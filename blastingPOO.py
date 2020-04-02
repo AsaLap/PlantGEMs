@@ -8,7 +8,7 @@ import cobra
 from os.path import join
 import subprocess
 
-class Model:
+class BiModel:
     """This class defines a metabolic model with only genes and reactions"""
     def __init__(self, _name):
         self.name = _name
@@ -43,9 +43,9 @@ def blast_p(model, workDir, subjectFile, queryFile):
     """Runs multiple blastp between the subject and each protein of the query file.
     
     ARGS : 
-    model -- a Model object.
+    model -- a BiModel object.
     subjectPATH -- the subject file for the blastp.
-    queryPATH -- the query file for the blastp corresponding to the Model object given.
+    queryPATH -- the query file for the blastp corresponding to the BiModel object given.
     RETURN : 
     dico_res -- a dictionary containing the result of the blastp command for each gene,
     the genes being the keys.
@@ -54,6 +54,8 @@ def blast_p(model, workDir, subjectFile, queryFile):
     queryDir = workDir + queryFile
     subjectDir = workDir + subjectFile
     subprocess.run(["mkdir", newDir])
+    
+    ###Creation of one file per protein of the query###
     fileFasta = open(queryDir)
     queryFasta = fileFasta.read()
     for seq in queryFasta.split(">"):
@@ -62,22 +64,30 @@ def blast_p(model, workDir, subjectFile, queryFile):
         f.write(">"+seq)
         f.close()
     fileFasta.close()
+    
+    ###Blastp###
     dico_res = {}
     for gene in model.genes:
-        ###The request used for Blastp
-        requestBlastp = ["blastp", "-subject", subjectDir, "-query", newDir+"in_"+gene+".fa", "-outfmt", "10 delim=, qseqid sseqid qlen length slen nident pident score evalue bitscore"]
-        ###The request passed via subprocess to the blastp command in bash
+        requestBlastp = [
+            "blastp",
+            "-subject",
+            subjectDir,
+            "-query",
+            newDir+"in_"+gene+".fa",
+            "-outfmt",
+            "10 delim=, qseqid sseqid qlen length slen nident pident score evalue bitscore"]
         dico_res[gene] = subprocess.run(requestBlastp, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
     subprocess.run(["rm", "-rf", workDir+newDir])
     
     
 if __name__=='__main__':
-    #Files and working directory :
+    ###Files and working directory###
     WD = '/home/asa/INRAE/Work/Drafts/Data/Tests/'
-    aragem = 'AraGEM3.xml'
-    aragemFasta = 'genomic.in.fasta'
+    modelGem = 'AraGEM3.xml'
+    modelGemFasta = 'genomic.in.fasta'
     tomatoFasta = 'ITAG4.0_proteins.fasta'
     
-    aragemModel = Model('AraGEM')
-    aragemModel.buil_model(WD + aragem)
-    blast_p(aragemModel, WD, tomatoFasta, aragemFasta)
+    ###Pipeline###
+    modelGemBiModel = BiModel('AraGEM')
+    modelGemBiModel.buil_model(WD + modelGem)
+    blast_p(modelGemBiModel, WD, tomatoFasta, modelGemFasta)
