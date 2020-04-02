@@ -7,12 +7,14 @@
 import cobra
 from os.path import join
 import subprocess
+import json
 
 class BiModel:
     """This class defines a metabolic model with only genes and reactions"""
     def __init__(self, _name):
         self.name = _name
         self.dictionary = {}
+        self.dico_res = {}
         self.genes = []
         self.reactions = []
     
@@ -38,7 +40,8 @@ class BiModel:
                 self.dictionary[gene] = [reaction]
         self.genes = self.dictionary.keys()
         self.reactions = self.dictionary.values()
-        
+
+
 def blast_p(model, workDir, subjectFile, queryFile):
     """Runs multiple blastp between the subject and each protein of the query file.
     
@@ -56,6 +59,7 @@ def blast_p(model, workDir, subjectFile, queryFile):
     subprocess.run(["mkdir", newDir])
     
     ###Creation of one file per protein of the query###
+    print("\nCreating the small fasta files...")
     fileFasta = open(queryDir)
     queryFasta = fileFasta.read()
     for seq in queryFasta.split(">"):
@@ -64,10 +68,16 @@ def blast_p(model, workDir, subjectFile, queryFile):
         f.write(">"+seq)
         f.close()
     fileFasta.close()
+    print("...done !")
     
     ###Blastp###
-    dico_res = {}
+    print("\nLaunching the blastp !")
+    i = 1
+    x = len(model.genes)
     for gene in model.genes:
+        if i%50==0:
+            print("Protein %i out of %i" %(i,x))
+        i+=1
         requestBlastp = [
             "blastp",
             "-subject",
@@ -75,9 +85,24 @@ def blast_p(model, workDir, subjectFile, queryFile):
             "-query",
             newDir+"in_"+gene+".fa",
             "-outfmt",
-            "10 delim=, qseqid sseqid qlen length slen nident pident score evalue bitscore"]
-        dico_res[gene] = subprocess.run(requestBlastp, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
-    subprocess.run(["rm", "-rf", workDir+newDir])
+            "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
+        model.dico_res[gene] = subprocess.run(requestBlastp, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
+    subprocess.run(["rm", "-rf", newDir])
+
+
+def save_model(workingDir, model):
+    with open(workingDir+'model_data.json', 'w') as f:
+        json.dump(model, f)
+    del model
+    
+def read_model(modelDir):
+    with open(modelDir, 'wb') as input:
+        model = pickle.load(input)
+    return model
+
+    # def stats_on_blastp(model):
+        
+        
     
     
 if __name__=='__main__':
@@ -85,9 +110,13 @@ if __name__=='__main__':
     WD = '/home/asa/INRAE/Work/Drafts/Data/Tests/'
     modelGem = 'AraGEM3.xml'
     modelGemFasta = 'genomic.in.fasta'
+    modelGemFastaTest = 'testBlast.in.fasta'
     tomatoFasta = 'ITAG4.0_proteins.fasta'
+    tomatoTestFasta = 'TomatoTest.fasta'
     
     ###Pipeline###
     modelGemBiModel = BiModel('AraGEM')
     modelGemBiModel.buil_model(WD + modelGem)
-    blast_p(modelGemBiModel, WD, tomatoFasta, modelGemFasta)
+    blast_p(modelGemBiModel, WD, tomatoTestFasta, modelGemFasta)
+    save_model(WD, modelGemBiModel)
+    
