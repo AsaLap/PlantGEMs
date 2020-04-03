@@ -7,6 +7,7 @@
 import cobra
 from os.path import join
 import subprocess
+import pickle
 
 
 def get_genes_reactions(_path):
@@ -73,10 +74,16 @@ def blast_p(gene_dic, workDir, subjectFile, queryFile):
             "-outfmt",
             "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
         gene_dic[gene]['BlastP'] = subprocess.run(requestBlastp, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
-        print(gene_dic[gene])
     subprocess.run(["rm", "-rf", newDir])
     return gene_dic
 
+def save_obj(obj, path):
+    with open(path + '.pkl', 'wb+') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(path):
+    with open(path + '.pkl', 'rb') as f:
+        return pickle.load(f)
 
 if __name__=='__main__':
     ###Files and working directory###
@@ -85,8 +92,11 @@ if __name__=='__main__':
     modelGemFasta = 'genomic.in.fasta'
     modelGemFastaTest = 'testBlast.in.fasta'
     tomatoFasta = 'ITAG4.0_proteins.fasta'
-    tomatoTestFasta = 'TomatoTest.fasta'
+    tomatoFastaTest = 'TomatoTest.fasta'
     
     ###Pipeline###
     core_info = get_genes_reactions(WD+modelGem)
-    blast_p(core_info, WD, tomatoFasta, modelGemFastaTest)
+    core_info = blast_p(core_info, WD, tomatoFasta, modelGemFastaTest)
+    save_obj(core_info, WD + "dictionary")
+    test = load_obj(WD + "dictionary")
+    print(test)
