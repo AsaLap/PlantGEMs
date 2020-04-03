@@ -96,7 +96,6 @@ if __name__=='__main__':
     
     ###Pipeline###
     core_info = get_genes_reactions(WD+modelGem)
-    core_info = blast_p(core_info, WD, tomatoFasta, modelGemFastaTest)
+    core_info = blast_p(core_info, WD, tomatoFastaTest, modelGemFasta)
     save_obj(core_info, WD + "dictionary")
-    test = load_obj(WD + "dictionary")
-    print(test)
+    # test = load_obj(WD + "dictionary")
