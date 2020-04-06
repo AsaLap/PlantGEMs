@@ -30,7 +30,7 @@ def get_genes_reactions(_path):
     return gene_dic
 
 
-def blast_p(gene_dic, workDir, subjectFile, queryFile):
+def blast_run(gene_dic, workDir, subjectFile, queryFile):
     """Runs multiple blastp between a subject file and each protein of the query file.
     
     ARGS : 
@@ -96,7 +96,17 @@ def load_obj(path):
         return pickle.load(f)
 
 
-def make_graph(dict_data):
+def get_plot_values(dict_data):
+    """
+    Gather the number of sequences correctly mapped, depending on a
+    treshold value varying from 5 to 100 (percentage of coverage).
+    
+    ARGS : 
+        dict_data -- the dictionary containing the blast results for each gene.
+    RETURN : 
+        x -- the list of x values which are the different treshold used to filter the data.
+        y -- the list of y values which are the number of results for the different tresholds.
+    """
     res_plot = {}
     treshold = 5
     while treshold <= 100:
@@ -112,6 +122,22 @@ def make_graph(dict_data):
     return x, y
 
 
+def make_dico_draft(data, treshold = 60):
+    dico_pairs = {}
+    for key in data.keys():
+        for res in data[key]['BlastP']:
+            if float(res.split(",")[6]) >= treshold:
+                #Best coverage for this gene
+                try:
+                    if dico_pairs[key]['TargetGene'][1] < res.split(",")[6]:
+                        dico_pairs[key] = {'TargetGene' : [res.split(",")[2], res.split(",")[6]]}
+                except KeyError:
+                    dico_pairs[key] = {'TargetGene' : [res.split(",")[2], res.split(",")[6]]}
+    for key in dico_pairs.keys():
+        dico_pairs[key]['Reactions'] = data[key]['Reactions']
+    return dico_pairs
+
+
 if __name__=='__main__':
     ###Files and working directory###
     WDtom = '/home/asa/INRAE/Work/Drafts/Data/Tomato_Arabidopsis/'
@@ -119,7 +145,7 @@ if __name__=='__main__':
     WDche = '/home/asa/INRAE/Work/Drafts/Data/Cherry_Arabidopsis/'
     WDcuc = '/home/asa/INRAE/Work/Drafts/Data/Cucumber_Arabidopsis/'
     
-    # WD = '/home/asa/INRAE/Work/Drafts/Data/Tests/'
+    WD = '/home/asa/INRAE/Work/Drafts/Data/Tests/'
     
     modelGem = 'AraGEM3.xml'
     modelGemFasta = 'genomic.in.fasta'
@@ -131,16 +157,35 @@ if __name__=='__main__':
     kiwiFasta = 'Hongyang_pep_v2.0.fa'
     
     ###Pipeline###
+    #Gathering first information
     # core_info = get_genes_reactions(WD+modelGem)
-    # core_info = blast_p(core_info, WD, kiwiFasta, modelGemFasta)
-    # save_obj(core_info, WD + "dictionary")
+    #Running blast (p by default)
+    # core_info = blast_run(core_info, WDche, cherryFasta, modelGemFasta)
+    #Saving results
+    # save_obj(core_info, WDche + "dictionary")
+    #Creating dico for the draft (step before Cobra model making)
     tom = load_obj(WDtom + "dictionary")
-    kiw = load_obj(WDkiw + "dictionary")
-    che = load_obj(WDche + "dictionary")
-    cuc = load_obj(WDcuc + "dictionary")
-    tomato = make_graph(tom)
-    kiwi = make_graph(kiw)
-    cherry = make_graph(che)
-    cucumber = make_graph(cuc)
-    plt.plot(tomato[0], tomato[1], 'r', kiwi[0], kiwi[1], 'g', cucumber[0], cucumber[1], 'b', cherry[0], cherry[1], 'y')
-    plt.show()
+    res = make_dico_draft(tom,70)
+    # print(res)
+    
+    ###Making a plot for our information###
+    #Loads for the plot
+    # tom = load_obj(WDtom + "dictionary")
+    # kiw = load_obj(WDkiw + "dictionary")
+    # che = load_obj(WDche + "dictionary")
+    # cuc = load_obj(WDcuc + "dictionary")
+    # tomato = get_plot_values(tom)
+    # kiwi = get_plot_values(kiw)
+    # cherry = get_plot_values(che)
+    # cucumber = get_plot_values(cuc)
+    #Ploting
+    # plt.plot(tomato[0], tomato[1], 'r', label = 'Tomato')
+    # plt.plot(kiwi[0], kiwi[1], 'g', label = 'Kiwi')
+    # plt.plot(cucumber[0], cucumber[1], 'b', label = 'Cucumber')
+    # plt.plot(cherry[0], cherry[1], 'y', label = 'Cherry' )
+    # plt.ylabel('Number of mappings')
+    # plt.xlabel('Percentage of identity')
+    # plt.legend(fancybox=True, framealpha=1, shadow=True, borderpad=1)
+    # plt.savefig(WD + '4plots.png', dpi=300)
+    # plt.show()
+    
