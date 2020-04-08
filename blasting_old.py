@@ -96,7 +96,7 @@ def load_obj(path):
         return pickle.load(f)
 
 
-def plot_ditribution(dict_data):
+def plot_distribution(dict_data):
     """
     Gather the number of sequences correctly mapped, depending on a
     treshold value varying from 5 to 100 (percentage of coverage).
@@ -173,10 +173,10 @@ if __name__=='__main__':
     # kiw = load_obj(WDkiw + "dictionary")
     # che = load_obj(WDche + "dictionary")
     # cuc = load_obj(WDcuc + "dictionary")
-    # tomato = plot_ditribution(tom)
-    # kiwi = plot_ditribution(kiw)
-    # cherry = plot_ditribution(che)
-    # cucumber = plot_ditribution(cuc)
+    # tomato = plot_distribution(tom)
+    # kiwi = plot_distribution(kiw)
+    # cherry = plot_distribution(che)
+    # cucumber = plot_distribution(cuc)
     #Plotting
     # plt.plot(tomato[0], tomato[1], 'r', label = 'Tomato')
     # plt.plot(kiwi[0], kiwi[1], 'g', label = 'Kiwi')

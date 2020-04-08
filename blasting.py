@@ -66,6 +66,15 @@ def blast_run(workDir, model, queryFile, subjectFile):
 
 
 def select_genes(blast_res, treshold = 80):
+    """Select the target organism's genes with a good score.
+    
+    ARGS:
+        blast_res -- the dictionary with the results of the blastp.
+        treshold -- the treshold value of identity for selection of the target genes.
+    RETURN:
+        dico_genes -- a dictionary with model gene as key and corresponding target 
+        key and coverage value as value.
+    """
     dico_genes = {}
     for key in blast_res.keys():
         for res in blast_res[key]:
