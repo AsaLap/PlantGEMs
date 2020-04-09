@@ -119,11 +119,11 @@ if __name__=='__main__':
     tomatoFasta = 'ITAG4.0_proteins.fasta'
     kiwiFasta = 'Hongyang_pep_v2.0.fa'
     cucumberFasta = 'Gy14_pep_v2.fa'
-    cherryFasta = 'PRUAV_Regina.fa'
+    cherryFasta = 'PRUAV_Regina_CDS.fa'
     
     ###Main###
     #For the tomato
-    # pipeline(WDtom, aragem, aragemFasta, tomatoFasta)
+    pipeline(WDtom, aragem, aragemFasta, tomatoFasta)
     #For the kiwifruit
     # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta)
     #For the cucumber
