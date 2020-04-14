@@ -12,6 +12,16 @@ import time
 import matplotlib.pyplot as plt
 
 
+def save_obj(obj, path):
+    with open(path + '.pkl', 'wb+') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(path):
+    with open(path + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
+
 def blast_run(workDir, model, queryFile, subjectFile):
     """Runs multiple blasts between a subject file and each protein of the query file.
     
@@ -65,12 +75,12 @@ def blast_run(workDir, model, queryFile, subjectFile):
     return blast_res
 
 
-def select_genes(blast_res, treshold = 80):
+def select_genes(blast_res, treshold = 75, e_val = 1e-100):
     """Select the target organism's genes with a good score.
     
     ARGS:
         blast_res -- the dictionary with the results of the blastp.
-        treshold -- the treshold value of identity for selection of the target genes.
+        treshold -- the treshold value of identity to select the target genes.
     RETURN:
         dico_genes -- a dictionary with model gene as key and corresponding target 
         key and coverage value as value.
@@ -80,29 +90,45 @@ def select_genes(blast_res, treshold = 80):
         for res in blast_res[key]:
             if float(res.split(",")[6]) >= treshold:
                 try:
-                    if dico_genes[key][1] < res.split(",")[6]:
-                        dico_genes[key] = [res.split(",")[2], res.split(",")[6]]
+                    if float(res.split(",")[8]) <= e_val:
+                        dico_genes[key].append(res.split(",")[2])
                 except KeyError:
-                    dico_genes[key] = [res.split(",")[2], res.split(",")[6]]
+                    if float(res.split(",")[8]) <= e_val:
+                        dico_genes[key] = [res.split(",")[2]]
     return dico_genes
 
 
-def save_obj(obj, path):
-    with open(path + '.pkl', 'wb+') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+def drafting(model, dico_genes, model_name):
+    new_model = cobra.Model(model_name)
+    #Getting the associated reaction genes
+    for key in dico_genes.keys():
+        string_reaction_rule = "( "
+        for i in dico_genes[key]:
+            string_reaction_rule += i + " or "
+        string_reaction_rule = string_reaction_rule[:-3] + ")"
+        #Getting the reactions for each gene and changing gene_reaction_rule to current genes
+        for i in model.genes.get_by_id(key).reactions:
+            i.gene_reaction_rule = string_reaction_rule
+            new_model.add_reactions([i])
+    return new_model
+        
 
 
-def load_obj(path):
-    with open(path + '.pkl', 'rb') as f:
-        return pickle.load(f)
-
-
-def pipeline(WD, ref_gem, queryFile, subjectFile):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    blast_res = blast_run(WD, model, queryFile, subjectFile)
-    save_obj(blast_res, WD + "resBlastp")
-    # blast_res = load_obj(WD + "resBlastp")
-    # draft = select_genes(blast_res)
+    # blast_res = blast_run(WD, model, queryFile, subjectFile)
+    # save_obj(blast_res, WD + "resBlastp")
+    blast_res = load_obj(WD + "resBlastp")
+    dico_genes = select_genes(blast_res, 70, 1e-100)
+    #Printing of the filters's effect
+    # tot = 0
+    # for value in dico_genes.values():
+    #     tot += len(value)
+    # print(len(dico_genes.values()), tot)
+    new_model = drafting(model, dico_genes, modelName)
+    new_model.add_metabolites(model.metabolites)
+    return new_model
+    
 
 
 if __name__=='__main__':
@@ -123,10 +149,10 @@ if __name__=='__main__':
     
     ###Main###
     #For the tomato
-    pipeline(WDtom, aragem, aragemFasta, tomatoFasta)
-    #For the kiwifruit
-    # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta)
-    #For the cucumber
-    # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta)
-    #For the cherry
-    # pipeline(WDche, aragem, aragemFasta, cherryFasta)
+    test = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    # #For the kiwifruit
+    # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    # #For the cucumber
+    # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    # #For the cherry
+    # pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")

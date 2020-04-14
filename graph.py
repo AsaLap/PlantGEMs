@@ -125,5 +125,29 @@ if __name__=="__main__":
     cucumber = get_all_scores("Cucumber", cuc)
     cherry = get_all_scores("Cherry", che)
     total = tomato + kiwi + cucumber + cherry
-    total.insert(0,["Organism", "Identity", "Score", "E_Value", "Bit_Score"])
-    write_csv(WD, total)
+    # total.insert(0,["Organism", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WD, total)
+    
+    #---Calculs savants---#    
+    x = 10
+    mean_score = 0
+    mean_e_value = 0
+    mean_bit_score = 0
+    score = 0
+    e_value = 0
+    bit_score = 0
+    count = 0
+    for i in total:
+        mean_score += i[2]
+        mean_e_value += i[3]
+        mean_bit_score += i[4]
+        if i[1] > x:
+            score += i[2]
+            e_value += i[3]
+            bit_score += i[4]
+            count += 1
+    mean_score /= len(total)
+    mean_e_value /= len(total)
+    mean_bit_score /= len(total)
+    print("- Means with identity > %i :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (x, score/count, e_value/count, bit_score/count))
+    print("\n- Total means :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (mean_score, mean_e_value, mean_bit_score))
