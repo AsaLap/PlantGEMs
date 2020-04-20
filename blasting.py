@@ -10,6 +10,7 @@ import subprocess
 import pickle
 import time
 import matplotlib.pyplot as plt
+from statistics import mean
 
 
 def save_obj(obj, path):
@@ -108,8 +109,9 @@ def drafting(model, dico_genes, model_name):
         string_reaction_rule = string_reaction_rule[:-3] + ")"
         #Getting the reactions for each gene and changing gene_reaction_rule to current genes
         for i in model.genes.get_by_id(key).reactions:
-            i.gene_reaction_rule = string_reaction_rule
-            new_model.add_reactions([i])
+            x = i
+            x.gene_reaction_rule = string_reaction_rule
+            new_model.add_reactions([x])
     return new_model
         
 
@@ -119,15 +121,27 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, 70, 1e-100)
-    #Printing of the filters's effect
-    # tot = 0
-    # for value in dico_genes.values():
-    #     tot += len(value)
-    # print(len(dico_genes.values()), tot)
+    dico_genes = select_genes(blast_res, 75, 1e-100)
+    
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
-    return new_model
+    
+    #Printing of verifications
+    #Test blast_res, search for the genes with no results
+    no_results = []
+    for key in blast_res.keys():
+        if not blast_res[key]:
+            no_results.append(key)
+    print("The",len(no_results),"genes that have no results : ", no_results)
+    
+    #
+    test = []
+    for val in dico_genes.values():
+        for i in val:
+            test.append(i)
+    print("Nb of genes in ref model : %s\nNb of genes in the new model : %s\nNb of genes in dico_genes : %s\nNb of values in dico_genes : %s (without doublons : %s)" %(len(model.genes), len(new_model.genes), len(dico_genes.keys()), len(test), len(set(test))))
+    print("----------------------------------------")
+    return test, new_model
     
 
 
@@ -149,10 +163,10 @@ if __name__=='__main__':
     
     ###Main###
     #For the tomato
-    test = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    # #For the kiwifruit
-    # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    # #For the cucumber
-    # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    # #For the cherry
-    # pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
+    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    #For the kiwifruit
+    pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    #For the cucumber
+    pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    #For the cherry
+    pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
