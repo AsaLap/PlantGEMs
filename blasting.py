@@ -11,6 +11,7 @@ import pickle
 import time
 import matplotlib.pyplot as plt
 from statistics import mean
+import copy
 
 
 def save_obj(obj, path):
@@ -76,7 +77,7 @@ def blast_run(workDir, model, queryFile, subjectFile):
     return blast_res
 
 
-def select_genes(blast_res, treshold = 75, e_val = 1e-100):
+def select_genes(blast_res, treshold = 75, length = 0.8, e_val = 1e-100):
     """Select the target organism's genes with a good score.
     
     ARGS:
@@ -89,13 +90,14 @@ def select_genes(blast_res, treshold = 75, e_val = 1e-100):
     dico_genes = {}
     for key in blast_res.keys():
         for res in blast_res[key]:
-            if float(res.split(",")[6]) >= treshold:
+            spl = res.split(",")
+            if float(spl[6]) >= treshold and float(spl[3])/float(spl[1]) >= length:
                 try:
-                    if float(res.split(",")[8]) <= e_val:
-                        dico_genes[key].append(res.split(",")[2])
+                    if float(spl[8]) <= e_val:
+                        dico_genes[key].append(spl[2])
                 except KeyError:
-                    if float(res.split(",")[8]) <= e_val:
-                        dico_genes[key] = [res.split(",")[2]]
+                    if float(spl[8]) <= e_val:
+                        dico_genes[key] = [spl[2]]
     return dico_genes
 
 
@@ -109,7 +111,7 @@ def drafting(model, dico_genes, model_name):
         string_reaction_rule = string_reaction_rule[:-3] + ")"
         #Getting the reactions for each gene and changing gene_reaction_rule to current genes
         for i in model.genes.get_by_id(key).reactions:
-            x = i
+            x = copy.deepcopy(i)
             x.gene_reaction_rule = string_reaction_rule
             new_model.add_reactions([x])
     return new_model
@@ -121,27 +123,40 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, 75, 1e-100)
-    
+    dico_genes = select_genes(blast_res, 70, 0.7, 1e-100)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     
-    #Printing of verifications
-    #Test blast_res, search for the genes with no results
+    ###Printing of verifications
+    #Test blast_res, search for the genes with no matches with blastp
     no_results = []
     for key in blast_res.keys():
         if not blast_res[key]:
             no_results.append(key)
-    print("The",len(no_results),"genes that have no results : ", no_results)
+    print("The",len(no_results),"genes that have no matches : ", no_results)
     
-    #
-    test = []
+    #Counting of different values
+    nb_values = []
     for val in dico_genes.values():
         for i in val:
-            test.append(i)
-    print("Nb of genes in ref model : %s\nNb of genes in the new model : %s\nNb of genes in dico_genes : %s\nNb of values in dico_genes : %s (without doublons : %s)" %(len(model.genes), len(new_model.genes), len(dico_genes.keys()), len(test), len(set(test))))
+            nb_values.append(i)
+    print(
+        "Nb of genes in ref model : %s\n\
+Nb of reactions in ref model : %s\n\
+Nb of genes in the new model : %s\n\
+Nb of reactions in the new model : %s\n\
+Nb of genes in dico_genes : %s\n\
+Nb of values in dico_genes : %s\
+ (without doublons : %s)"
+        %(len(model.genes),
+        len(model.reactions),
+        len(new_model.genes),
+        len(new_model.reactions),
+        len(dico_genes.keys()),
+        len(nb_values),
+        len(set(nb_values))))
     print("----------------------------------------")
-    return test, new_model
+    return nb_values, new_model
     
 
 
@@ -164,9 +179,9 @@ if __name__=='__main__':
     ###Main###
     #For the tomato
     tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    #For the kiwifruit
-    pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    #For the cucumber
-    pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    #For the cherry
-    pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
+    # #For the kiwifruit
+    # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    # #For the cucumber
+    # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    # #For the cherry
+    # pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
