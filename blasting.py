@@ -15,11 +15,13 @@ import copy
 
 
 def save_obj(obj, path):
+    """Saves the dictionary of Blastp results in a pickle file."""
     with open(path + '.pkl', 'wb+') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(path):
+    """Loads a dictionary of Blastp results stored in a pickle file."""
     with open(path + '.pkl', 'rb') as f:
         return pickle.load(f)
 
@@ -54,8 +56,7 @@ def blast_run(workDir, model, queryFile, subjectFile):
     print("...done !")
     ###Blast###
     print("\nLaunching the blast !")
-    i = 1
-    x = len(model.genes)
+    i, x = 1, len(model.genes)
     total_time = lap_time = time.time()
     blast_res = {}
     for gene in model.genes:
@@ -77,21 +78,22 @@ def blast_run(workDir, model, queryFile, subjectFile):
     return blast_res
 
 
-def select_genes(blast_res, treshold = 75, length = 0.8, e_val = 1e-100):
-    """Select the target organism's genes with a good score.
+def select_genes(blast_res, treshold = 75, len_diff = 20, e_val = 1e-100):
+    """Select the subject organism's genes with a good score.
     
     ARGS:
         blast_res -- the dictionary with the results of the blastp.
-        treshold -- the treshold value of identity to select the target genes.
+        treshold -- the treshold value of identity to select the subject genes.
     RETURN:
-        dico_genes -- a dictionary with model gene as key and corresponding target 
+        dico_genes -- a dictionary with model gene as key and corresponding subject 
         key and coverage value as value.
     """
     dico_genes = {}
     for key in blast_res.keys():
         for res in blast_res[key]:
             spl = res.split(",")
-            if float(spl[6]) >= treshold and float(spl[3])/float(spl[1]) >= length:
+            length = float(spl[1]) * 100 / float(spl[3])
+            if float(spl[6]) >= treshold and length >= 100 - len_diff and length <= 100 + len_diff:
                 try:
                     if float(spl[8]) <= e_val:
                         dico_genes[key].append(spl[2])
@@ -102,20 +104,32 @@ def select_genes(blast_res, treshold = 75, length = 0.8, e_val = 1e-100):
 
 
 def drafting(model, dico_genes, model_name):
+    """Creates the new model for the subject organism.
+    
+    ARGS:
+        model -- the COBRA model used for the reconstruction.
+        dico_genes -- the dictionary containing the correspondance
+        between genes of the model and the subject.
+        model_name -- a name for the new model (string)
+    RETURN:
+        new_model -- the new COBRA model automatically generated.
+    """
     new_model = cobra.Model(model_name)
-    #Getting the associated reaction genes
-    for key in dico_genes.keys():
-        string_reaction_rule = "( "
-        for i in dico_genes[key]:
-            string_reaction_rule += i + " or "
-        string_reaction_rule = string_reaction_rule[:-3] + ")"
-        #Getting the reactions for each gene and changing gene_reaction_rule to current genes
-        for i in model.genes.get_by_id(key).reactions:
-            x = copy.deepcopy(i)
+    #Browsing the model reactions and associating the subject's genes to them
+    for reac in model.reactions:
+        to_add = []
+        to_search = reac.gene_reaction_rule.split(" or ")
+        for gene in to_search:
+            try:
+                to_add += dico_genes[gene]
+            except KeyError:
+                pass
+        string_reaction_rule = " or ".join(to_add)
+        if string_reaction_rule:
+            x = copy.deepcopy(reac)
             x.gene_reaction_rule = string_reaction_rule
             new_model.add_reactions([x])
     return new_model
-        
 
 
 def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
@@ -123,7 +137,7 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, 70, 0.7, 1e-100)
+    dico_genes = select_genes(blast_res, 70, 30, 1e-100)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     
