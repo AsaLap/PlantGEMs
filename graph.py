@@ -54,17 +54,19 @@ def get_all_scores(organism, data):
     list_value = []
     for key in data.keys():
         for res in data[key]:
+            spl = res.split(",")
             list_value.append([
                 organism,
-                float(res.split(",")[6]),
-                float(res.split(",")[7]),
-                float(res.split(",")[8]),
-                float(res.split(",")[9])])
+                spl[2],
+                float(spl[6]),
+                float(spl[7]),
+                float(spl[8]),
+                float(spl[9])])
     return list_value
 
 
-def write_csv(WD, list_value):
-    with open(WD + 'all_values.csv', 'w', newline = '') as file:
+def write_csv(WD, list_value, name):
+    with open(WD + name + '.csv', 'w', newline = '') as file:
         writer = csv.writer(file)
         for f in list_value:
             writer.writerow(f)
@@ -77,13 +79,16 @@ if __name__=="__main__":
     WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
     WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
     WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
     
     ###Making plots###
-    #Loads for the plot
+    #Loading the data
     tom = blasting.load_obj(WDtom + "resBlastp")
     kiw = blasting.load_obj(WDkiw + "resBlastp")
     cuc = blasting.load_obj(WDcuc + "resBlastp")
     che = blasting.load_obj(WDche + "resBlastp")
+    cam = blasting.load_obj(WDcam + "resBlastp")
+    
     
     #------Identity------#
     # tomato = graph_identity(tom)
@@ -120,34 +125,50 @@ if __name__=="__main__":
     # tomato = get_bit_score(tom)
     # print("Mean : %f, max : %f, min : %f" % (mean(tomato), max(tomato), min(tomato)))
     
-    tomato = get_all_scores("Tomato", tom)
-    kiwi = get_all_scores("Kiwi", kiw)
-    cucumber = get_all_scores("Cucumber", cuc)
-    cherry = get_all_scores("Cherry", che)
-    total = tomato + kiwi + cucumber + cherry
-    # total.insert(0,["Organism", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WD, total)
+    # tomato = get_all_scores("Tomato", tom)
+    # tomato.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WDtom, tomato, "tomato_values")
+    
+    # kiwi = get_all_scores("Kiwi", kiw)
+    # kiwi.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WDkiw, kiwi, "kiwi_values")
+    
+    # cucumber = get_all_scores("Cucumber", cuc)
+    # cucumber.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WDcuc, cucumber, "cucumber_values")
+    
+    # cherry = get_all_scores("Cherry", che)
+    # cherry.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WDche, cherry, "cherry_values")
+    
+    camelina = get_all_scores("Camelina", cam)
+    camelina.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    write_csv(WDcam, camelina, "camelina_values")
+    
+    # total = tomato + kiwi + cucumber + cherry
+    # total.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WD, total, "total_values")
     
     #---Calculs savants---#    
-    x = 10
-    mean_score = 0
-    mean_e_value = 0
-    mean_bit_score = 0
-    score = 0
-    e_value = 0
-    bit_score = 0
-    count = 0
-    for i in total:
-        mean_score += i[2]
-        mean_e_value += i[3]
-        mean_bit_score += i[4]
-        if i[1] > x:
-            score += i[2]
-            e_value += i[3]
-            bit_score += i[4]
-            count += 1
-    mean_score /= len(total)
-    mean_e_value /= len(total)
-    mean_bit_score /= len(total)
-    print("- Means with identity > %i :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (x, score/count, e_value/count, bit_score/count))
-    print("\n- Total means :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (mean_score, mean_e_value, mean_bit_score))
+    # x = 10
+    # mean_score = 0
+    # mean_e_value = 0
+    # mean_bit_score = 0
+    # score = 0
+    # e_value = 0
+    # bit_score = 0
+    # count = 0
+    # for i in total:
+    #     mean_score += i[2]
+    #     mean_e_value += i[3]
+    #     mean_bit_score += i[4]
+    #     if i[1] > x:
+    #         score += i[2]
+    #         e_value += i[3]
+    #         bit_score += i[4]
+    #         count += 1
+    # mean_score /= len(total)
+    # mean_e_value /= len(total)
+    # mean_bit_score /= len(total)
+    # print("- Means with identity > %i :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (x, score/count, e_value/count, bit_score/count))
+    # print("\n- Total means :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (mean_score, mean_e_value, mean_bit_score))

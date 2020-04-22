@@ -1,17 +1,11 @@
 setwd("~/INRAE/Work/Plant-GEMs")
-df = read.csv("values.csv", sep=',', header = TRUE)
-df_tot = read.csv("all_values.csv", sep=',', header=TRUE)
+df_tot = read.csv("values.csv", sep=',', header=TRUE)
 #rownames(e_values) = e_values[,1]
 #e_values = e_values[,-1]
 #e_values = t(e_values)
 
 library(ggplot2)
 library(plyr)
-
-#Only on tomato
-p<-ggplot(df, aes(x=Identity)) + 
-  geom_histogram(aes(y=..density..), color="black", fill="white") +
-  geom_density(alpha=.2, fill="#FF6666")
 
 #For all organisms
 muID <- ddply(df_tot, "Organism", summarise, grp.mean=mean(Identity))

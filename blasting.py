@@ -134,8 +134,8 @@ def drafting(model, dico_genes, model_name):
 
 def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    # blast_res = blast_run(WD, model, queryFile, subjectFile)
-    # save_obj(blast_res, WD + "resBlastp")
+    blast_res = blast_run(WD, model, queryFile, subjectFile)
+    save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
     dico_genes = select_genes(blast_res, 70, 30, 1e-100)
     new_model = drafting(model, dico_genes, modelName)
@@ -180,6 +180,7 @@ if __name__=='__main__':
     WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
     WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
     WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
     
     WD = '/home/asa/INRAE/Work/Drafts/Tests/'
     
@@ -189,13 +190,16 @@ if __name__=='__main__':
     kiwiFasta = 'Hongyang_pep_v2.0.fa'
     cucumberFasta = 'Gy14_pep_v2.fa'
     cherryFasta = 'PRUAV_Regina_CDS.fa'
+    camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
     ###Main###
     #For the tomato
-    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
     # #For the kiwifruit
     # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # #For the cucumber
     # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
     # #For the cherry
     # pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
+    #For the camelina
+    camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
