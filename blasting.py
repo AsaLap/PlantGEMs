@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from statistics import mean
 import copy
 
+import graph
+
 
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
@@ -132,47 +134,64 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 70, coverage = 20, EVal = 10**-100):
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    blast_res = blast_run(WD, model, queryFile, subjectFile)
-    save_obj(blast_res, WD + "resBlastp")
+    # blast_res = blast_run(WD, model, queryFile, subjectFile)
+    # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, 70, 30, 1e-100)
+    dico_genes = select_genes(blast_res, identity, coverage, EVal)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     
     ###Printing of verifications
     #Test blast_res, search for the genes with no matches with blastp
-    no_results = []
-    for key in blast_res.keys():
-        if not blast_res[key]:
-            no_results.append(key)
-    print("The",len(no_results),"genes that have no matches : ", no_results)
+    # no_results = []
+    # for key in blast_res.keys():
+    #     if not blast_res[key]:
+    #         no_results.append(key)
+    # print("The",len(no_results),"genes that have no matches : ", no_results)
     
     #Counting of different values
-    nb_values = []
-    for val in dico_genes.values():
-        for i in val:
-            nb_values.append(i)
-    print(
-        "Nb of genes in ref model : %s\n\
-Nb of reactions in ref model : %s\n\
-Nb of genes in the new model : %s\n\
-Nb of reactions in the new model : %s\n\
-Nb of genes in dico_genes : %s\n\
-Nb of values in dico_genes : %s\
- (without doublons : %s)"
-        %(len(model.genes),
-        len(model.reactions),
-        len(new_model.genes),
-        len(new_model.reactions),
-        len(dico_genes.keys()),
-        len(nb_values),
-        len(set(nb_values))))
-    print("----------------------------------------")
-    return nb_values, new_model
+#     nb_values = []
+#     for val in dico_genes.values():
+#         for i in val:
+#             nb_values.append(i)
+#     print(
+#         "Nb of genes in ref model : %s\n\
+# Nb of reactions in ref model : %s\n\
+# Nb of genes in the new model : %s\n\
+# Nb of reactions in the new model : %s\n\
+# Nb of genes in dico_genes : %s\n\
+# Nb of values in dico_genes : %s\
+#  (without doublons : %s)"
+#         %(len(model.genes),
+#         len(model.reactions),
+#         len(new_model.genes),
+#         len(new_model.reactions),
+#         len(dico_genes.keys()),
+#         len(nb_values),
+#         len(set(nb_values))))
+#     print("----------------------------------------")
+    return new_model
     
 
+def help_treshold(WD, model, modelFasta, subjectFasta, name, identity, coverage):
+    """Function to help choosing the treshold value."""
+    
+    listValues = []
+    for i in range(1,101):
+        draft = pipeline(WD, model, modelFasta, subjectFasta, name, identity, coverage, 10**(-i))
+        listValues.append([i, len(draft.genes), len(draft.reactions)])
+    print(listValues)
+    listValues.insert(0,["EValue (1e-x)", "Nb genes", "Nb reactions"])
+    graph.write_csv(WD, listValues, name + "Treshold")
+
+
+def data_venn(WD, model, name):
+    list_id = []
+    for reac in model.reactions:
+        list_id.append([reac.id])
+    graph.write_csv(WD, list_id, name + "_id_reac")
 
 if __name__=='__main__':
     ###Files and working directory###
@@ -181,8 +200,9 @@ if __name__=='__main__':
     WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
     WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
     WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
+    WDara = '/home/asa/INRAE/Work/Drafts/Arabidopsis/'
     
-    WD = '/home/asa/INRAE/Work/Drafts/Tests/'
+    WDtests = '/home/asa/INRAE/Work/Drafts/Tests/'
     
     aragem = 'AraGEM3.xml'
     aragemFasta = 'genomic.in.fasta'
@@ -193,13 +213,28 @@ if __name__=='__main__':
     camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
     ###Main###
-    #For the tomato
+    # #For the tomato
     # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
     # #For the kiwifruit
-    # pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    # kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # #For the cucumber
-    # pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    # cucumberDraft = pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
     # #For the cherry
-    # pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
-    #For the camelina
-    camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    # cherryDraft = pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cucumber")
+    # #For the camelina
+    # camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    
+    ###Get the reactions id for the Venn diagramm###
+    # data_venn(WDtom, tomatoDraft, "Tomato")
+    # data_venn(WDkiw, kiwiDraft, "Kiwi")
+    # data_venn(WDcuc, cucumberDraft, "Cucumber")
+    # data_venn(WDche, cherryDraft, "Cherry")
+    # data_venn(WDcam, camelinaDraft, "Camelina")
+    data_venn(WDara, cobra.io.read_sbml_model(WDara + aragem), "Arabidopsis")
+    
+    ###Help to choose the treshold###
+    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", 70, 20)
+    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi", 70, 20)
+    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber", 70, 20)
+    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry", 70, 20)
+    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina", 70, 20)

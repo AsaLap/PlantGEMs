@@ -89,7 +89,6 @@ if __name__=="__main__":
     che = blasting.load_obj(WDche + "resBlastp")
     cam = blasting.load_obj(WDcam + "resBlastp")
     
-    
     #------Identity------#
     # tomato = graph_identity(tom)
     # kiwi = graph_identity(kiw)
@@ -125,6 +124,7 @@ if __name__=="__main__":
     # tomato = get_bit_score(tom)
     # print("Mean : %f, max : %f, min : %f" % (mean(tomato), max(tomato), min(tomato)))
     
+    #------All Scores------#
     # tomato = get_all_scores("Tomato", tom)
     # tomato.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
     # write_csv(WDtom, tomato, "tomato_values")
@@ -141,9 +141,9 @@ if __name__=="__main__":
     # cherry.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
     # write_csv(WDche, cherry, "cherry_values")
     
-    camelina = get_all_scores("Camelina", cam)
-    camelina.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    write_csv(WDcam, camelina, "camelina_values")
+    # camelina = get_all_scores("Camelina", cam)
+    # camelina.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
+    # write_csv(WDcam, camelina, "camelina_values")
     
     # total = tomato + kiwi + cucumber + cherry
     # total.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
