@@ -145,7 +145,7 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, score = 1000):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, score = 2500):
     model = cobra.io.read_sbml_model(WD + ref_gem)
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
@@ -156,33 +156,33 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
     
     ###Printing of verifications
     #Test blast_res, search for the genes with no matches with blastp
-    # no_results = []
-    # for key in blast_res.keys():
-    #     if not blast_res[key]:
-    #         no_results.append(key)
-    # print("The",len(no_results),"genes that have no matches : ", no_results)
+    no_results = []
+    for key in blast_res.keys():
+        if not blast_res[key]:
+            no_results.append(key)
+    print("The",len(no_results),"genes that have no matches : ", no_results)
     
     #Counting of different values
-#     nb_values = []
-#     for val in dico_genes.values():
-#         for i in val:
-#             nb_values.append(i)
-#     print(
-#         "Nb of genes in ref model : %s\n\
-# Nb of reactions in ref model : %s\n\
-# Nb of genes in the new model : %s\n\
-# Nb of reactions in the new model : %s\n\
-# Nb of genes in dico_genes : %s\n\
-# Nb of values in dico_genes : %s\
-#  (without doublons : %s)"
-#         %(len(model.genes),
-#         len(model.reactions),
-#         len(new_model.genes),
-#         len(new_model.reactions),
-#         len(dico_genes.keys()),
-#         len(nb_values),
-#         len(set(nb_values))))
-#     print("----------------------------------------")
+    nb_values = []
+    for val in dico_genes.values():
+        for i in val:
+            nb_values.append(i)
+    print(
+        "Nb of genes in ref model : %s\n\
+Nb of reactions in ref model : %s\n\
+Nb of genes in the new model : %s\n\
+Nb of reactions in the new model : %s\n\
+Nb of genes in dico_genes : %s\n\
+Nb of values in dico_genes : %s\
+ (without doublons : %s)"
+        %(len(model.genes),
+        len(model.reactions),
+        len(new_model.genes),
+        len(new_model.reactions),
+        len(dico_genes.keys()),
+        len(nb_values),
+        len(set(nb_values))))
+    print("----------------------------------------")
     return new_model
     
 
@@ -225,8 +225,8 @@ if __name__=='__main__':
     camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
     ###Main###
-    # #For the tomato
-    # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", score = 1000)
+    #For the tomato
+    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", score = 1000)
     # #For the kiwifruit
     # kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # #For the cucumber
