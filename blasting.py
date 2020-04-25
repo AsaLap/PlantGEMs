@@ -80,12 +80,12 @@ def blast_run(workDir, model, queryFile, subjectFile):
     return blast_res
 
 
-def select_genes(blast_res, treshold = 75, len_diff = 20, e_val = 1e-100):
+def select_genes(blast_res, identity, diff, e_val, coverage, score):
     """Select the subject organism's genes with a good score.
     
     ARGS:
         blast_res -- the dictionary with the results of the blastp.
-        treshold -- the treshold value of identity to select the subject genes.
+        identity -- the treshold value of identity to select the subject genes.
     RETURN:
         dico_genes -- a dictionary with model gene as key and corresponding subject 
         key and coverage value as value.
@@ -94,16 +94,24 @@ def select_genes(blast_res, treshold = 75, len_diff = 20, e_val = 1e-100):
     for key in blast_res.keys():
         for res in blast_res[key]:
             spl = res.split(",")
-            len_subject = float(spl[3])
-            len_query = [float(spl[1]) * (100 - len_diff) / 100, float(spl[1]) * (100 + len_diff) / 100]
-            if float(spl[6]) >= treshold and len_subject >= len_query[0] and len_subject <= len_query[1]:
-            # length = float(spl[1]) * 100 / float(spl[3])
-            # if float(spl[6]) >= treshold and length >= 100 - len_diff and length <= 100 + len_diff:
+            for i in range(len(spl)):
                 try:
-                    if float(spl[8]) <= e_val:
+                    spl[i] = float(spl[i])
+                except ValueError:
+                    pass
+            len_subject = spl[3]
+            len_query = [spl[1] * (100 - diff) / 100, spl[1] * (100 + diff) / 100]
+            min_align = coverage / 100 * spl[1]
+            if spl[6] >= identity\
+            and len_subject >= len_query[0]\
+            and len_subject <= len_query[1]\
+            and spl[4] >= min_align\
+            and spl[7] >= score:
+                try:
+                    if spl[8] <= e_val:
                         dico_genes[key].append(spl[2])
                 except KeyError:
-                    if float(spl[8]) <= e_val:
+                    if spl[8] <= e_val:
                         dico_genes[key] = [spl[2]]
     return dico_genes
 
@@ -137,56 +145,57 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 70, coverage = 20, EVal = 10**-100):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, score = 1000):
     model = cobra.io.read_sbml_model(WD + ref_gem)
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, identity, coverage, EVal)
+    dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, score)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     
     ###Printing of verifications
     #Test blast_res, search for the genes with no matches with blastp
-    no_results = []
-    for key in blast_res.keys():
-        if not blast_res[key]:
-            no_results.append(key)
-    print("The",len(no_results),"genes that have no matches : ", no_results)
+    # no_results = []
+    # for key in blast_res.keys():
+    #     if not blast_res[key]:
+    #         no_results.append(key)
+    # print("The",len(no_results),"genes that have no matches : ", no_results)
     
     #Counting of different values
-    nb_values = []
-    for val in dico_genes.values():
-        for i in val:
-            nb_values.append(i)
-    print(
-        "Nb of genes in ref model : %s\n\
-Nb of reactions in ref model : %s\n\
-Nb of genes in the new model : %s\n\
-Nb of reactions in the new model : %s\n\
-Nb of genes in dico_genes : %s\n\
-Nb of values in dico_genes : %s\
- (without doublons : %s)"
-        %(len(model.genes),
-        len(model.reactions),
-        len(new_model.genes),
-        len(new_model.reactions),
-        len(dico_genes.keys()),
-        len(nb_values),
-        len(set(nb_values))))
-    print("----------------------------------------")
+#     nb_values = []
+#     for val in dico_genes.values():
+#         for i in val:
+#             nb_values.append(i)
+#     print(
+#         "Nb of genes in ref model : %s\n\
+# Nb of reactions in ref model : %s\n\
+# Nb of genes in the new model : %s\n\
+# Nb of reactions in the new model : %s\n\
+# Nb of genes in dico_genes : %s\n\
+# Nb of values in dico_genes : %s\
+#  (without doublons : %s)"
+#         %(len(model.genes),
+#         len(model.reactions),
+#         len(new_model.genes),
+#         len(new_model.reactions),
+#         len(dico_genes.keys()),
+#         len(nb_values),
+#         len(set(nb_values))))
+#     print("----------------------------------------")
     return new_model
     
 
-def help_treshold(WD, model, modelFasta, subjectFasta, name, identity, coverage):
+def help_treshold(WD, model, modelFasta, subjectFasta, name):
     """Function to help choosing the treshold value."""
     
     listValues = []
-    for i in range(1,101):
-        draft = pipeline(WD, model, modelFasta, subjectFasta, name, identity, coverage, 10**(-i))
-        listValues.append([i, len(draft.genes), len(draft.reactions)])
+    for i in range(101):
+        test = 50 * i
+        draft = pipeline(WD, model, modelFasta, subjectFasta, name, score = test)
+        listValues.append([test, len(draft.genes), len(draft.reactions)])
     print(listValues)
-    listValues.insert(0,["EValue (1e-x)", "Nb genes", "Nb reactions"])
+    listValues.insert(0,["Score", "Nb genes", "Nb reactions"])
     graph.write_csv(WD, listValues, name + "Treshold")
 
 
@@ -195,6 +204,8 @@ def data_venn(WD, model, name):
     for reac in model.reactions:
         list_id.append([reac.id])
     graph.write_csv(WD, list_id, name + "_id_reac")
+    
+
 
 if __name__=='__main__':
     ###Files and working directory###
@@ -217,7 +228,7 @@ if __name__=='__main__':
     
     ###Main###
     # #For the tomato
-    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", score = 1000)
     # #For the kiwifruit
     # kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # #For the cucumber
@@ -236,8 +247,8 @@ if __name__=='__main__':
     # data_venn(WDara, cobra.io.read_sbml_model(WDara + aragem), "Arabidopsis")
     
     ###Help to choose the treshold###
-    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", 70, 20)
-    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi", 70, 20)
-    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber", 70, 20)
-    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry", 70, 20)
-    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina", 70, 20)
+    help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
+    help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
