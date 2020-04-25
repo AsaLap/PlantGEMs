@@ -74,12 +74,11 @@ def write_csv(WD, list_value, name):
 
 if __name__=="__main__":
     ###Files and working directory###
-    WD = '/home/asa/INRAE/Work/Drafts/Tests/'
-    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
+    WDtom = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Arabidopsis/'
+    WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Arabidopsis/'
+    WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
+    WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
     
     ###Making plots###
     #Loading the data
@@ -144,10 +143,6 @@ if __name__=="__main__":
     # camelina = get_all_scores("Camelina", cam)
     # camelina.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
     # write_csv(WDcam, camelina, "camelina_values")
-    
-    # total = tomato + kiwi + cucumber + cherry
-    # total.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WD, total, "total_values")
     
     #---Calculs savants---#    
     # x = 10

@@ -209,14 +209,12 @@ def data_venn(WD, model, name):
 
 if __name__=='__main__':
     ###Files and working directory###
-    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
-    WDara = '/home/asa/INRAE/Work/Drafts/Arabidopsis/'
-    
-    WDtests = '/home/asa/INRAE/Work/Drafts/Tests/'
+    WDtom = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Arabidopsis/'
+    WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Arabidopsis/'
+    WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
+    WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
+    WDara = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Arabidopsis/'
     
     aragem = 'AraGEM3.xml'
     aragemFasta = 'genomic.in.fasta'
@@ -247,8 +245,8 @@ if __name__=='__main__':
     # data_venn(WDara, cobra.io.read_sbml_model(WDara + aragem), "Arabidopsis")
     
     ###Help to choose the treshold###
-    help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
-    help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
+    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")

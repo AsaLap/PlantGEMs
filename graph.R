@@ -1,5 +1,5 @@
-setwd("~/INRAE/Work/Plant-GEMs")
-df_tot = read.csv("values.csv", sep=',', header=TRUE)
+setwd("~/INRAE/Work/Plant-GEMs/")
+df_tot = read.csv("Data/AllValues/values.csv", sep=',', header=TRUE)
 #rownames(e_values) = e_values[,1]
 #e_values = e_values[,-1]
 #e_values = t(e_values)
