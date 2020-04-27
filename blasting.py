@@ -147,8 +147,8 @@ def drafting(model, dico_genes, model_name):
 
 def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 1000):
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    blast_res = blast_run(WD, model, queryFile, subjectFile)
-    save_obj(blast_res, WD + "resBlastp")
+    # blast_res = blast_run(WD, model, queryFile, subjectFile)
+    # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
@@ -156,33 +156,33 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
     
     ###Printing of verifications
     #Test blast_res, search for the genes with no matches with blastp
-    no_results = []
-    for key in blast_res.keys():
-        if not blast_res[key]:
-            no_results.append(key)
-    print("The",len(no_results),"genes that have no matches : ", no_results)
+    # no_results = []
+    # for key in blast_res.keys():
+    #     if not blast_res[key]:
+    #         no_results.append(key)
+    # print("The",len(no_results),"genes that have no matches : ", no_results)
     
     #Counting of different values
-    nb_values = []
-    for val in dico_genes.values():
-        for i in val:
-            nb_values.append(i)
-    print(
-        "Nb of genes in ref model : %s\n\
-Nb of reactions in ref model : %s\n\
-Nb of genes in the new model : %s\n\
-Nb of reactions in the new model : %s\n\
-Nb of genes in dico_genes : %s\n\
-Nb of values in dico_genes : %s\
- (without doublons : %s)"
-        %(len(model.genes),
-        len(model.reactions),
-        len(new_model.genes),
-        len(new_model.reactions),
-        len(dico_genes.keys()),
-        len(nb_values),
-        len(set(nb_values))))
-    print("----------------------------------------")
+#     nb_values = []
+#     for val in dico_genes.values():
+#         for i in val:
+#             nb_values.append(i)
+#     print(
+#         "Nb of genes in ref model : %s\n\
+# Nb of reactions in ref model : %s\n\
+# Nb of genes in the new model : %s\n\
+# Nb of reactions in the new model : %s\n\
+# Nb of genes in dico_genes : %s\n\
+# Nb of values in dico_genes : %s\
+#  (without doublons : %s)"
+#         %(len(model.genes),
+#         len(model.reactions),
+#         len(new_model.genes),
+#         len(new_model.reactions),
+#         len(dico_genes.keys()),
+#         len(nb_values),
+#         len(set(nb_values))))
+#     print("----------------------------------------")
     return new_model
     
 
