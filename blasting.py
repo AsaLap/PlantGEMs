@@ -80,7 +80,7 @@ def blast_run(workDir, model, queryFile, subjectFile):
     return blast_res
 
 
-def select_genes(blast_res, identity, diff, e_val, coverage, score):
+def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
     """Select the subject organism's genes with a good score.
     
     ARGS:
@@ -106,7 +106,7 @@ def select_genes(blast_res, identity, diff, e_val, coverage, score):
             and len_subject >= len_query[0]\
             and len_subject <= len_query[1]\
             and spl[4] >= min_align\
-            and spl[7] >= score:
+            and spl[9] >= bit_score:
                 try:
                     if spl[8] <= e_val:
                         dico_genes[key].append(spl[2])
@@ -145,12 +145,12 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, score = 2500):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 1000):
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    # blast_res = blast_run(WD, model, queryFile, subjectFile)
-    # save_obj(blast_res, WD + "resBlastp")
+    blast_res = blast_run(WD, model, queryFile, subjectFile)
+    save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
-    dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, score)
+    dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     
@@ -191,11 +191,11 @@ def help_treshold(WD, model, modelFasta, subjectFasta, name):
     
     listValues = []
     for i in range(101):
-        test = 50 * i
-        draft = pipeline(WD, model, modelFasta, subjectFasta, name, score = test)
+        test = 20 * i
+        draft = pipeline(WD, model, modelFasta, subjectFasta, name, 10, 40, 1e-5, 20, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     print(listValues)
-    listValues.insert(0,["Score", "Nb genes", "Nb reactions"])
+    listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
     graph.write_csv(WD, listValues, name + "Treshold")
 
 
@@ -219,16 +219,16 @@ if __name__=='__main__':
     aragem = 'AraGEM3.xml'
     aragemFasta = 'genomic.in.fasta'
     tomatoFasta = 'ITAG4.0_proteins.fasta'
-    kiwiFasta = 'Hongyang_pep_v2.0.fa'
+    kiwiFasta = 'Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa'
     cucumberFasta = 'Gy14_pep_v2.fa'
-    cherryFasta = 'PRUAV_Regina_CDS.fa'
+    cherryFasta = 'PRUAV_Regina_pep.fa'
     camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
     ###Main###
     #For the tomato
-    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", score = 1000)
+    # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", bit_score = 1000)
     # #For the kiwifruit
-    # kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # #For the cucumber
     # cucumberDraft = pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
     # #For the cherry
@@ -246,7 +246,7 @@ if __name__=='__main__':
     
     ###Help to choose the treshold###
     # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
     # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
     # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
     # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")

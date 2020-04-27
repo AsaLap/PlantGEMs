@@ -1,14 +1,14 @@
 setwd("~/INRAE/Work/Plant-GEMs")
-data_kiw = read.csv("Data/Treshold_50_30_1e-100_20_Score/KiwiTreshold.csv", sep=',', header=TRUE)
-data_tom = read.csv("Data/Treshold_50_30_1e-100_20_Score/TomatoTreshold.csv", sep=',', header=TRUE)
-data_cuc = read.csv("Data/Treshold_50_30_1e-100_20_Score/CucumberTreshold.csv", sep=',', header=TRUE)
-data_che = read.csv("Data/Treshold_50_30_1e-100_20_Score/CherryTreshold.csv", sep=',', header=TRUE)
-data_cam = read.csv("Data/Treshold_50_30_1e-100_20_Score/CamelinaTreshold.csv", sep=',', header=TRUE)
+data_kiw = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/KiwiTreshold.csv", sep=',', header=TRUE)
+data_tom = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/TomatoTreshold.csv", sep=',', header=TRUE)
+data_cuc = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CucumberTreshold.csv", sep=',', header=TRUE)
+data_che = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CherryTreshold.csv", sep=',', header=TRUE)
+data_cam = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CamelinaTreshold.csv", sep=',', header=TRUE)
 
 #Tomato double y axis
 dataFrame = data_tom
 par(mar = c(5, 5, 3, 5))
-plot(dataFrame$Score, dataFrame$Nb.genes, type = "l", pch = 19,
+plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
      col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
@@ -16,12 +16,12 @@ plot(dataFrame$Nb.reactions, type = "l", pch = 19,
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Tomate 50/30/1e-100/20")
+title("Draft Tomate 10/40/1e-5/20 BitScore")
 
 #Kiwi double y axis
 dataFrame = data_kiw
 par(mar = c(5, 5, 3, 5))
-plot(dataFrame$Score, dataFrame$Nb.genes, type = "l", pch = 19,
+plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
      col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
@@ -29,12 +29,12 @@ plot(dataFrame$Nb.reactions, type = "l", pch = 19,
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Kiwi 50/30/1e-100/20")
+title("Draft Kiwi 10/40/1e-5/20 BitScore")
 
 #Cucumber double y axis
 dataFrame = data_cuc
 par(mar = c(5, 5, 3, 5))
-plot(dataFrame$Score, dataFrame$Nb.genes, type = "l", pch = 19,
+plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
      col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
@@ -42,12 +42,12 @@ plot(dataFrame$Nb.reactions, type = "l", pch = 19,
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Concombre 50/30/1e-100/20")
+title("Draft Concombre 10/40/1e-5/20 BitScore")
 
 #Cherry double y axis
 dataFrame = data_che
 par(mar = c(5, 5, 3, 5))
-plot(dataFrame$Score, dataFrame$Nb.genes, type = "l", pch = 19,
+plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
      col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
@@ -55,12 +55,12 @@ plot(dataFrame$Nb.reactions, type = "l", pch = 19,
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Cerise 50/30/1e-100/20")
+title("Draft Cerise 10/40/1e-5/20 BitScore")
 
 #Camelina double y axis
 dataFrame = data_cam
 par(mar = c(5, 5, 3, 5))
-plot(dataFrame$Score, dataFrame$Nb.genes, type = "l", pch = 19,
+plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
      col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
@@ -68,7 +68,7 @@ plot(dataFrame$Nb.reactions, type = "l", pch = 19,
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Cameline 50/30/1e-100/20")
+title("Draft Cameline 10/40/1e-5/20 BitScore")
 
 
 # #Tomato
