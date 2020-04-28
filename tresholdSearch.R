@@ -1,74 +1,74 @@
 setwd("~/INRAE/Work/Plant-GEMs")
-data_kiw = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/KiwiTreshold.csv", sep=',', header=TRUE)
-data_tom = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/TomatoTreshold.csv", sep=',', header=TRUE)
-data_cuc = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CucumberTreshold.csv", sep=',', header=TRUE)
-data_che = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CherryTreshold.csv", sep=',', header=TRUE)
-data_cam = read.csv("Data/Treshold_10_40_1e-5_20_BitScore/CamelinaTreshold.csv", sep=',', header=TRUE)
+data_kiw = read.csv("Data/Treshold_0_100_1_0_BitScore/KiwiTreshold.csv", sep=',', header=TRUE)
+data_tom = read.csv("Data/Treshold_0_100_1_0_BitScore/TomatoTreshold.csv", sep=',', header=TRUE)
+data_cuc = read.csv("Data/Treshold_0_100_1_0_BitScore/CucumberTreshold.csv", sep=',', header=TRUE)
+data_che = read.csv("Data/Treshold_0_100_1_0_BitScore/CherryTreshold.csv", sep=',', header=TRUE)
+data_cam = read.csv("Data/Treshold_0_100_1_0_BitScore/CamelinaTreshold.csv", sep=',', header=TRUE)
 
 #Tomato double y axis
 dataFrame = data_tom
 par(mar = c(5, 5, 3, 5))
 plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
-     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
+     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft", ylim = c(0, max(dataFrame$Nb.genes)))
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
-     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = c(0, max(dataFrame$Nb.reactions)))
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Tomate 10/40/1e-5/20 BitScore")
+title("Draft Tomate 0/100/1/0 BitScore")
 
 #Kiwi double y axis
 dataFrame = data_kiw
 par(mar = c(5, 5, 3, 5))
 plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
-     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
+     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft", ylim = c(0, max(dataFrame$Nb.genes)))
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
-     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = c(0, max(dataFrame$Nb.reactions)))
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Kiwi 10/40/1e-5/20 BitScore")
+title("Draft Kiwi 0/100/1/0 BitScore")
 
 #Cucumber double y axis
 dataFrame = data_cuc
 par(mar = c(5, 5, 3, 5))
 plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
-     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
+     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft", ylim = c(0, max(dataFrame$Nb.genes)))
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
-     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = c(0, max(dataFrame$Nb.reactions)))
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Concombre 10/40/1e-5/20 BitScore")
+title("Draft Concombre 0/100/1/0 BitScore")
 
 #Cherry double y axis
 dataFrame = data_che
 par(mar = c(5, 5, 3, 5))
 plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
-     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
+     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft", ylim = c(0, max(dataFrame$Nb.genes)))
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
-     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = c(0, max(dataFrame$Nb.reactions)))
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Cerise 10/40/1e-5/20 BitScore")
+title("Draft Cerise 0/100/1/0 BitScore")
 
 #Camelina double y axis
 dataFrame = data_cam
 par(mar = c(5, 5, 3, 5))
 plot(dataFrame$Bit_Score, dataFrame$Nb.genes, type = "l", pch = 19,
-     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft")
+     col = "blue", xlab = "Score", ylab = "Nombre de gènes du draft", ylim = c(0, max(dataFrame$Nb.genes)))
 par(new = TRUE)
 plot(dataFrame$Nb.reactions, type = "l", pch = 19,
-     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "")
+     col = "red", lty = 2, xaxt = "n", yaxt = "n", xlab = "", ylab = "", ylim = c(0, max(dataFrame$Nb.reactions)))
 axis(side = 4)
 mtext("Nombre de réactions du draft", side = 4, line = 3)
 legend("bottomleft", c("Gènes", "Réactions"), col = c("blue", "red"), lty = c(1, 2), cex = 1.2)
-title("Draft Cameline 10/40/1e-5/20 BitScore")
+title("Draft Cameline 0/100/1/0 BitScore")
 
 
 # #Tomato
