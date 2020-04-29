@@ -7,6 +7,9 @@
 import matplotlib.pyplot as plt
 from statistics import mean
 import csv
+from upsetplot import plot
+from upsetplot import from_memberships
+import copy
 
 import blasting
 
@@ -65,6 +68,54 @@ def get_all_scores(organism, data):
     return list_value
 
 
+def make_upsetplot(data):
+    clusters = get_clusters(list(data.keys()))
+    count = []
+    for c in clusters:
+        listInter = []
+        for x in c:
+            listInter.append(set(data[x]))
+            print(listInter)
+        count.append(similiraty_count(listInter))
+    [clusters.insert(0,[key]) for key in data.keys()]
+    [count.insert(0,len(data[key])) for key in data.keys()]
+    my_upsetplot = from_memberships(clusters, count)
+    plot(my_upsetplot)
+    plt.show()
+
+
+def similiraty_count(args):
+    return len(set.intersection(*args))
+
+
+def get_clusters(liste):
+    res = []
+    final_res = []
+    for i in range(len(liste)-1):
+        if i == 0:
+            for x in liste:
+                z = liste.index(x)
+                for i in range(len(liste) - z - 1):
+                    res.append([x, liste[z + i + 1]])
+            [final_res.append(i) for i in res]
+        else:
+            print(res)
+            res = get_sub_clusters(liste, res)
+            [final_res.append(i) for i in res]
+    return final_res
+
+
+def get_sub_clusters(liste, res):
+    sub_res = []
+    for y in res:
+        z = liste.index(y[len(y)-1])
+        for i in range(z + 1, len(liste)):
+            x = copy.deepcopy(y)
+            x.append(liste[i])
+            sub_res.append(x)
+    return sub_res
+
+
 def write_csv(WD, list_value, name):
     with open(WD + name + '.csv', 'w', newline = '') as file:
         writer = csv.writer(file)
@@ -82,11 +133,16 @@ if __name__=="__main__":
     
     ###Making plots###
     #Loading the data
-    tom = blasting.load_obj(WDtom + "resBlastp")
-    kiw = blasting.load_obj(WDkiw + "resBlastp")
-    cuc = blasting.load_obj(WDcuc + "resBlastp")
-    che = blasting.load_obj(WDche + "resBlastp")
-    cam = blasting.load_obj(WDcam + "resBlastp")
+    # tom = blasting.load_obj(WDtom + "resBlastp")
+    # kiw = blasting.load_obj(WDkiw + "resBlastp")
+    # cuc = blasting.load_obj(WDcuc + "resBlastp")
+    # che = blasting.load_obj(WDche + "resBlastp")
+    # cam = blasting.load_obj(WDcam + "resBlastp")
+    
+    ###Using UpSetplot
+    # get_clusters(["Arabidopsis", "Tomato", "Kiwi", "Cherry", "Cucumber", "Camelina"])
+    make_upsetplot({"Arabidopsis" : [1,2,3,4,5,6], "Tomato" : [1,2,3,5,7], "Kiwi" : [3,4,5,7,8]})
+    
     
     #------Identity------#
     # tomato = graph_identity(tom)

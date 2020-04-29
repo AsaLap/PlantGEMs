@@ -156,38 +156,37 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
     cobra.io.write_sbml_model(new_model, WD + modelName + ".xml")
     
     ###Printing of verifications
-    # Test blast_res, search for the genes with no matches with blastp
-    no_results = []
-    for key in blast_res.keys():
-        if not blast_res[key]:
-            no_results.append(key)
-    print("The",len(no_results),"genes that have no matches : ", no_results)
+    # no_results = []
+    # for key in blast_res.keys():
+    #     if not blast_res[key]:
+    #         no_results.append(key)
+    # print("The",len(no_results),"genes that have no matches : ", no_results)
     
     #Counting of different values
-    nb_values = []
-    for val in dico_genes.values():
-        for i in val:
-            nb_values.append(i)
-    compt = 0
-    for reac in model.reactions:
-        if reac.gene_reaction_rule:
-            compt += 1
-    print(
-        "Model : %s\n\
-Stats for the reference model :\n\
-- Nb of genes : %i\n\
-- Nb of reactions : %i\n\
--> whose are associated to gene(s) : %i\n\
-Stats for the new model :\n\
-- Nb of genes : %i\n\
-- Nb of reactions : %i"
-        %(modelName,
-        len(model.genes),
-        len(model.reactions),
-        compt,
-        len(new_model.genes),
-        len(new_model.reactions)))
-    print("----------------------------------------")
+#     nb_values = []
+#     for val in dico_genes.values():
+#         for i in val:
+#             nb_values.append(i)
+#     compt = 0
+#     for reac in model.reactions:
+#         if reac.gene_reaction_rule:
+#             compt += 1
+#     print(
+#         "Model : %s\n\
+# Stats for the reference model :\n\
+# - Nb of genes : %i\n\
+# - Nb of reactions : %i\n\
+# -> whose are associated to gene(s) : %i\n\
+# Stats for the new model :\n\
+# - Nb of genes : %i\n\
+# - Nb of reactions : %i"
+#         %(modelName,
+#         len(model.genes),
+#         len(model.reactions),
+#         compt,
+#         len(new_model.genes),
+#         len(new_model.reactions)))
+#     print("----------------------------------------")
     return new_model
     
 
@@ -250,8 +249,8 @@ if __name__=='__main__':
     # data_venn(WDara, cobra.io.read_sbml_model(WDara + aragem), "Arabidopsis")
     
     ###Help to choose the treshold###
-    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
-    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
+    help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
