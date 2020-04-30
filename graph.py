@@ -75,12 +75,12 @@ def make_upsetplot(data):
         listInter = []
         for x in c:
             listInter.append(set(data[x]))
-            print(listInter)
         count.append(similiraty_count(listInter))
     [clusters.insert(0,[key]) for key in data.keys()]
     [count.insert(0,len(data[key])) for key in data.keys()]
     my_upsetplot = from_memberships(clusters, count)
-    plot(my_upsetplot)
+    
+    plot(my_upsetplot, orientation = 'vertical', show_counts = '%d', show_percentages = True)
     plt.show()
 
 
@@ -99,7 +99,6 @@ def get_clusters(liste):
                     res.append([x, liste[z + i + 1]])
             [final_res.append(i) for i in res]
         else:
-            print(res)
             res = get_sub_clusters(liste, res)
             [final_res.append(i) for i in res]
     return final_res
@@ -116,11 +115,20 @@ def get_sub_clusters(liste, res):
     return sub_res
 
 
-def write_csv(WD, list_value, name):
+def write_file(WD, list_value, name):
     with open(WD + name + '.csv', 'w', newline = '') as file:
         writer = csv.writer(file)
         for f in list_value:
             writer.writerow(f)
+
+
+def read_file(WD, file):
+    res = []
+    f = open(WD + file, "r")
+    for line in f.readlines():
+        res.append(line.rstrip())
+    return res
+
 
 
 if __name__=="__main__":
@@ -140,9 +148,21 @@ if __name__=="__main__":
     # cam = blasting.load_obj(WDcam + "resBlastp")
     
     ###Using UpSetplot
-    # get_clusters(["Arabidopsis", "Tomato", "Kiwi", "Cherry", "Cucumber", "Camelina"])
-    make_upsetplot({"Arabidopsis" : [1,2,3,4,5,6], "Tomato" : [1,2,3,5,7], "Kiwi" : [3,4,5,7,8]})
-    
+    tomatoGenes = read_file(WDtom, "Tomato_id_reac.csv")
+    kiwiGenes = read_file(WDkiw, "Kiwi_id_reac.csv")
+    cucumberGenes = read_file(WDcuc, "Cucumber_id_reac.csv")
+    cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
+    camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
+    dicoUpset = {"Tomato" : tomatoGenes,
+                 "Kiwi" : kiwiGenes,
+                 "Cucumber" : cucumberGenes,
+                 "Cherry" : cherryGenes,
+                 "Camelina" : camelinaGenes}
+    make_upsetplot(dicoUpset)
+    # make_upsetplot({"Arabidopsis" : [1,2,3,4,5,6], "Tomato" : [1,2,3,5,7], "Kiwi" : [3,4,5,7,8]})
+    # make_upsetplot({"Arabidopsis" : ['R02649_c', 'R04786_c', 'R02691_c', 'R03457_c', 'R02166_c', 'R00216_p', 'R01220_c', 'R02360_c', 'R01206_c'],
+    #                 "Tomato" : ['R02444_c', 'R02649_c', 'R04786_c', 'R02691_c', 'R03457_c', 'R02166_c', 'R01220_c', 'R02360_c', 'R01206_c'],
+    #                 "Kiwi" : ['R04726_p', 'R03231_c', 'R07444_c', 'R04546_c', 'R05961_c', 'R03661_c', 'R04990_c', 'R07978_c', 'R02444_c']})
     
     #------Identity------#
     # tomato = graph_identity(tom)
