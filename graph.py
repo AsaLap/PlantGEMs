@@ -68,24 +68,29 @@ def get_all_scores(organism, data):
     return list_value
 
 
-def make_upsetplot(data):
+def make_upsetplot(WD, data):
     clusters = get_clusters(list(data.keys()))
+    [clusters.insert(0,[key]) for key in data.keys()]
     count = []
     for c in clusters:
+        others = list(data.keys())
         listInter = []
         for x in c:
+            others.remove(x)
             listInter.append(set(data[x]))
-        count.append(similiraty_count(listInter))
-    [clusters.insert(0,[key]) for key in data.keys()]
-    [count.insert(0,len(data[key])) for key in data.keys()]
+        count.append(similiraty_count(data, listInter, others))
     my_upsetplot = from_memberships(clusters, count)
-    
-    plot(my_upsetplot, orientation = 'vertical', show_counts = '%d', show_percentages = True)
+    plot(my_upsetplot, show_counts = '%d', totals_plot_elements = 3)
+    plt.suptitle("Unique intersection for each possible cluster")
+    plt.savefig(WD + "upsetplot.pdf")
     plt.show()
 
 
-def similiraty_count(args):
-    return len(set.intersection(*args))
+def similiraty_count(data, args, others):
+    cluster_set = set.intersection(*args)
+    for i in others:
+        cluster_set = cluster_set.difference(set(data[i]))
+    return len(cluster_set)
 
 
 def get_clusters(liste):
@@ -138,6 +143,7 @@ if __name__=="__main__":
     WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
     WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
     WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
+    WD = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/'
     
     ###Making plots###
     #Loading the data
@@ -158,12 +164,9 @@ if __name__=="__main__":
                  "Cucumber" : cucumberGenes,
                  "Cherry" : cherryGenes,
                  "Camelina" : camelinaGenes}
-    make_upsetplot(dicoUpset)
-    # make_upsetplot({"Arabidopsis" : [1,2,3,4,5,6], "Tomato" : [1,2,3,5,7], "Kiwi" : [3,4,5,7,8]})
-    # make_upsetplot({"Arabidopsis" : ['R02649_c', 'R04786_c', 'R02691_c', 'R03457_c', 'R02166_c', 'R00216_p', 'R01220_c', 'R02360_c', 'R01206_c'],
-    #                 "Tomato" : ['R02444_c', 'R02649_c', 'R04786_c', 'R02691_c', 'R03457_c', 'R02166_c', 'R01220_c', 'R02360_c', 'R01206_c'],
-    #                 "Kiwi" : ['R04726_p', 'R03231_c', 'R07444_c', 'R04546_c', 'R05961_c', 'R03661_c', 'R04990_c', 'R07978_c', 'R02444_c']})
+    make_upsetplot(WD, dicoUpset)
     
+
     #------Identity------#
     # tomato = graph_identity(tom)
     # kiwi = graph_identity(kiw)
