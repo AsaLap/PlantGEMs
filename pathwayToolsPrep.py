@@ -37,7 +37,11 @@ if __name__=="__main__":
     camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
     ###GFF files
-    
+    tomatoGFF = "ITAG4.0_gene_models.gff"
+    kiwiGFF = "Actinidia_chinensis.Red5_PS1_1.69.0.44.gff3"
+    cucumberGFF = "Gy14_gene_gff_v2.gff"
+    cherryGFF = "PRUAV_Regina.gff3"
+    camelinaGFF = "GCF_000633955.1_Cs_genomic.gff"
     
     ###eggNOG files
     tomatoEgg = "eggNOG_annotations.tsv"
