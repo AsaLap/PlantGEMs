@@ -2,7 +2,8 @@
 # python 3.8.2
 # Antoine Laporte
 # Université de Bordeaux - INRAE Bordeaux
-# Mars 2020
+# Reconstruction de réseaux métaboliques
+# Mars - Aout 2020
 
 import matplotlib.pyplot as plt
 from statistics import mean
@@ -14,7 +15,34 @@ import copy
 import blasting
 
 
+def write_file(WD, list_value, name):
+    """Function to save a file as a CSV format."""
+    with open(WD + name + '.csv', 'w', newline = '') as file:
+        writer = csv.writer(file)
+        for f in list_value:
+            writer.writerow(f)
+
+
+def read_file(WD, file):
+    """Function to load a file written under the previous model of save."""
+    res = []
+    f = open(WD + file, "r")
+    for line in f.readlines():
+        res.append(line.rstrip())
+    return res
+
+
 def graph_identity(data):
+    """Function to gather the identity value of the blastp results
+    (obtained with blasting.py) and prepare them for a plot.
+    
+    ARGS:
+        data -- the dictionary containing the genes and the blastp result for each.
+    RETURN:
+        x -- list of x-axis values depending on the treshold value.
+        y -- list of y-axis values depending on the treshold value.
+    """
+    
     res_plot = {}
     treshold = 5
     while treshold <= 100:
@@ -30,6 +58,9 @@ def graph_identity(data):
 
 
 def get_score(data):
+    """Function that gathers the Score of all the blastp
+    results and returns a list of these values."""
+    
     list_value = []
     for key in data.keys():
         for res in data[key]:
@@ -38,6 +69,9 @@ def get_score(data):
 
 
 def get_e_value(data):
+    """Function that gathers the E-Value of all the blastp
+    results and returns a list of these values."""
+    
     list_value = []
     for key in data.keys():
         for res in data[key]:
@@ -46,6 +80,9 @@ def get_e_value(data):
 
 
 def get_bit_score(data):
+    """Function that gathers the Bit-Score of all the blastp
+    results and returns a list of these values."""
+    
     list_value = []
     for key in data.keys():
         for res in data[key]:
@@ -54,6 +91,10 @@ def get_bit_score(data):
 
 
 def get_all_scores(organism, data):
+    """Function that gathers all the previous scores of all the blastp
+    results and returns a list of these values, with the organism name as first value.
+    This function is used to make graph with the R script 'regressions.R'"""
+    
     list_value = []
     for key in data.keys():
         for res in data[key]:
@@ -69,6 +110,14 @@ def get_all_scores(organism, data):
 
 
 def make_upsetplot(WD, data):
+    """Function to make an UpSetPlot.
+    
+    ARGS:
+        WD -- the working directory to save the result.
+        data -- the dictionary containing the organisms as keys
+        and the genes/reactions/others to treat for the UpSetPlot.
+    """
+    
     clusters = get_clusters(list(data.keys()))
     [clusters.insert(0,[key]) for key in data.keys()]
     count = []
@@ -87,6 +136,9 @@ def make_upsetplot(WD, data):
 
 
 def similiraty_count(data, args, others):
+    """Function which is part of the process to make the UpSetPlot,
+    counting and retourning the similarities between the clusters."""
+    
     cluster_set = set.intersection(*args)
     for i in others:
         cluster_set = cluster_set.difference(set(data[i]))
@@ -94,6 +146,9 @@ def similiraty_count(data, args, others):
 
 
 def get_clusters(liste):
+    """Function to create every individual cluster depending on 
+    the number of organisms given to the UpSetPlot function."""
+    
     res = []
     final_res = []
     for i in range(len(liste)-1):
@@ -110,6 +165,8 @@ def get_clusters(liste):
 
 
 def get_sub_clusters(liste, res):
+    """Subfunction of the clusters (algorithmic architecture)."""
+    
     sub_res = []
     for y in res:
         z = liste.index(y[len(y)-1])
@@ -118,21 +175,6 @@ def get_sub_clusters(liste, res):
             x.append(liste[i])
             sub_res.append(x)
     return sub_res
-
-
-def write_file(WD, list_value, name):
-    with open(WD + name + '.csv', 'w', newline = '') as file:
-        writer = csv.writer(file)
-        for f in list_value:
-            writer.writerow(f)
-
-
-def read_file(WD, file):
-    res = []
-    f = open(WD + file, "r")
-    for line in f.readlines():
-        res.append(line.rstrip())
-    return res
 
 
 

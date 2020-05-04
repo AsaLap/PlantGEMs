@@ -2,7 +2,8 @@
 # python 3.8.2
 # Antoine Laporte
 # Université de Bordeaux - INRAE Bordeaux
-# Mars 2020
+# Reconstruction de réseaux métaboliques
+# Mars - Aout 2020
 
 import cobra
 from os.path import join
@@ -81,11 +82,15 @@ def blast_run(workDir, model, queryFile, subjectFile):
 
 
 def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
-    """Select the subject organism's genes with a good score.
+    """Select the subject organism's genes regarding the different treshold parameters selected.
     
     ARGS:
         blast_res -- the dictionary with the results of the blastp.
         identity -- the treshold value of identity to select the subject genes.
+        diff -- the percentage of length difference tolerated between subject and query. 
+        e_val -- the minimum E-Value chosen. 
+        coverage -- the minimum percentage of coverage of the match.
+        bit_score -- the minimum Bit-Score chosen.
     RETURN:
         dico_genes -- a dictionary with model gene as key and corresponding subject 
         key and coverage value as value.
@@ -117,7 +122,7 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
 
 
 def drafting(model, dico_genes, model_name):
-    """Creates the new model for the subject organism.
+    """Creates the new COBRA model for the subject organism.
     
     ARGS:
         model -- the COBRA model used for the reconstruction.
@@ -146,7 +151,26 @@ def drafting(model, dico_genes, model_name):
 
 
 def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+    """The function that launches the entire pipeline of analysis
+    and selections to create a new model.
+    
+    ARGS:
+        WD -- the working directory where to find ref_gem, queryFile, subjectFile.
+        ref_gem -- the reference model (sbml model compatible with COBRA).
+        queryFile -- the fasta file of the model.
+        subjectFile -- the fasta file of the subject.
+        modelName -- string - the name for the new model.
+        identity -- the treshold value of identity to select the subject genes.
+        diff -- the percentage of length difference tolerated between subject and query. 
+        e_val -- the minimum E-Value chosen. 
+        coverage -- the minimum percentage of coverage of the match.
+        bit_score -- the minimum Bit-Score chosen.
+    RETURN:
+        new_model -- the subject COBRA model.
+    """
+    
     model = cobra.io.read_sbml_model(WD + ref_gem)
+    ###The two next function can be skipped if you already have done the blastp###
     # blast_res = blast_run(WD, model, queryFile, subjectFile)
     # save_obj(blast_res, WD + "resBlastp")
     blast_res = load_obj(WD + "resBlastp")
@@ -191,11 +215,13 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
     
 
 def help_treshold(WD, model, modelFasta, subjectFasta, name):
-    """Function to help choosing the treshold value."""
+    """Function to help choosing the treshold value,
+    personal use only, to combine with the R script 'tresholdSearch.R'"""
     
     listValues = []
     for i in range(101):
         test = 10 * i
+        ###Putting the test values instead of default values
         draft = pipeline(WD, model, modelFasta, subjectFasta, name, 0, 100, 1, 0, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     print(listValues)
@@ -204,6 +230,9 @@ def help_treshold(WD, model, modelFasta, subjectFasta, name):
 
 
 def data_venn(WD, model, name):
+    """Function to gather the reactions in a model and write them into a CSV file.
+    Used to make VENN graph"""
+    
     list_id = []
     for reac in model.reactions:
         list_id.append([reac.id])
