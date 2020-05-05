@@ -4,11 +4,32 @@
 # Université de Bordeaux - INRAE Bordeaux
 # 2020
 
-def read_gff():
-    print("TODO")
+import re
+
+def read_file(path):
+    f = open(path, "r")
+    res = f.readlines()
+    return res
 
 
-def read_eggNog():
+def write_file(WD, filename, data):
+    f = open(WD + filename, "w")
+    for i in data:
+        f.write(i)
+    f.close()
+
+def get_sequence_region(data):
+    res = []
+    for i in data:
+        try:
+            test = re.search('(?<=##sequence-region)[ \t]*\w+(\.\w+)*',i).group(0).strip()
+            res.append(test)
+        except AttributeError:
+            pass
+    return res
+
+
+def parse_eggNog():
     print("TODO")
 
 
@@ -16,9 +37,29 @@ def make_pf():
     print("TODO")
 
 
-def make_dat():
-    print("TODO")
+def make_dat(WD, name, seq_regions):
+    ###Type ??
+    TYPE = ':CHRSM'
+    ###Circular ??
+    CIRC = 'N'
 
+    datFile = []
+    if TYPE != ":CONTIG":
+        for i in seq_regions:
+            datFile.append('ID\t%s\nNAME\t%s\nTYPE\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
+                           %(i, i.upper(), TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
+    write_file(WD, name, datFile)
+
+
+# :CHRSM, :PLASMID, :MT (mitochondrial chromosome),:PT (chloroplast chromosome), or :CONTIG
+
+# ID	TEST-CHROM-1
+# NAME	Chromosome 1
+# TYPE	:CHRSM
+# CIRCULAR?	N
+# ANNOT-FILE	chrom1.pf
+# SEQ-FILE	chrom1.fsa
+# //
 
 
 if __name__=="__main__":
@@ -49,3 +90,15 @@ if __name__=="__main__":
     cucumberEgg = "eggNOG_annotations.tsv"
     cherryEgg = "eggNOG_annotations.tsv"
     camelinaEgg = "eggNOG_annotations.tsv"
+    
+    ###Main###
+    tomatoGFFfile = read_file(WDtom + tomatoGFF)
+    tomatoSeqRegions = get_sequence_region(tomatoGFFfile)
+    res = tomatoSeqRegions
+    make_dat(WDtom, "Tomato.dat", res)
+    # kiwiGFFfile = read_file(WDkiw + kiwiGFF)
+    # kiwiSeqRegions = get_sequence_region(kiwiGFFfile)
+    # print(kiwiSeqRegions)
+    # get_sequence_region(read_file(WDche + cherryGFF))
+    # get_sequence_region(read_file(WDcuc + cucumberGFF))
+    # get_sequence_region(read_file(WDcam + camelinaGFF))
