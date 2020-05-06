@@ -26,7 +26,20 @@ def get_sequence_region(data):
             res.append(test)
         except AttributeError:
             pass
+    get_genes(data, res)
     return res
+
+def get_genes(data, seq_regions):
+    listGenes = []
+    for i in data:
+        for region in seq_regions:
+            if region in i:
+                try:
+                    gene = re.search('(?<=ID=gene:)\w+(\.\w+)*', i).group(0)
+                    listGenes.append(gene)
+                except AttributeError:
+                    pass
+    print(listGenes)
 
 
 def parse_eggNog():
@@ -94,8 +107,7 @@ if __name__=="__main__":
     ###Main###
     tomatoGFFfile = read_file(WDtom + tomatoGFF)
     tomatoSeqRegions = get_sequence_region(tomatoGFFfile)
-    res = tomatoSeqRegions
-    make_dat(WDtom, "Tomato.dat", res)
+    make_dat(WDtom, "Tomato.dat", tomatoSeqRegions)
     # kiwiGFFfile = read_file(WDkiw + kiwiGFF)
     # kiwiSeqRegions = get_sequence_region(kiwiGFFfile)
     # print(kiwiSeqRegions)

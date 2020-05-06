@@ -207,7 +207,7 @@ if __name__=="__main__":
                  "Cherry" : cherryGenes,
                  "Camelina" : camelinaGenes}
     make_upsetplot(WD, dicoUpset)
-    
+
 
     #------Identity------#
     # tomato = graph_identity(tom)
