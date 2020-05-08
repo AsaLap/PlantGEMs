@@ -5,6 +5,7 @@
 # 2020
 
 import re
+import numpy as np
 
 def read_file(path):
     f = open(path, "r")
@@ -21,15 +22,15 @@ def write_file(WD, filename, data):
 
 def get_sequence_region(data):
     res = []
-    regionsAndGenes = {}
+    dicoRegions = {}
     for i in data:
         try:
             region = re.search('(?<=##sequence-region)[ \t]*\w+(\.\w+)*',i).group(0).strip()
-            regionsAndGenes[region] = []
+            dicoRegions[region] = {}
         except AttributeError:
             pass
-    get_regions_genes(data, regionsAndGenes)
-    return regionsAndGenes
+    get_regions_genes(data, dicoRegions)
+    return dicoRegions
 
 
 def get_regions_genes(data, dicoRegions):
@@ -37,22 +38,19 @@ def get_regions_genes(data, dicoRegions):
         for region in dicoRegions.keys():
             if region in i:
                 try:
-                    gene = re.search('(?<=ID=gene:)\w+(\.\w+)*', i).group(0)
-                    dicoRegions[region].append(gene)
+                    #WARNING : "gene:" is not in every gff file...
+                    #regexp to modify : re.search('(?<=ID=gene:)\w+(\.\w+)*', i).group(0)
+                    gene = re.search('(?<=ID=)\w+(\.\w+)*', i).group(0)
+                    dicoRegions[region][gene] = {"Begin": i.split("\t")[3], "End": i.split("\t")[4]}
                 except AttributeError:
                     pass
-    print(dicoRegions.keys())
 
 
 def parse_eggNog():
     print("TODO")
 
 
-def make_pf():
-    print("TODO")
-
-
-def make_dat(WD, name, seq_regions, TYPE):
+def make_dat(WD, name, dicoRegions, TYPE):
     """Function to create the .dat file.
     
     ARGS:
@@ -69,25 +67,50 @@ correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (ye
     CIRC = 'N'
     datFile = []
     if TYPE == "NONE":
-        for i in seq_regions:
+        for i in dicoRegions.keys():
             datFile.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                            %(i, CIRC, WD + i + '.pf', WD + i + '.fsa'))
     elif TYPE == ":CONTIG":
-        for i in seq_regions:
+        for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                            %(i, TYPE, WD + i + '.pf', WD + i + '.fsa'))
     else:
-        for i in seq_regions:
+        for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                            %(i, TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
     write_file(WD, name + ".dat", datFile)
 
 
-def pipelinePT(WD, fileGFF, name, TYPE="NONE"):
-    gffFile = read_file(WD + fileGFF)
-    seqRegions = get_sequence_region(gffFile)
-    make_dat(WD, name, seqRegions, TYPE)
+def make_fsa(WD, fileFASTA, dicoRegions):
+    fasta = read_file(WD + fileFASTA)
+    list_index = list(np.arange(0,len(fasta),2))
+    for region in dicoRegions.keys():
+        subFasta = []
+        # print(dicoRegions)
+        for gene in dicoRegions[region].keys():
+            found = False
+            for i in list_index:
+                if found:
+                    break
+                # print(gene, fasta[i])
+                if gene in fasta[i]:
+                    subFasta.append(fasta[i])
+                    subFasta.append(fasta[i + 1])
+                    list_index.remove(i)
+                    found = True
+        write_file(WD, region + ".fsa", subFasta)
 
+
+def make_pf():
+    print("TODO")
+
+
+
+def pipelinePT(WD, fileGFF, fileFASTA, name, TYPE="NONE"):
+    gffFile = read_file(WD + fileGFF)
+    dicoRegions = get_sequence_region(gffFile)
+    make_dat(WD, name, dicoRegions, TYPE)
+    make_fsa(WD, fileFASTA, dicoRegions)
 
 
 if __name__=="__main__":
@@ -120,15 +143,8 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    pipelinePT(WDtom, tomatoGFF, "Tomato", TYPE=":CHRSM")
+    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, "Tomato", TYPE=":CHRSM")
+
+    # pipelinePT(WDche, cherryGFF, cherryFasta, "Cherry", TYPE=":CONTIG")
     
-    # kiwiGFFfile = read_file(WDkiw + kiwiGFF)
-    # kiwiSeqRegions = get_sequence_region(kiwiGFFfile)
-    # print(kiwiSeqRegions)
-    
-    # cherryGFFfile = read_file(WDche + cherryGFF)
-    # cherrySeqRegions = get_sequence_region(cherryGFFfile)
-    # make_dat(WDche, "Cherry.dat", cherrySeqRegions, TYPE=":CONTIG")
-    
-    # get_sequence_region(read_file(WDcuc + cucumberGFF))
-    # get_sequence_region(read_file(WDcam + camelinaGFF))
+    pipelinePT(WDcuc, cucumberGFF, cucumberFasta, "Cucumber", TYPE=":CHRSM")
