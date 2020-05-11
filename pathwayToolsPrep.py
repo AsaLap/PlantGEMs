@@ -21,7 +21,6 @@ def write_file(WD, filename, data):
 
 
 def get_sequence_region(data):
-    res = []
     dicoRegions = {}
     for i in data:
         try:
@@ -29,19 +28,22 @@ def get_sequence_region(data):
             dicoRegions[region] = {}
         except AttributeError:
             pass
+    print(dicoRegions)
     get_regions_genes(data, dicoRegions)
     return dicoRegions
 
 
 def get_regions_genes(data, dicoRegions):
+    ###TODO : optimize the reading of the file (for when many regions = contigs)
     for i in data:
         for region in dicoRegions.keys():
-            if region in i:
+            if region in i and "\tgene\t" in i:
                 try:
-                    #WARNING : "gene:" is not in every gff file...
-                    #regexp to modify : re.search('(?<=ID=gene:)\w+(\.\w+)*', i).group(0)
-                    gene = re.search('(?<=ID=)\w+(\.\w+)*', i).group(0)
-                    dicoRegions[region][gene] = {"Begin": i.split("\t")[3], "End": i.split("\t")[4]}
+                    gene = re.search('(?<=ID=)(gene:)*(gene-)*\w+(\.\w+)*', i).group(0)
+                    if "gene" in gene:
+                        gene = gene[5:]
+                    spl = i.split("\t")
+                    dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4]}
                 except AttributeError:
                     pass
 
@@ -86,13 +88,11 @@ def make_fsa(WD, fileFASTA, dicoRegions):
     list_index = list(np.arange(0,len(fasta),2))
     for region in dicoRegions.keys():
         subFasta = []
-        # print(dicoRegions)
         for gene in dicoRegions[region].keys():
             found = False
             for i in list_index:
                 if found:
                     break
-                # print(gene, fasta[i])
                 if gene in fasta[i]:
                     subFasta.append(fasta[i])
                     subFasta.append(fasta[i + 1])
@@ -144,7 +144,12 @@ if __name__=="__main__":
     
     ###Main###
     # pipelinePT(WDtom, tomatoGFF, tomatoFasta, "Tomato", TYPE=":CHRSM")
-
+    
+    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, "Kiwi", TYPE=":CONTIG")
+  
+    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, "Cucumber", TYPE=":CHRSM")
+    
     # pipelinePT(WDche, cherryGFF, cherryFasta, "Cherry", TYPE=":CONTIG")
     
-    pipelinePT(WDcuc, cucumberGFF, cucumberFasta, "Cucumber", TYPE=":CHRSM")
+    ##Too much regions without any genes
+    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, "Camelina", TYPE=":CONTIG")
