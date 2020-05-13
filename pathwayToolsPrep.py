@@ -30,13 +30,12 @@ def get_sequence_region(data):
             dicoRegions[region] = {}
         except AttributeError:
             pass
-    print(dicoRegions)
     get_regions_genes(data, dicoRegions)
     return dicoRegions
 
 
 def get_regions_genes(data, dicoRegions):
-    ###TODO : optimize the reading of the file (for when many regions = contigs)
+    ###TODO : optimize the reading of the file when many regions => contigs
     for i in data:
         for region in dicoRegions.keys():
             if region in i and "\tgene\t" in i:
@@ -45,13 +44,9 @@ def get_regions_genes(data, dicoRegions):
                     if "gene" in gene:
                         gene = gene[5:]
                     spl = i.split("\t")
-                    dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4]}
+                    dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4], "Transcribes" : []}
                 except AttributeError:
                     pass
-
-
-def parse_eggNog():
-    print("TODO")
 
 
 def make_dat(WD, name, dicoRegions, TYPE):
@@ -98,20 +93,44 @@ def make_fsa(WD, fileFASTA, dicoRegions):
                 if gene in fasta[i]:
                     subFasta.append(fasta[i])
                     subFasta.append(fasta[i + 1])
+                    dicoRegions[region][gene]["Transcribes"].append(re.search('(?<=>)\w+(\.\w+)*', fasta[i]).group(0))
                     list_index.remove(i)
-                    found = True
+                    try:
+                        if gene not in fasta[i + 2]:
+                            found = True
+                    except IndexError:
+                        pass
         write_file(WD, region + ".fsa", subFasta)
 
 
-def make_pf():
+def make_pf(WD, fileEggNOG, dicoRegions):
+    tsv = read_file(WD + fileEggNOG)
+    list_index = list(np.arange(0, len(tsv)))
+    for region in dicoRegions.keys():
+        subPf = []
+        for gene in dicoRegions[region].keys():
+            for transcribe in dicoRegions[region][gene]["Transcribes"]:
+                found = False
+                for i in list_index:
+                    if found:
+                        break
+                    if transcribe in tsv[i]:
+                        list_index.remove(i)
+                        ###TODO : parse_eggNog()
+                        # subPf.append(parse_eggNog(i)) ## TODO
+                        found = True
+
+
+def parse_eggNog():
     print("TODO")
 
 
-def pipelinePT(WD, fileGFF, fileFASTA, name, TYPE="NONE"):
+def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE"):
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile)
     make_dat(WD, name, dicoRegions, TYPE)
     make_fsa(WD, fileFASTA, dicoRegions)
+    make_pf(WD, fileEggNOG, dicoRegions)
 
 
 if __name__=="__main__":
@@ -144,13 +163,9 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, "Tomato", TYPE=":CHRSM")
-    
-    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, "Kiwi", TYPE=":CONTIG")
-  
-    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, "Cucumber", TYPE=":CHRSM")
-    
-    # pipelinePT(WDche, cherryGFF, cherryFasta, "Cherry", TYPE=":CONTIG")
-    
+    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
+    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
+    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
+    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
     ##Too much regions without any genes
-    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, "Camelina", TYPE=":CONTIG")
+    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG")
