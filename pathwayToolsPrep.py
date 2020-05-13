@@ -3,6 +3,8 @@
 # Antoine Laporte
 # Université de Bordeaux - INRAE Bordeaux
 # 2020
+"""This file is used for the preparation of the required files for the 
+Pathway Tools software reconstruction."""
 
 import re
 import numpy as np
@@ -103,7 +105,6 @@ def make_fsa(WD, fileFASTA, dicoRegions):
 
 def make_pf():
     print("TODO")
-
 
 
 def pipelinePT(WD, fileGFF, fileFASTA, name, TYPE="NONE"):

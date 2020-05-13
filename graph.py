@@ -4,6 +4,8 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
+"""This file is used as a tool to gather data to make graph, 
+do some calculations on my newly made drafts and so on..."""
 
 import matplotlib.pyplot as plt
 from statistics import mean
@@ -11,6 +13,7 @@ import csv
 from upsetplot import plot
 from upsetplot import from_memberships
 import copy
+import cobra
 
 import blasting
 
@@ -177,6 +180,30 @@ def get_sub_clusters(liste, res):
     return sub_res
 
 
+def data_venn(WD, model, name):
+    """Function to gather the reactions in a model and write them into a CSV file.
+    Used to make VENN graph"""
+    
+    list_id = []
+    for reac in model.reactions:
+        list_id.append([reac.id])
+    write_file(WD, list_id, name + "_id_reac")
+
+
+def help_treshold(WD, model, modelFasta, subjectFasta, name):
+    """Function to help choosing the treshold value,
+    personal use only, to combine with the R script 'tresholdSearch.R'"""
+    
+    listValues = []
+    for i in range(101):
+        test = 10 * i
+        ###Putting the test values instead of default values
+        draft = blasting.pipeline(WD, model, modelFasta, subjectFasta, name, 0, 100, 1, 0, test)
+        listValues.append([test, len(draft.genes), len(draft.reactions)])
+    listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
+    write_file(WD, listValues, name + "Treshold")
+
+
 
 if __name__=="__main__":
     ###Files and working directory###
@@ -187,6 +214,13 @@ if __name__=="__main__":
     WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
     WD = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/'
     
+    ###The new models
+    # tomatoDraft = cobra.io.read_sbml_model(WD + "Tomato.xml")
+    # kiwiDraft = cobra.io.read_sbml_model(WD + "Kiwi.xml")
+    # cucumberDraft = cobra.io.read_sbml_model(WD + "Cucumber.xml")
+    # cherryDraft = cobra.io.read_sbml_model(WD + "Cherry.xml")
+    # camelinaDraft = cobra.io.read_sbml_model(WD + "Camelina.xml")
+
     ###Making plots###
     #Loading the data
     # tom = blasting.load_obj(WDtom + "resBlastp")
@@ -201,6 +235,7 @@ if __name__=="__main__":
     cucumberGenes = read_file(WDcuc, "Cucumber_id_reac.csv")
     cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
     camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
+    ###Creating the dictionary to fit the function
     dicoUpset = {"Tomato" : tomatoGenes,
                  "Kiwi" : kiwiGenes,
                  "Cucumber" : cucumberGenes,
@@ -208,6 +243,19 @@ if __name__=="__main__":
                  "Camelina" : camelinaGenes}
     make_upsetplot(WD, dicoUpset)
 
+    ###Get the reactions id for the Venn diagramm###
+    # data_venn(WDtom, tomatoDraft, "Tomato")
+    # data_venn(WDkiw, kiwiDraft, "Kiwi")
+    # data_venn(WDcuc, cucumberDraft, "Cucumber")
+    # data_venn(WDche, cherryDraft, "Cherry")
+    # data_venn(WDcam, camelinaDraft, "Camelina")
+
+    ###Help to choose the treshold###
+    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
+    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
+    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
+    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
+    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
 
     #------Identity------#
     # tomato = graph_identity(tom)

@@ -4,6 +4,9 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
+"""This file is the main file for the reconstruction of a draft using a previously 
+made model, which has to be the most curated possible and as close as possible 
+genetically speaking to the target model."""
 
 import cobra
 from os.path import join
@@ -150,7 +153,7 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
     """The function that launches the entire pipeline of analysis
     and selections to create a new model.
     
@@ -160,6 +163,8 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
         queryFile -- the fasta file of the model.
         subjectFile -- the fasta file of the subject.
         modelName -- string - the name for the new model.
+        blast -- default value means the blast as not been done 
+        and will be made, else, loads it from the working directory given.
         identity -- the treshold value of identity to select the subject genes.
         diff -- the percentage of length difference tolerated between subject and query. 
         e_val -- the minimum E-Value chosen. 
@@ -170,74 +175,49 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, identity = 50, diff
     """
     
     model = cobra.io.read_sbml_model(WD + ref_gem)
-    ###The two next function can be skipped if you already have done the blastp###
-    # blast_res = blast_run(WD, model, queryFile, subjectFile)
-    # save_obj(blast_res, WD + "resBlastp")
-    blast_res = load_obj(WD + "resBlastp")
+    if blast:
+        blast_res = blast_run(WD, model, queryFile, subjectFile)
+        save_obj(blast_res, WD + "resBlastp")
+    else:
+        blast_res = load_obj(WD + "resBlastp")
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
     cobra.io.write_sbml_model(new_model, WD + modelName + ".xml")
     
     ###Printing of verifications
-    # no_results = []
-    # for key in blast_res.keys():
-    #     if not blast_res[key]:
-    #         no_results.append(key)
-    # print("The",len(no_results),"genes that have no matches : ", no_results)
+    no_results = []
+    for key in blast_res.keys():
+        if not blast_res[key]:
+            no_results.append(key)
+    print("The",len(no_results),"genes that have no matches : ", no_results)
     
-    #Counting of different values
-#     nb_values = []
-#     for val in dico_genes.values():
-#         for i in val:
-#             nb_values.append(i)
-#     compt = 0
-#     for reac in model.reactions:
-#         if reac.gene_reaction_rule:
-#             compt += 1
-#     print(
-#         "Model : %s\n\
-# Stats for the reference model :\n\
-# - Nb of genes : %i\n\
-# - Nb of reactions : %i\n\
-# -> whose are associated to gene(s) : %i\n\
-# Stats for the new model :\n\
-# - Nb of genes : %i\n\
-# - Nb of reactions : %i"
-#         %(modelName,
-#         len(model.genes),
-#         len(model.reactions),
-#         compt,
-#         len(new_model.genes),
-#         len(new_model.reactions)))
-#     print("----------------------------------------")
-    return new_model
-    
-
-def help_treshold(WD, model, modelFasta, subjectFasta, name):
-    """Function to help choosing the treshold value,
-    personal use only, to combine with the R script 'tresholdSearch.R'"""
-    
-    listValues = []
-    for i in range(101):
-        test = 10 * i
-        ###Putting the test values instead of default values
-        draft = pipeline(WD, model, modelFasta, subjectFasta, name, 0, 100, 1, 0, test)
-        listValues.append([test, len(draft.genes), len(draft.reactions)])
-    print(listValues)
-    listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
-    graph.write_csv(WD, listValues, name + "Treshold")
-
-
-def data_venn(WD, model, name):
-    """Function to gather the reactions in a model and write them into a CSV file.
-    Used to make VENN graph"""
-    
-    list_id = []
+    ###Counting of different values
+    nb_values = []
+    for val in dico_genes.values():
+        for i in val:
+            nb_values.append(i)
+    compt = 0
     for reac in model.reactions:
-        list_id.append([reac.id])
-    graph.write_csv(WD, list_id, name + "_id_reac")
-    
+        if reac.gene_reaction_rule:
+            compt += 1
+    print(
+        "Model : %s\n\
+Stats for the reference model :\n\
+- Nb of genes : %i\n\
+- Nb of reactions : %i\n\
+-> whose are associated to gene(s) : %i\n\
+Stats for the new model :\n\
+- Nb of genes : %i\n\
+- Nb of reactions : %i"
+        %(modelName,
+        len(model.genes),
+        len(model.reactions),
+        compt,
+        len(new_model.genes),
+        len(new_model.reactions)))
+    print("----------------------------------------")
+    return new_model
 
 
 if __name__=='__main__':
@@ -257,29 +237,14 @@ if __name__=='__main__':
     cherryFasta = 'PRUAV_Regina_pep.fa'
     camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
     
-    ###Main###
-    # #For the tomato
-    # tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    # #For the kiwifruit
-    # kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    # #For the cucumber
-    # cucumberDraft = pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    # #For the cherry
-    # cherryDraft = pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
-    # #For the camelina
-    # camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
-    
-    ###Get the reactions id for the Venn diagramm###
-    # data_venn(WDtom, tomatoDraft, "Tomato")
-    # data_venn(WDkiw, kiwiDraft, "Kiwi")
-    # data_venn(WDcuc, cucumberDraft, "Cucumber")
-    # data_venn(WDche, cherryDraft, "Cherry")
-    # data_venn(WDcam, camelinaDraft, "Camelina")
-    # data_venn(WDara, cobra.io.read_sbml_model(WDara + aragem), "Arabidopsis")
-    
-    ###Help to choose the treshold###
-    help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
-    help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    ###Example of use###
+    #For the tomato
+    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", blast = False)
+    #For the kiwifruit
+    kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi", blast = False)
+    #For the cucumber
+    cucumberDraft = pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber", blast = False)
+    #For the cherry
+    cherryDraft = pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cherry", blast = False)
+    #For the camelina
+    camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina", blast = False)
