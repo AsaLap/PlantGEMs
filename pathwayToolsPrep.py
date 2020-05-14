@@ -12,6 +12,7 @@ import numpy as np
 def read_file(path):
     f = open(path, "r")
     res = f.readlines()
+    f.close()
     return res
 
 
@@ -24,29 +25,18 @@ def write_file(WD, filename, data):
 
 def get_sequence_region(data):
     dicoRegions = {}
+    gene = ""
     for i in data:
-        try:
-            region = re.search('(?<=##sequence-region)[ \t]*\w+(\.\w+)*',i).group(0).strip()
-            dicoRegions[region] = {}
-        except AttributeError:
-            pass
-    get_regions_genes(data, dicoRegions)
+        if "\tgene\t" in i:
+            spl = i.split("\t")
+            region = spl[0]
+            gene = re.search('(?<=Name=)\w+(\.\w+)*', i).group(0)
+            if region not in dicoRegions.keys():
+                dicoRegions[region] = {}
+            dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4], "Transcribes" : []}
+        # if "\tmRNA\t" in i: ###TODO : on voulait prendre le nom des mRNA, mais marche pas pour Cameline
+            
     return dicoRegions
-
-
-def get_regions_genes(data, dicoRegions):
-    ###TODO : optimize the reading of the file when many regions => contigs
-    for i in data:
-        for region in dicoRegions.keys():
-            if region in i and "\tgene\t" in i:
-                try:
-                    gene = re.search('(?<=ID=)(gene:)*(gene-)*\w+(\.\w+)*', i).group(0)
-                    if "gene" in gene:
-                        gene = gene[5:]
-                    spl = i.split("\t")
-                    dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4], "Transcribes" : []}
-                except AttributeError:
-                    pass
 
 
 def make_dat(WD, name, dicoRegions, TYPE):
@@ -81,26 +71,16 @@ correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (ye
 
 
 def make_fsa(WD, fileFASTA, dicoRegions):
-    fasta = read_file(WD + fileFASTA)
-    list_index = list(np.arange(0,len(fasta),2))
-    for region in dicoRegions.keys():
-        subFasta = []
-        for gene in dicoRegions[region].keys():
-            found = False
-            for i in list_index:
-                if found:
-                    break
-                if gene in fasta[i]:
-                    subFasta.append(fasta[i])
-                    subFasta.append(fasta[i + 1])
-                    dicoRegions[region][gene]["Transcribes"].append(re.search('(?<=>)\w+(\.\w+)*', fasta[i]).group(0))
-                    list_index.remove(i)
-                    try:
-                        if gene not in fasta[i + 2]:
-                            found = True
-                    except IndexError:
-                        pass
-        write_file(WD, region + ".fsa", subFasta)
+    with open(WD + fileFASTA, "r") as file:
+        fasta = file.read()
+    fasta = fasta.split(">")
+    fasta = list(filter(None, fasta))
+    for i in fasta:
+        region = re.search("\w+(\.\w+)*", i).group(0)
+        listRegions = list(dicoRegions.keys())
+        if region in listRegions:
+            listRegions.remove(region)
+            write_file(WD, region + ".fsa", i)
 
 
 def make_pf(WD, fileEggNOG, dicoRegions):
@@ -116,9 +96,9 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                         break
                     if transcribe in tsv[i]:
                         list_index.remove(i)
+                        found = True
                         ###TODO : parse_eggNog()
                         # subPf.append(parse_eggNog(i)) ## TODO
-                        found = True
 
 
 def parse_eggNog():
@@ -130,7 +110,7 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE"):
     dicoRegions = get_sequence_region(gffFile)
     make_dat(WD, name, dicoRegions, TYPE)
     make_fsa(WD, fileFASTA, dicoRegions)
-    make_pf(WD, fileEggNOG, dicoRegions)
+    # make_pf(WD, fileEggNOG, dicoRegions)
 
 
 if __name__=="__main__":
@@ -142,11 +122,11 @@ if __name__=="__main__":
     WDcam = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Camelina/'
     
     ###Fasta files
-    tomatoFasta = 'ITAG4.0_proteins.fasta'
-    kiwiFasta = 'Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa'
-    cucumberFasta = 'Gy14_pep_v2.fa'
-    cherryFasta = 'PRUAV_Regina_pep.fa'
-    camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
+    tomatoFasta = 'S_lycopersicum_chromosomes.4.00.faa'
+    kiwiFasta = 'Actinidia_chinensis.Red5_PS1_1.69.0.dna.toplevel.fa'
+    cucumberFasta = 'Gy14_genome_v2.fa'
+    cherryFasta = 'PRUAV_Regina.fa'
+    camelinaFasta = 'GCF_000633955.1_Cs_genomic.fna'
     
     ###GFF files
     tomatoGFF = "ITAG4.0_gene_models.gff"
@@ -163,7 +143,7 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
+    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
     # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
     # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
