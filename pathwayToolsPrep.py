@@ -35,7 +35,7 @@ def get_sequence_region(data):
                 dicoRegions[region] = {}
             dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4], "Transcribes" : []}
         # if "\tmRNA\t" in i: ###TODO : on voulait prendre le nom des mRNA, mais marche pas pour Cameline
-            
+            # 
     return dicoRegions
 
 
@@ -147,5 +147,4 @@ if __name__=="__main__":
     # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
     # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
-    ##Too much regions without any genes
     # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG")
