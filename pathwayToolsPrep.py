@@ -33,9 +33,10 @@ def get_sequence_region(data):
             gene = re.search('(?<=Name=)\w+(\.\w+)*', i).group(0)
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
-            dicoRegions[region][gene] = {"Begin": spl[3], "End": spl[4], "Transcribes" : []}
-        # if "\tmRNA\t" in i: ###TODO : on voulait prendre le nom des mRNA, mais marche pas pour Cameline
-            # 
+            dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcribes" : []}
+        if "\tmRNA\t" in i: ###TODO : on voulait prendre le nom des mRNA, mais marche pas pour Cameline
+            transcribe = re.search('(?<=Name=)\w+(\.\w+)*', i).group(0)
+            dicoRegions[region][gene]["Transcribes"].append(transcribe)
     return dicoRegions
 
 
@@ -97,20 +98,41 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                     if transcribe in tsv[i]:
                         list_index.remove(i)
                         found = True
-                        ###TODO : parse_eggNog()
-                        # subPf.append(parse_eggNog(i)) ## TODO
+                        subPf.append(parse_eggNog(gene,
+                                                  transcribe,
+                                                  dicoRegions[region][gene]["Start"],
+                                                  dicoRegions[region][gene]["End"], 
+                                                  tsv[i]))
+        f = open(WD + region + ".pf", "w")
+        for i in subPf:
+            for j in i:
+                f.write(j)
+        f.close()
 
 
-def parse_eggNog():
-    print("TODO")
+def parse_eggNog(id, name, start, end, line):
+    info = []
+    info.append("ID\t" + id + "\n")
+    info.append("NAME\t" + name + "\n")
+    info.append("STARTBASE\t" + start + "\n")
+    info.append("ENDBASE\t" + end + "\n")
+    spl = line.split("\t")
+    if spl[7]:
+        info.append("EC\t" + spl[7] + "\n")
+    if spl[6]:
+        go = spl[6].split(",")
+        for i in go:
+            info.append("DBLINK\t" + i + "\n")
+    info.append("//\n")
+    return info
 
 
 def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE"):
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile)
     make_dat(WD, name, dicoRegions, TYPE)
-    make_fsa(WD, fileFASTA, dicoRegions)
-    # make_pf(WD, fileEggNOG, dicoRegions)
+    # make_fsa(WD, fileFASTA, dicoRegions)
+    make_pf(WD, fileEggNOG, dicoRegions)
 
 
 if __name__=="__main__":
@@ -143,7 +165,7 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
+    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
     # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
     # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
