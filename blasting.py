@@ -16,6 +16,7 @@ import time
 import matplotlib.pyplot as plt
 from statistics import mean
 import copy
+import re
 
 import graph
 
@@ -53,13 +54,21 @@ def blast_run(workDir, model, queryFile, subjectFile):
     print("\nCreating the individual CDS fasta files...")
     fileFasta = open(queryDir)
     queryFasta = fileFasta.read()
+    ###Writing of the individual fasta files, adapt to have same name of file as IDs in the model
     for seq in queryFasta.split(">"):
-        geneName = seq.split("\n")[0]
-        f = open(newDir+geneName+".fa", "w")
-        f.write(">"+seq)
-        f.close()
+        # geneName = seq.split("\n")[0] ##For AraGEM
+        try:
+            geneName = re.search('\w+', seq).group(0)
+            geneName = re.sub("__..__", "-", geneName)
+            print(geneName)
+            f = open(newDir + geneName + ".fa", "w")
+            f.write(">" + seq)
+            f.close()
+        except AttributeError:
+            pass
     fileFasta.close()
     print("...done !")
+    ###End of the fasta writing
     ###Blast###
     print("\nLaunching the blast !")
     i, x = 1, len(model.genes)
@@ -75,10 +84,11 @@ def blast_run(workDir, model, queryFile, subjectFile):
             "-subject",
             subjectDir,
             "-query",
-            newDir+"in_"+gene.name+".fa",
+            # newDir + "in_" + gene.id + ".fa", ## 'in_' = Specific for A.Thaliana AraGEM's fasta file...
+            newDir + gene.id + ".fa",
             "-outfmt",
             "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
-        blast_res[gene.name] = subprocess.run(requestBlast, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
+        blast_res[gene.id] = subprocess.run(requestBlast, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
     subprocess.run(["rm", "-rf", newDir])
     print("Blast done !\nTotal time : %f s" %(time.time() - total_time))
     return blast_res
@@ -96,7 +106,7 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
         bit_score -- the minimum Bit-Score chosen.
     RETURN:
         dico_genes -- a dictionary with model gene as key and corresponding subject 
-        key and coverage value as value.
+        key and coverage value as values.
     """
     dico_genes = {}
     for key in blast_res.keys():
