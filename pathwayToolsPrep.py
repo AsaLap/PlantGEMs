@@ -26,17 +26,25 @@ def write_file(WD, filename, data):
 def get_sequence_region(data):
     dicoRegions = {}
     gene = ""
-    for i in data:
-        if "\tgene\t" in i:
-            spl = i.split("\t")
+    for line in data:
+        if "\tgene\t" in line:
+            spl = line.split("\t")
             region = spl[0]
-            gene = re.search('(?<=Name=)\w+(\.\w+)*', i).group(0)
+            try:
+                gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+            except AttributeError:
+                print("The gene has non attribute 'Name='...")
+                pass
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
             dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcribes" : []}
-        if "\tmRNA\t" in i: ###TODO : on voulait prendre le nom des mRNA, mais marche pas pour Cameline
-            transcribe = re.search('(?<=Name=)\w+(\.\w+)*', i).group(0)
-            dicoRegions[region][gene]["Transcribes"].append(transcribe)
+        if "RNA\t" in line:
+            try:
+                transcribe = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                dicoRegions[region][gene]["Transcribes"].append(transcribe)
+            except AttributeError:
+                print("The mRNA has no attribute 'Name='...")
+                dicoRegions[region][gene]["Transcribes"].append("None")
     return dicoRegions
 
 
@@ -77,7 +85,7 @@ def make_fsa(WD, fileFASTA, dicoRegions):
     fasta = fasta.split(">")
     fasta = list(filter(None, fasta))
     for i in fasta:
-        region = re.search("\w+(\.\w+)*", i).group(0)
+        region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
         listRegions = list(dicoRegions.keys())
         if region in listRegions:
             listRegions.remove(region)
@@ -99,24 +107,33 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                         list_index.remove(i)
                         found = True
                         subPf.append(parse_eggNog(gene,
-                                                  transcribe,
                                                   dicoRegions[region][gene]["Start"],
                                                   dicoRegions[region][gene]["End"], 
                                                   tsv[i]))
-        f = open(WD + region + ".pf", "w")
-        for i in subPf:
-            for j in i:
-                f.write(j)
-        f.close()
+        if subPf:
+            f = open(WD + region + ".pf", "w")
+            for i in subPf:
+                for j in i:
+                    f.write(j)
+            f.close()
 
 
-def parse_eggNog(id, name, start, end, line):
+def parse_eggNog(id, start, end, line):
     info = []
+    spl = line.split("\t")
     info.append("ID\t" + id + "\n")
-    info.append("NAME\t" + name + "\n")
+    if spl[5]:
+        info.append("NAME\t" + spl[5] + "\n")
+    else:
+        info.append("NAME\tORF\n")
     info.append("STARTBASE\t" + start + "\n")
     info.append("ENDBASE\t" + end + "\n")
-    spl = line.split("\t")
+    spl[21] = spl[21].replace("\n", "")
+    if spl[21]:
+        info.append("FUNCTION\t" + spl[21] + "\n")
+    else:
+        info.append("FUNCTION\tORF\n")
+    info.append("PRODUCT-TYPE\tP\n")
     if spl[7]:
         info.append("EC\t" + spl[7] + "\n")
     if spl[6]:
@@ -131,7 +148,7 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE"):
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile)
     make_dat(WD, name, dicoRegions, TYPE)
-    # make_fsa(WD, fileFASTA, dicoRegions)
+    make_fsa(WD, fileFASTA, dicoRegions)
     make_pf(WD, fileEggNOG, dicoRegions)
 
 
@@ -165,8 +182,9 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
-    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
+    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
-    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
+    pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
+    ##Don't work because don't have name or ID not corresponding to transcript
+    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
     # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG")
