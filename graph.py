@@ -112,7 +112,7 @@ def get_all_scores(organism, data):
     return list_value
 
 
-def make_upsetplot(WD, data):
+def make_upsetplot(WD, data, name):
     """Function to make an UpSetPlot.
     
     ARGS:
@@ -134,7 +134,7 @@ def make_upsetplot(WD, data):
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts = '%d', totals_plot_elements = 3)
     plt.suptitle("Unique intersection for each possible cluster")
-    plt.savefig(WD + "upsetplot.pdf")
+    plt.savefig(WD + name + ".pdf")
     plt.show()
 
 
@@ -207,19 +207,33 @@ def help_treshold(WD, model, modelFasta, subjectFasta, name):
 
 if __name__=="__main__":
     ###Files and working directory###
+    WD = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/'
+    #AraGem models
     WDtom = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Arabidopsis/'
     WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Arabidopsis/'
     WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
     WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
     WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
-    WD = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/'
+    #AraCyc models
+    WDtomCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Aracyc/'
+    WDkiwCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Aracyc/'
+    WDcucCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Aracyc/'
+    WDcheCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Aracyc/'
+    WDcamCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Aracyc/'
     
-    ###The new models
-    # tomatoDraft = cobra.io.read_sbml_model(WD + "Tomato.xml")
-    # kiwiDraft = cobra.io.read_sbml_model(WD + "Kiwi.xml")
-    # cucumberDraft = cobra.io.read_sbml_model(WD + "Cucumber.xml")
-    # cherryDraft = cobra.io.read_sbml_model(WD + "Cherry.xml")
-    # camelinaDraft = cobra.io.read_sbml_model(WD + "Camelina.xml")
+    ###The new models (AraGem)
+    # tomatoDraft = cobra.io.read_sbml_model(WDtom + "Tomato.xml")
+    # kiwiDraft = cobra.io.read_sbml_model(WDkiw + "Kiwi.xml")
+    # cucumberDraft = cobra.io.read_sbml_model(WDcuc + "Cucumber.xml")
+    # cherryDraft = cobra.io.read_sbml_model(WDche + "Cherry.xml")
+    # camelinaDraft = cobra.io.read_sbml_model(WDcam + "Camelina.xml")
+    
+    ###The new models (AraCyc)
+    # tomatoDraftCyc = cobra.io.load_json_model(WDtomCyc + "Tomato.json")
+    # kiwiDraftCyc = cobra.io.load_json_model(WDkiwCyc + "Kiwi.json")
+    # cucumberDraftCyc = cobra.io.load_json_model(WDcucCyc + "Cucumber.json")
+    # cherryDraftCyc = cobra.io.load_json_model(WDcheCyc + "Cherry.json")
+    # camelinaDraftCyc = cobra.io.load_json_model(WDcamCyc + "Camelina.json")
 
     ###Making plots###
     #Loading the data
@@ -230,25 +244,46 @@ if __name__=="__main__":
     # cam = blasting.load_obj(WDcam + "resBlastp")
     
     ###Using UpSetplot
-    tomatoGenes = read_file(WDtom, "Tomato_id_reac.csv")
-    kiwiGenes = read_file(WDkiw, "Kiwi_id_reac.csv")
-    cucumberGenes = read_file(WDcuc, "Cucumber_id_reac.csv")
-    cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
-    camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
+    ##AraGem
+    # tomatoGenes = read_file(WDtom, "Tomato_id_reac.csv")
+    # kiwiGenes = read_file(WDkiw, "Kiwi_id_reac.csv")
+    # cucumberGenes = read_file(WDcuc, "Cucumber_id_reac.csv")
+    # cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
+    # camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
+    ##AraCyc
+    # tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
+    # kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
+    # cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
+    # cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
+    # camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
     ###Creating the dictionary to fit the function
-    dicoUpset = {"Tomato" : tomatoGenes,
-                 "Kiwi" : kiwiGenes,
-                 "Cucumber" : cucumberGenes,
-                 "Cherry" : cherryGenes,
-                 "Camelina" : camelinaGenes}
-    make_upsetplot(WD, dicoUpset)
+    # dicoUpset = {"Tomato" : tomatoGenes,
+    #              "Kiwi" : kiwiGenes,
+    #              "Cucumber" : cucumberGenes,
+    #              "Cherry" : cherryGenes,
+    #              "Camelina" : camelinaGenes}
+    # make_upsetplot(WD, dicoUpset, "upsetPlotAraGem")
+
+    # dicoUpset = {"Tomato" : tomatoGenesCyc,
+    #              "Kiwi" : kiwiGenesCyc,
+    #              "Cucumber" : cucumberGenesCyc,
+    #              "Cherry" : cherryGenesCyc,
+    #              "Camelina" : camelinaGenesCyc}
+    # make_upsetplot(WD, dicoUpset, "upsetPlotAraCyc")
 
     ###Get the reactions id for the Venn diagramm###
+    ##First models (AraGem)
     # data_venn(WDtom, tomatoDraft, "Tomato")
     # data_venn(WDkiw, kiwiDraft, "Kiwi")
     # data_venn(WDcuc, cucumberDraft, "Cucumber")
     # data_venn(WDche, cherryDraft, "Cherry")
     # data_venn(WDcam, camelinaDraft, "Camelina")
+    ##Second models (AraCyc)
+    # data_venn(WDtomCyc, tomatoDraftCyc, "TomatoCyc")
+    # data_venn(WDkiwCyc, kiwiDraftCyc, "KiwiCyc")
+    # data_venn(WDcucCyc, cucumberDraftCyc, "CucumberCyc")
+    # data_venn(WDcheCyc, cherryDraftCyc, "CherryCyc")
+    # data_venn(WDcamCyc, camelinaDraftCyc, "CamelinaCyc")
 
     ###Help to choose the treshold###
     # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")

@@ -54,17 +54,16 @@ def blast_run(workDir, model, queryFile, subjectFile):
     print("\nCreating the individual CDS fasta files...")
     fileFasta = open(queryDir)
     queryFasta = fileFasta.read()
-    ###Writing of the individual fasta files, adapt to have same name of file as IDs in the model
+    ###Writing of the individual fasta files
+    # Fasta name of the genes must corresponds to the IDs in the model #
     for seq in queryFasta.split(">"):
-        # geneName = seq.split("\n")[0] ##For AraGEM
         try:
-            geneName = re.search('\w+', seq).group(0)
-            geneName = re.sub("__..__", "-", geneName)
-            print(geneName)
+            geneName = re.search('\w+(\.\w+)*(\-\w+)*', seq).group(0)
             f = open(newDir + geneName + ".fa", "w")
             f.write(">" + seq)
             f.close()
         except AttributeError:
+            print("Gene name not found in :", seq)
             pass
     fileFasta.close()
     print("...done !")
@@ -84,7 +83,6 @@ def blast_run(workDir, model, queryFile, subjectFile):
             "-subject",
             subjectDir,
             "-query",
-            # newDir + "in_" + gene.id + ".fa", ## 'in_' = Specific for A.Thaliana AraGEM's fasta file...
             newDir + gene.id + ".fa",
             "-outfmt",
             "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
@@ -193,7 +191,7 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, ident
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
-    cobra.io.write_sbml_model(new_model, WD + modelName + ".xml")
+    cobra.io.save_json_model(new_model, WD + modelName + ".json")
     
     ###Printing of verifications
     no_results = []
