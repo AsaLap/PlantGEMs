@@ -23,28 +23,59 @@ def write_file(WD, filename, data):
     f.close()
 
 
-def get_sequence_region(data):
+def get_sequence_region(data, mRNA):
+    """Function which browse the .gff file and get the name of each gene, 
+    the position in the genome and each corresponding region and transcribe(s).
+    
+    ARGS:
+        data -- the gff file to browse (already put in memory by the function "read_file").
+        mRNA -- a boolean to know if the function must search the mRNA line or CDS.
+    RETURN:
+        dicoRegions -- a dictionary containing all the gathered 
+        informations with regions as principale key.
+    """
+    
     dicoRegions = {}
-    gene = ""
+    CDSfound = False
     for line in data:
         if "\tgene\t" in line:
+            CDSfound = False
             spl = line.split("\t")
             region = spl[0]
             try:
                 gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
             except AttributeError:
-                print("The gene has non attribute 'Name='...")
-                pass
+                try:
+                    gene = re.search('(?<=ID=)(gene:)*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    if "gene:" in gene:
+                        gene = gene[5:]
+                except AttributeError:
+                    print("The gene name hasn't been found...")
+                    gene = ""
+                    pass
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
             dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcribes" : []}
-        if "RNA\t" in line:
-            try:
-                transcribe = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-                dicoRegions[region][gene]["Transcribes"].append(transcribe)
-            except AttributeError:
-                print("The mRNA has no attribute 'Name='...")
-                dicoRegions[region][gene]["Transcribes"].append("None")
+        if mRNA:
+            if "RNA\t" in line:
+                try:
+                    transcribe = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    dicoRegions[region][gene]["Transcribes"].append(transcribe)
+                except AttributeError:
+                    print("The mRNA has no attribute 'Name='...")
+                    dicoRegions[region][gene]["Transcribes"].append("None")
+        else:
+        #In case the gff file needs to be looked at on the CDS 
+        #and not the mRNA to corresponds to the TSV file
+            if CDSfound == False and "CDS\t" in line:
+                try: #Searching for CDS ID instead of mRNA.
+                    transcribe = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
+                    dicoRegions[region][gene]["Transcribes"].append(transcribe)
+                    CDSfound = True
+                except AttributeError:
+                    print("The CDS has no attribute 'ID='...")
+                    dicoRegions[region][gene]["Transcribes"].append("None")
+            
     return dicoRegions
 
 
@@ -52,12 +83,11 @@ def make_dat(WD, name, dicoRegions, TYPE):
     """Function to create the .dat file.
     
     ARGS:
-        WD --
-        name --
-        seq_regions --
-        TYPE --
-    RETURN:
-    
+        WD -- the working directory in which the file will be saved.
+        name -- the name of the .dat file.
+        dicoRegions -- the dictionary containing the data to create the .dat file.
+        TYPE -- indication if the sequence of the organism are assembled 
+        as chromosomes or contigs (or else, see Pathway Tools guide).
     """
     
     print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually \
@@ -80,6 +110,15 @@ correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (ye
 
 
 def make_fsa(WD, fileFASTA, dicoRegions):
+    """Function to make the .fsa files.
+    
+    ARGS:
+        WD -- the working directory to save those files.
+        fileFASTA -- the fasta file of the organism where to get the sequences.
+        dicoRegions -- the dictionary containing the data to create 
+        those files, the region and the corresponding genes in it. 
+    """
+    
     with open(WD + fileFASTA, "r") as file:
         fasta = file.read()
     fasta = fasta.split(">")
@@ -93,6 +132,15 @@ def make_fsa(WD, fileFASTA, dicoRegions):
 
 
 def make_pf(WD, fileEggNOG, dicoRegions):
+    """Function to make the .pf files.
+    
+    ARGS:
+        WD -- the working directory to save those files.
+        fileEggNOG -- the .tsv file from EggNOG with most information for the .pf file.
+        dicoRegions -- the dictionary containing the data to create 
+        those files, the region and the corresponding transcribe(s) in it.
+    """
+    
     tsv = read_file(WD + fileEggNOG)
     list_index = list(np.arange(0, len(tsv)))
     for region in dicoRegions.keys():
@@ -119,6 +167,17 @@ def make_pf(WD, fileEggNOG, dicoRegions):
 
 
 def parse_eggNog(id, start, end, line):
+    """Sub-function of make_pf() to write the info in the correct order for each transcribe.
+    
+    ARGS:
+        id -- the gene name for the transcribe.
+        start -- the start position of the sequence.
+        end -- the end position of the sequence.
+        line -- the line corresponding to the transcribe of the .tsv file.
+    RETURN:
+        info -- a string with all the information and with the correct page settings.
+    """
+    
     info = []
     spl = line.split("\t")
     info.append("ID\t" + id + "\n")
@@ -144,9 +203,23 @@ def parse_eggNog(id, start, end, line):
     return info
 
 
-def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE"):
+def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE", mRNA = True):
+    """Function to run all the process.
+    
+    ARGS:
+        WD -- the working directory where to find/save the files.
+        fileGFF -- the .gff file for the organism.
+        fileFASTA -- the .fasta file for the organism.
+        fileEggNOG -- the .tsv file for the organism from EggNOG.
+        name -- the name for the .dat file.
+        TYPE -- indication if the sequence of the organism are assembled 
+        as chromosomes or contigs (or else, see Pathway Tools guide).
+        mRNA -- True by default but false means the .gff file must be read by 
+        the CDS and not the mRNA to get the transcribes name.
+    """
+    
     gffFile = read_file(WD + fileGFF)
-    dicoRegions = get_sequence_region(gffFile)
+    dicoRegions = get_sequence_region(gffFile, mRNA)
     make_dat(WD, name, dicoRegions, TYPE)
     make_fsa(WD, fileFASTA, dicoRegions)
     make_pf(WD, fileEggNOG, dicoRegions)
@@ -184,7 +257,7 @@ if __name__=="__main__":
     ###Main###
     # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
-    pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
+    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
     ##Don't work because don't have name or ID not corresponding to transcript
-    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG")
-    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG")
+    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG", mRNA = False)
+    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG", mRNA = False)
