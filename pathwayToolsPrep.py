@@ -79,12 +79,11 @@ def get_sequence_region(data, mRNA):
     return dicoRegions
 
 
-def make_dat(WD, name, dicoRegions, TYPE):
+def make_dat(WD, dicoRegions, TYPE):
     """Function to create the .dat file.
     
     ARGS:
         WD -- the working directory in which the file will be saved.
-        name -- the name of the .dat file.
         dicoRegions -- the dictionary containing the data to create the .dat file.
         TYPE -- indication if the sequence of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
@@ -106,7 +105,7 @@ correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (ye
         for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                            %(i, TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
-    write_file(WD, name + ".dat", datFile)
+    write_file(WD, "genetic-elements" + ".dat", datFile)
 
 
 def make_fsa(WD, fileFASTA, dicoRegions):
@@ -194,7 +193,8 @@ def parse_eggNog(id, start, end, line):
         info.append("FUNCTION\tORF\n")
     info.append("PRODUCT-TYPE\tP\n")
     if spl[7]:
-        info.append("EC\t" + spl[7] + "\n")
+        for res in spl[7].split(","):
+            info.append("EC\t" + res + "\n")
     if spl[6]:
         go = spl[6].split(",")
         for i in go:
@@ -203,7 +203,7 @@ def parse_eggNog(id, start, end, line):
     return info
 
 
-def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE", mRNA = True):
+def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, TYPE="NONE", mRNA = True):
     """Function to run all the process.
     
     ARGS:
@@ -211,7 +211,6 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE", mRNA = Tru
         fileGFF -- the .gff file for the organism.
         fileFASTA -- the .fasta file for the organism.
         fileEggNOG -- the .tsv file for the organism from EggNOG.
-        name -- the name for the .dat file.
         TYPE -- indication if the sequence of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
         mRNA -- True by default but false means the .gff file must be read by 
@@ -220,7 +219,7 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, name, TYPE="NONE", mRNA = Tru
     
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile, mRNA)
-    make_dat(WD, name, dicoRegions, TYPE)
+    make_dat(WD, dicoRegions, TYPE)
     make_fsa(WD, fileFASTA, dicoRegions)
     make_pf(WD, fileEggNOG, dicoRegions)
 
@@ -255,9 +254,9 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, "Tomato", TYPE=":CHRSM")
-    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, "Cucumber", TYPE=":CHRSM")
-    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, "Cherry", TYPE=":CONTIG")
+    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, TYPE=":CHRSM")
+    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, TYPE=":CHRSM")
+    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, TYPE=":CONTIG")
     ##Don't work because don't have name or ID not corresponding to transcript
-    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, "Kiwi", TYPE=":CONTIG", mRNA = False)
-    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, "Camelina", TYPE=":CONTIG", mRNA = False)
+    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, TYPE=":CONTIG", mRNA = False)
+    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, TYPE=":CONTIG", mRNA = False)

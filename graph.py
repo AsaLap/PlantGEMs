@@ -229,11 +229,11 @@ if __name__=="__main__":
     # camelinaDraft = cobra.io.read_sbml_model(WDcam + "Camelina.xml")
     
     ###The new models (AraCyc)
-    # tomatoDraftCyc = cobra.io.load_json_model(WDtomCyc + "Tomato.json")
-    # kiwiDraftCyc = cobra.io.load_json_model(WDkiwCyc + "Kiwi.json")
-    # cucumberDraftCyc = cobra.io.load_json_model(WDcucCyc + "Cucumber.json")
-    # cherryDraftCyc = cobra.io.load_json_model(WDcheCyc + "Cherry.json")
-    # camelinaDraftCyc = cobra.io.load_json_model(WDcamCyc + "Camelina.json")
+    tomatoDraftCyc = cobra.io.load_json_model(WDtomCyc + "Tomato.json")
+    kiwiDraftCyc = cobra.io.load_json_model(WDkiwCyc + "Kiwi.json")
+    cucumberDraftCyc = cobra.io.load_json_model(WDcucCyc + "Cucumber.json")
+    cherryDraftCyc = cobra.io.load_json_model(WDcheCyc + "Cherry.json")
+    camelinaDraftCyc = cobra.io.load_json_model(WDcamCyc + "Camelina.json")
 
     ###Making plots###
     #Loading the data
