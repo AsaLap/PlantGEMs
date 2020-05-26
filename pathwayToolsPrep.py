@@ -8,6 +8,8 @@ Pathway Tools software reconstruction."""
 
 import re
 import numpy as np
+import string
+import random
 
 def read_file(path):
     f = open(path, "r")
@@ -163,6 +165,31 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                 for j in i:
                     f.write(j)
             f.close()
+    
+    
+def make_organism_params(WD, species, abbrev, rank, storage = "file", private = "NIL", tax = 2, codon = 1, mito_codon = 1):
+    #Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
+    dico_tax = {1 : "TAX-2", 2 : "TAX-2759", 3 : "TAX-2157",
+                4 : "2", 5 : "2759", 6 : "2157"}
+    info = []
+    #Making the random ID
+    ID = random.choice(string.ascii_lowercase)
+    string_choice = string.ascii_lowercase + "0123456789"
+    for loop in range(random.randint(1,10)):
+        ID += random.choice(string_choice)
+    info.append("ID\t" + ID + "\n")
+    info.append("STORAGE\t" + storage + "\n")
+    info.append("NAME\t" + species + "\n")
+    info.append("ABBREV-NAME\t" + abbrev + "\n")
+    info.append("PRIVATE?\t" + private + "\n")
+    info.append("RANK\t" + str(rank) + "\n")
+    info.append("ORG-COUNTER\t\n") ##Test with or without
+    info.append("DOMAIN\t" + dico_tax[tax] + "\n")
+    info.append("CODON-TABLE\t" + str(codon) + "\n")
+    info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
+    info.append("DBNAME\t" + abbrev + "DBcyc\n")
+    info.append("NCBI-TAXON-ID\t" + dico_tax[tax+3] + "\n")
+    write_file(WD, "organism-params.dat", info)
 
 
 def parse_eggNog(id, start, end, line):
@@ -254,9 +281,11 @@ if __name__=="__main__":
     camelinaEgg = "eggNOG_annotations.tsv"
     
     ###Main###
-    pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, TYPE=":CHRSM")
+    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, TYPE=":CHRSM")
     # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, TYPE=":CHRSM")
     # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, TYPE=":CONTIG")
     ##Don't work because don't have name or ID not corresponding to transcript
     # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, TYPE=":CONTIG", mRNA = False)
     # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, TYPE=":CONTIG", mRNA = False)
+    
+    make_organism_params("/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Tomato/", "Solanum lycopersicum RED5", "Tomato", 195583)
