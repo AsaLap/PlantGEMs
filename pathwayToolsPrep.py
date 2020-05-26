@@ -253,11 +253,11 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, TYPE="NONE", mRNA = True):
 
 if __name__=="__main__":
     ###Files and working directory###
-    WDtom = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Tomato/'
-    WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Kiwi/'
-    WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Cucumber/'
-    WDche = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Cherry/'
-    WDcam = '/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Camelina/'
+    WDtom = '/home/asa/INRAE/Work/PathwayToolsData/Tomato/'
+    WDkiw = '/home/asa/INRAE/Work/PathwayToolsData/Kiwi/'
+    WDcuc = '/home/asa/INRAE/Work/PathwayToolsData/Cucumber/'
+    WDche = '/home/asa/INRAE/Work/PathwayToolsData/Cherry/'
+    WDcam = '/home/asa/INRAE/Work/PathwayToolsData/Camelina/'
     
     ###Fasta files
     tomatoFasta = 'S_lycopersicum_chromosomes.4.00.faa'
@@ -288,4 +288,4 @@ if __name__=="__main__":
     # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, TYPE=":CONTIG", mRNA = False)
     # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, TYPE=":CONTIG", mRNA = False)
     
-    make_organism_params("/home/asa/INRAE/Work/Plant-GEMs/PathwayToolsData/Tomato/", "Solanum lycopersicum RED5", "Tomato", 195583)
+    make_organism_params("/home/asa/INRAE/Work/PathwayToolsData/Tomato/", "Solanum lycopersicum RED5", "Tomato", 195583)

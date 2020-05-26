@@ -230,11 +230,11 @@ Stats for the new model :\n\
 
 if __name__=='__main__':
     ###Files and working directory###
-    WDtom = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
+    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
+    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
+    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
+    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
     WDara = '/home/asa/INRAE/Work/Raw_Data/Arabidopsis/'
     
     aragem = 'AraGEM3.xml'

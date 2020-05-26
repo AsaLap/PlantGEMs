@@ -207,19 +207,19 @@ def help_treshold(WD, model, modelFasta, subjectFasta, name):
 
 if __name__=="__main__":
     ###Files and working directory###
-    WD = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/'
+    WD = '/home/asa/INRAE/Work/Drafts/'
     #AraGem models
-    WDtom = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Arabidopsis/'
+    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
+    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
+    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
+    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
     #AraCyc models
-    WDtomCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Tomato_Aracyc/'
-    WDkiwCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Kiwi_Aracyc/'
-    WDcucCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cucumber_Aracyc/'
-    WDcheCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Cherry_Aracyc/'
-    WDcamCyc = '/home/asa/INRAE/Work/Plant-GEMs/Drafts/Camelina_Aracyc/'
+    WDtomCyc = '/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/'
+    WDkiwCyc = '/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/'
+    WDcucCyc = '/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/'
+    WDcheCyc = '/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/'
+    WDcamCyc = '/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/'
     
     ###The new models (AraGem)
     # tomatoDraft = cobra.io.read_sbml_model(WDtom + "Tomato.xml")
