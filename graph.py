@@ -190,7 +190,7 @@ def data_venn(WD, model, name):
     write_file(WD, list_id, name + "_id_reac")
 
 
-def help_treshold(WD, model, modelFasta, subjectFasta, name):
+def help_treshold(WD, ini):
     """Function to help choosing the treshold value,
     personal use only, to combine with the R script 'tresholdSearch.R'"""
     
@@ -198,11 +198,10 @@ def help_treshold(WD, model, modelFasta, subjectFasta, name):
     for i in range(101):
         test = 10 * i
         ###Putting the test values instead of default values
-        draft = blasting.pipeline(WD, model, modelFasta, subjectFasta, name, 0, 100, 1, 0, test)
+        draft = blasting.pipeline(ini, 0, 100, 1, 0, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
-    write_file(WD, listValues, name + "Treshold")
-
+    write_file(WD, listValues, "Treshold")
 
 
 if __name__=="__main__":
@@ -286,11 +285,11 @@ if __name__=="__main__":
     # data_venn(WDcamCyc, camelinaDraftCyc, "CamelinaCyc")
 
     ###Help to choose the treshold###
-    # help_treshold(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato")
-    # help_treshold(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi")
-    # help_treshold(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber")
-    # help_treshold(WDche, aragem, aragemFasta, cherryFasta, "Cherry")
-    # help_treshold(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina")
+    # help_treshold(WDtom, TomatoAracyc.ini)
+    # help_treshold(WDkiw, KiwiAracyc.ini)
+    # help_treshold(WDcuc, CucumberAracyc.ini)
+    # help_treshold(WDche, CherryAracyc.ini)
+    # help_treshold(WDcam, CamelinaAracyc.ini)
 
     #------Identity------#
     # tomato = graph_identity(tom)

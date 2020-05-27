@@ -10,6 +10,8 @@ import re
 import numpy as np
 import string
 import random
+import configparser
+
 
 def read_file(path):
     f = open(path, "r")
@@ -23,6 +25,18 @@ def write_file(WD, filename, data):
     for i in data:
         f.write(i)
     f.close()
+
+
+def read_config(ini):
+    """Runs the config file containing all the information to make a new model.
+    ARGS :
+        ini -- the path to the .ini file.
+    RETURN :
+        config -- the configuration in a python dictionary.
+    """
+    config = configparser.ConfigParser()
+    config.read(ini)
+    return config
 
 
 def get_sequence_region(data, mRNA):
@@ -230,19 +244,26 @@ def parse_eggNog(id, start, end, line):
     return info
 
 
-def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, TYPE="NONE", mRNA = True):
+def pipelinePT(ini, TYPE="NONE", mRNA = True):
     """Function to run all the process.
     
     ARGS:
-        WD -- the working directory where to find/save the files.
-        fileGFF -- the .gff file for the organism.
-        fileFASTA -- the .fasta file for the organism.
-        fileEggNOG -- the .tsv file for the organism from EggNOG.
+        ini -- the initialistion file containing all the following parameters:
+            WD -- the working directory where to find/save the files.
+            fileGFF -- the .gff file for the organism.
+            fileFASTA -- the .fasta file for the organism.
+            fileEggNOG -- the .tsv file for the organism from EggNOG.
         TYPE -- indication if the sequence of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
         mRNA -- True by default but false means the .gff file must be read by 
         the CDS and not the mRNA to get the transcribes name.
     """
+    #Reading the parameters from the ini file
+    param = read_config(ini)
+    WD = param["PATH"]["DIRECTORY"]
+    fileGFF = param["FILES"]["GFF"]
+    fileFASTA = param["FILES"]["FASTA"]
+    fileEggNOG = param["FILES"]["EGGNOG"]
     
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile, mRNA)
@@ -252,40 +273,11 @@ def pipelinePT(WD, fileGFF, fileFASTA, fileEggNOG, TYPE="NONE", mRNA = True):
 
 
 if __name__=="__main__":
-    ###Files and working directory###
-    WDtom = '/home/asa/INRAE/Work/PathwayToolsData/Tomato/'
-    WDkiw = '/home/asa/INRAE/Work/PathwayToolsData/Kiwi/'
-    WDcuc = '/home/asa/INRAE/Work/PathwayToolsData/Cucumber/'
-    WDche = '/home/asa/INRAE/Work/PathwayToolsData/Cherry/'
-    WDcam = '/home/asa/INRAE/Work/PathwayToolsData/Camelina/'
+    #Lauching the program for the 5 organism on which I'm working
+    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini", TYPE=":CHRSM")
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini", TYPE=":CONTIG")
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini", TYPE=":CONTIG", mRNA = False)
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini", TYPE=":CONTIG", mRNA = False)
     
-    ###Fasta files
-    tomatoFasta = 'S_lycopersicum_chromosomes.4.00.faa'
-    kiwiFasta = 'Actinidia_chinensis.Red5_PS1_1.69.0.dna.toplevel.fa'
-    cucumberFasta = 'Gy14_genome_v2.fa'
-    cherryFasta = 'PRUAV_Regina.fa'
-    camelinaFasta = 'GCF_000633955.1_Cs_genomic.fna'
-    
-    ###GFF files
-    tomatoGFF = "ITAG4.0_gene_models.gff"
-    kiwiGFF = "Actinidia_chinensis.Red5_PS1_1.69.0.44.gff3"
-    cucumberGFF = "Gy14_gene_gff_v2.gff"
-    cherryGFF = "PRUAV_Regina.gff3"
-    camelinaGFF = "GCF_000633955.1_Cs_genomic.gff"
-    
-    ###eggNOG files
-    tomatoEgg = "eggNOG_annotations.tsv"
-    kiwiEgg = "eggNOG_annotations.tsv"
-    cucumberEgg = "eggNOG_annotations.tsv"
-    cherryEgg = "eggNOG_annotations.tsv"
-    camelinaEgg = "eggNOG_annotations.tsv"
-    
-    ###Main###
-    # pipelinePT(WDtom, tomatoGFF, tomatoFasta, tomatoEgg, TYPE=":CHRSM")
-    # pipelinePT(WDcuc, cucumberGFF, cucumberFasta, cucumberEgg, TYPE=":CHRSM")
-    # pipelinePT(WDche, cherryGFF, cherryFasta, cherryEgg, TYPE=":CONTIG")
-    ##Don't work because don't have name or ID not corresponding to transcript
-    # pipelinePT(WDkiw, kiwiGFF, kiwiFasta, kiwiEgg, TYPE=":CONTIG", mRNA = False)
-    # pipelinePT(WDcam, camelinaGFF, camelinaFasta, camelinaEgg, TYPE=":CONTIG", mRNA = False)
-    
-    make_organism_params("/home/asa/INRAE/Work/PathwayToolsData/Tomato/", "Solanum lycopersicum RED5", "Tomato", 195583)
+    # make_organism_params("/home/asa/INRAE/Work/PathwayToolsData/Tomato/", "Solanum lycopersicum ITAG4.0", "Tomato", 195583)

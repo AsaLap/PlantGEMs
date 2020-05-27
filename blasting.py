@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from statistics import mean
 import copy
 import re
+import configparser
 
 import graph
 
@@ -33,7 +34,19 @@ def load_obj(path):
         return pickle.load(f)
 
 
-def blast_run(workDir, model, queryFile, subjectFile):
+def read_config(ini):
+    """Runs the config file containing all the information to make a new model.
+    ARGS :
+        ini -- the path to the .ini file.
+    RETURN :
+        config -- the configuration in a python dictionary.
+    """
+    config = configparser.ConfigParser()
+    config.read(ini)
+    return config
+
+
+def blast_run(WDref, WDsub, model, queryFile, subjectFile):
     """Runs multiple blasts between a subject file and each protein of the query file.
     
     ARGS : 
@@ -46,9 +59,9 @@ def blast_run(workDir, model, queryFile, subjectFile):
         blast_res -- dictionary containing the result of the blastp command for each gene of the model.
     """
     ###Concatenation of string to get the exact paths###
-    newDir = workDir + "Proteins_tmp/"
-    queryDir = workDir + queryFile
-    subjectDir = workDir + subjectFile
+    newDir = WDsub + "Proteins_tmp/"
+    queryDir = WDref + queryFile
+    subjectDir = WDsub + subjectFile
     ###Creation of temporary directory containing one file per protein of the query###
     subprocess.run(["mkdir", newDir])
     print("\nCreating the individual CDS fasta files...")
@@ -161,16 +174,18 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
     """The function that launches the entire pipeline of analysis
     and selections to create a new model.
     
     ARGS:
-        WD -- the working directory where to find ref_gem, queryFile, subjectFile.
-        ref_gem -- the reference model (sbml model compatible with COBRA).
-        queryFile -- the fasta file of the model.
-        subjectFile -- the fasta file of the subject.
-        modelName -- string - the name for the new model.
+        ini -- the initialistion file containing all the following parameters:
+            WDref -- the working directory where to find the ref_gem.
+            WDsub -- the working directory where to find the queryFile and subjectFile.
+            ref_gem -- the reference model (sbml model compatible with COBRA).
+            queryFile -- the fasta file of the model.
+            subjectFile -- the fasta file of the subject.
+            modelName -- string - the name for the new model.
         blast -- default value means the blast as not been done 
         and will be made, else, loads it from the working directory given.
         identity -- the treshold value of identity to select the subject genes.
@@ -181,17 +196,25 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, ident
     RETURN:
         new_model -- the subject COBRA model.
     """
+    #Reading of the parameter's file
+    param = read_config(ini)
+    WDref = param["MODEL"]["PATH"]
+    ref_gem = param["MODEL"]["GEM"]
+    queryFile = param["MODEL"]["FASTA"]
+    WDsub = param["SUBJECT"]["PATH"]
+    subjectFile = param["SUBJECT"]["FASTA"]
+    modelName = param["SUBJECT"]["NAME"]
     
-    model = cobra.io.read_sbml_model(WD + ref_gem)
+    model = cobra.io.read_sbml_model(WDref + ref_gem)
     if blast:
-        blast_res = blast_run(WD, model, queryFile, subjectFile)
-        save_obj(blast_res, WD + "resBlastp")
+        blast_res = blast_run(WDref, WDsub, model, queryFile, subjectFile)
+        save_obj(blast_res, WDsub + "resBlastp")
     else:
-        blast_res = load_obj(WD + "resBlastp")
+        blast_res = load_obj(WDsub + "resBlastp")
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
     new_model.add_metabolites(model.metabolites)
-    cobra.io.save_json_model(new_model, WD + modelName + ".json")
+    cobra.io.save_json_model(new_model, WDsub + modelName + ".json")
     
     ###Printing of verifications
     no_results = []
@@ -199,7 +222,6 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, ident
         if not blast_res[key]:
             no_results.append(key)
     print("The",len(no_results),"genes that have no matches : ", no_results)
-    
     ###Counting of different values
     nb_values = []
     for val in dico_genes.values():
@@ -209,50 +231,19 @@ def pipeline(WD, ref_gem, queryFile, subjectFile, modelName, blast = True, ident
     for reac in model.reactions:
         if reac.gene_reaction_rule:
             compt += 1
-    print(
-        "Model : %s\n\
-Stats for the reference model :\n\
-- Nb of genes : %i\n\
-- Nb of reactions : %i\n\
--> whose are associated to gene(s) : %i\n\
-Stats for the new model :\n\
-- Nb of genes : %i\n\
-- Nb of reactions : %i"
-        %(modelName,
-        len(model.genes),
-        len(model.reactions),
-        compt,
-        len(new_model.genes),
-        len(new_model.reactions)))
+    print("Model : %s\nStats for the reference model :\n\
+- Nb of genes : %i\n- Nb of reactions : %i\n-> whose are associated to gene(s) : %i\n\
+Stats for the new model :\n- Nb of genes : %i\n- Nb of reactions : %i" 
+    %(modelName, len(model.genes), len(model.reactions), compt,
+    len(new_model.genes), len(new_model.reactions)))
     print("----------------------------------------")
     return new_model
 
 
 if __name__=='__main__':
-    ###Files and working directory###
-    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
-    WDara = '/home/asa/INRAE/Work/Raw_Data/Arabidopsis/'
-    
-    aragem = 'AraGEM3.xml'
-    aragemFasta = 'genomic.in.fasta'
-    tomatoFasta = 'ITAG4.0_proteins.fasta'
-    kiwiFasta = 'Actinidia_chinensis.Red5_PS1_1.69.0.pep.all.fa'
-    cucumberFasta = 'Gy14_pep_v2.fa'
-    cherryFasta = 'PRUAV_Regina_pep.fa'
-    camelinaFasta = 'GCF_000633955.1_Cs_protein.faa'
-    
-    ###Example of use###
-    #For the tomato
-    tomatoDraft = pipeline(WDtom, aragem, aragemFasta, tomatoFasta, "Tomato", blast = False)
-    #For the kiwifruit
-    kiwiDraft = pipeline(WDkiw, aragem, aragemFasta, kiwiFasta, "Kiwi", blast = False)
-    #For the cucumber
-    cucumberDraft = pipeline(WDcuc, aragem, aragemFasta, cucumberFasta, "Cucumber", blast = False)
-    #For the cherry
-    cherryDraft = pipeline(WDche, aragem, aragemFasta, cherryFasta, "Cherry", blast = False)
-    #For the camelina
-    camelinaDraft = pipeline(WDcam, aragem, aragemFasta, camelinaFasta, "Camelina", blast = False)
+    #Lauching the program for the 5 organism on which I'm working
+    pipeline("/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
+    pipeline("/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
+    pipeline("/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
+    pipeline("/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/CherryAracyc.ini", blast = False)
+    pipeline("/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)
