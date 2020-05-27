@@ -14,6 +14,7 @@ from upsetplot import plot
 from upsetplot import from_memberships
 import copy
 import cobra
+from supervenn import supervenn
 
 import blasting
 
@@ -228,11 +229,11 @@ if __name__=="__main__":
     # camelinaDraft = cobra.io.read_sbml_model(WDcam + "Camelina.xml")
     
     ###The new models (AraCyc)
-    tomatoDraftCyc = cobra.io.load_json_model(WDtomCyc + "Tomato.json")
-    kiwiDraftCyc = cobra.io.load_json_model(WDkiwCyc + "Kiwi.json")
-    cucumberDraftCyc = cobra.io.load_json_model(WDcucCyc + "Cucumber.json")
-    cherryDraftCyc = cobra.io.load_json_model(WDcheCyc + "Cherry.json")
-    camelinaDraftCyc = cobra.io.load_json_model(WDcamCyc + "Camelina.json")
+    # tomatoDraftCyc = cobra.io.load_json_model(WDtomCyc + "Tomato.json")
+    # kiwiDraftCyc = cobra.io.load_json_model(WDkiwCyc + "Kiwi.json")
+    # cucumberDraftCyc = cobra.io.load_json_model(WDcucCyc + "Cucumber.json")
+    # cherryDraftCyc = cobra.io.load_json_model(WDcheCyc + "Cherry.json")
+    # camelinaDraftCyc = cobra.io.load_json_model(WDcamCyc + "Camelina.json")
 
     ###Making plots###
     #Loading the data
@@ -250,11 +251,11 @@ if __name__=="__main__":
     # cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
     # camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
     ##AraCyc
-    # tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
-    # kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
-    # cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
-    # cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
-    # camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
+    tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
+    kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
+    cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
+    cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
+    camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
     ###Creating the dictionary to fit the function
     # dicoUpset = {"Tomato" : tomatoGenes,
     #              "Kiwi" : kiwiGenes,
@@ -269,6 +270,13 @@ if __name__=="__main__":
     #              "Cherry" : cherryGenesCyc,
     #              "Camelina" : camelinaGenesCyc}
     # make_upsetplot(WD, dicoUpset, "upsetPlotAraCyc")
+    
+    #Tried the supervenn plot, not convinced for this use
+    # sets_list = [set(tomatoGenesCyc), set(kiwiGenesCyc), set(cucumberGenesCyc), set(cherryGenesCyc), set(camelinaGenesCyc)]
+    # species_names = ["Tomato", "Kiwi", "Cucumber", "Cherry", "Camelina"]
+    # plt.show(supervenn(sets_list, species_names, figsize=(20, 10), rotate_col_annotations=True,
+    #       col_annotations_area_height=1.2, sets_ordering='minimize gaps',
+    #       min_width_for_annotation=10))
 
     ###Get the reactions id for the Venn diagramm###
     ##First models (AraGem)
