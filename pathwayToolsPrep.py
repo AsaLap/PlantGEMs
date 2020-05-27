@@ -29,10 +29,11 @@ def write_file(WD, filename, data):
 
 def read_config(ini):
     """Runs the config file containing all the information to make a new model.
+    
     ARGS :
-        ini -- the path to the .ini file.
+        ini (str) -- the path to the .ini file.
     RETURN :
-        config -- the configuration in a python dictionary.
+        config (dict of str) -- the configuration in a python dictionary object.
     """
     config = configparser.ConfigParser()
     config.read(ini)
@@ -44,11 +45,11 @@ def get_sequence_region(data, mRNA):
     the position in the genome and each corresponding region and transcribe(s).
     
     ARGS:
-        data -- the gff file to browse (already put in memory by the function "read_file").
-        mRNA -- a boolean to know if the function must search the mRNA line or CDS.
+        data (file) -- the gff file to browse (already put in memory by the function "read_file").
+        mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
     RETURN:
         dicoRegions -- a dictionary containing all the gathered 
-        informations with regions as principale key.
+        informations (see pipelinePT() for the structure).
     """
     
     dicoRegions = {}
@@ -99,9 +100,10 @@ def make_dat(WD, dicoRegions, TYPE):
     """Function to create the .dat file.
     
     ARGS:
-        WD -- the working directory in which the file will be saved.
-        dicoRegions -- the dictionary containing the data to create the .dat file.
-        TYPE -- indication if the sequence of the organism are assembled 
+        WD (str) -- the path to the working directory in which the file (.dat) will be saved.
+        dicoRegions -- the dictionary containing the data to create the .dat file 
+        (see pipelinePT() for the structure).
+        TYPE (str) -- indication if the sequence of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
     """
     
@@ -128,10 +130,10 @@ def make_fsa(WD, fileFASTA, dicoRegions):
     """Function to make the .fsa files.
     
     ARGS:
-        WD -- the working directory to save those files.
-        fileFASTA -- the fasta file of the organism where to get the sequences.
+        WD (str) -- the path to the working directory to save the files.
+        fileFASTA (str) -- the path to the fasta file of the organism.
         dicoRegions -- the dictionary containing the data to create 
-        those files, the region and the corresponding genes in it. 
+        those files (see pipelinePT() for the structure). 
     """
     
     with open(WD + fileFASTA, "r") as file:
@@ -150,10 +152,11 @@ def make_pf(WD, fileEggNOG, dicoRegions):
     """Function to make the .pf files.
     
     ARGS:
-        WD -- the working directory to save those files.
-        fileEggNOG -- the .tsv file from EggNOG with most information for the .pf file.
+        WD (str) -- the path of the working directory to save the files.
+        fileEggNOG (str) -- the path to the .tsv file from EggNOG with most information 
+        for the .pf file.
         dicoRegions -- the dictionary containing the data to create 
-        those files, the region and the corresponding transcribe(s) in it.
+        the files (see pipelinePT() for the structure).
     """
     
     tsv = read_file(WD + fileEggNOG)
@@ -179,43 +182,19 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                 for j in i:
                     f.write(j)
             f.close()
-    
-    
-def make_organism_params(WD, species, abbrev, rank, storage = "file", private = "NIL", tax = 2, codon = 1, mito_codon = 1):
-    #Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
-    dico_tax = {1 : "TAX-2", 2 : "TAX-2759", 3 : "TAX-2157",
-                4 : "2", 5 : "2759", 6 : "2157"}
-    info = []
-    #Making the random ID
-    ID = random.choice(string.ascii_lowercase)
-    string_choice = string.ascii_lowercase + "0123456789"
-    for loop in range(random.randint(1,10)):
-        ID += random.choice(string_choice)
-    info.append("ID\t" + ID + "\n")
-    info.append("STORAGE\t" + storage + "\n")
-    info.append("NAME\t" + species + "\n")
-    info.append("ABBREV-NAME\t" + abbrev + "\n")
-    info.append("PRIVATE?\t" + private + "\n")
-    info.append("RANK\t" + str(rank) + "\n")
-    info.append("ORG-COUNTER\t\n") ##Test with or without
-    info.append("DOMAIN\t" + dico_tax[tax] + "\n")
-    info.append("CODON-TABLE\t" + str(codon) + "\n")
-    info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
-    info.append("DBNAME\t" + abbrev + "DBcyc\n")
-    info.append("NCBI-TAXON-ID\t" + dico_tax[tax+3] + "\n")
-    write_file(WD, "organism-params.dat", info)
 
 
 def parse_eggNog(id, start, end, line):
     """Sub-function of make_pf() to write the info in the correct order for each transcribe.
     
     ARGS:
-        id -- the gene name for the transcribe.
-        start -- the start position of the sequence.
-        end -- the end position of the sequence.
-        line -- the line corresponding to the transcribe of the .tsv file.
+        id (str) -- the gene name for the transcribe.
+        start (int) -- the start position of the sequence.
+        end (int) -- the end position of the sequence.
+        line (str) -- the line corresponding to the transcribe in the .tsv file.
     RETURN:
-        info -- a string with all the information and with the correct page settings.
+        info (str) -- a string with all the information and with the correct 
+        page settings for the .pf file.
     """
     
     info = []
@@ -244,19 +223,43 @@ def parse_eggNog(id, start, end, line):
     return info
 
 
+def make_organism_params(WD, species, abbrev, rank, storage = "file", private = "NIL", tax = 2, codon = 1, mito_codon = 1):
+    #Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
+    dico_tax = {1 : "TAX-2", 2 : "TAX-2759", 3 : "TAX-2157",
+                4 : "2", 5 : "2759", 6 : "2157"}
+    info = []
+    #Making the random ID
+    ID = random.choice(string.ascii_lowercase)
+    string_choice = string.ascii_lowercase + "0123456789"
+    for loop in range(random.randint(1,10)):
+        ID += random.choice(string_choice)
+    info.append("ID\t" + ID + "\n")
+    info.append("STORAGE\t" + storage + "\n")
+    info.append("NAME\t" + species + "\n")
+    info.append("ABBREV-NAME\t" + abbrev + "\n")
+    info.append("PRIVATE?\t" + private + "\n")
+    info.append("RANK\t" + str(rank) + "\n")
+    info.append("ORG-COUNTER\t\n") ##Test with or without
+    info.append("DOMAIN\t" + dico_tax[tax] + "\n")
+    info.append("CODON-TABLE\t" + str(codon) + "\n")
+    info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
+    info.append("DBNAME\t" + abbrev + "DBcyc\n")
+    info.append("NCBI-TAXON-ID\t" + dico_tax[tax+3] + "\n")
+    write_file(WD, "organism-params.dat", info)
+
+
 def pipelinePT(ini, TYPE="NONE", mRNA = True):
     """Function to run all the process.
     
     ARGS:
-        ini -- the initialistion file containing all the following parameters:
-            WD -- the working directory where to find/save the files.
-            fileGFF -- the .gff file for the organism.
-            fileFASTA -- the .fasta file for the organism.
-            fileEggNOG -- the .tsv file for the organism from EggNOG.
-        TYPE -- indication if the sequence of the organism are assembled 
+        ini (str) -- the path to the initialisation file containing all the following parameters:
+            WD (str) -- the path to the working directory where to find/save the files.
+            fileGFF (str) -- the name of the .gff file for the organism.
+            fileFASTA (str) -- the name of the .fasta file for the organism.
+            fileEggNOG (str) -- the name of the .tsv file for the organism from EggNOG.
+        TYPE (str) -- indication if the sequences of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
-        mRNA -- True by default but false means the .gff file must be read by 
-        the CDS and not the mRNA to get the transcribes name.
+        mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
     """
     #Reading the parameters from the ini file
     param = read_config(ini)
@@ -267,6 +270,13 @@ def pipelinePT(ini, TYPE="NONE", mRNA = True):
     
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile, mRNA)
+    """Structure of dicoRegions :
+    {Region name:
+        {Gene name:
+            {"Start": int, "End": int, "Transcribes":[the transcribe(s) name(s) (list of str)]}
+        }
+    }
+    """
     make_dat(WD, dicoRegions, TYPE)
     make_fsa(WD, fileFASTA, dicoRegions)
     make_pf(WD, fileEggNOG, dicoRegions)
