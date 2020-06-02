@@ -11,6 +11,7 @@ import numpy as np
 import string
 import random
 import configparser
+import mpwt
 
 
 def read_file(path):
@@ -42,7 +43,7 @@ def read_config(ini):
 
 def get_sequence_region(data, mRNA):
     """Function which browse the .gff file and get the name of each gene, 
-    the position in the genome and each corresponding region and transcribe(s).
+    the position in the genome and each corresponding region and transcript(s).
     
     ARGS:
         data (file) -- the gff file to browse (already put in memory by the function "read_file").
@@ -55,6 +56,7 @@ def get_sequence_region(data, mRNA):
     dicoRegions = {}
     CDSfound = False
     for line in data:
+        ##Searching the gene's informations
         if "\tgene\t" in line:
             CDSfound = False
             spl = line.split("\t")
@@ -72,27 +74,41 @@ def get_sequence_region(data, mRNA):
                     pass
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
-            dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcribes" : []}
+            if spl[6] == "+":
+                dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcripts" : {}}
+            else:
+                dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Transcripts" : {}}
+        ##Searching the transcript's information
         if mRNA:
             if "RNA\t" in line:
                 try:
-                    transcribe = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    dicoRegions[region][gene]["Transcribes"].append(transcribe)
+                    transcript = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    dicoRegions[region][gene]["Transcripts"][transcript] = []
                 except AttributeError:
                     print("The mRNA has no attribute 'Name='...")
-                    dicoRegions[region][gene]["Transcribes"].append("None")
+                    dicoRegions[region][gene]["Transcripts"]["None"] = []
         else:
         #In case the gff file needs to be looked at on the CDS 
         #and not the mRNA to corresponds to the TSV file
-            if CDSfound == False and "CDS\t" in line:
+            if not CDSfound and "CDS\t" in line:
                 try: #Searching for CDS ID instead of mRNA.
-                    transcribe = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
-                    dicoRegions[region][gene]["Transcribes"].append(transcribe)
+                    transcript = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
+                    dicoRegions[region][gene]["Transcripts"][transcript] = []
                     CDSfound = True
                 except AttributeError:
                     print("The CDS has no attribute 'ID='...")
-                    dicoRegions[region][gene]["Transcribes"].append("None")
-            
+                    dicoRegions[region][gene]["Transcripts"]["None"] = []
+        ##Searching the exon's information
+        if "\texon\t" in line:
+            spl = line.split("\t")
+            dicoRegions[region][gene]["Transcripts"][transcript].append([int(spl[3]),int(spl[4])])
+        if "prime_UTR" in line:
+            spl = line.split("\t")
+            if spl[2] == "three_prime_UTR":
+                print("found three")
+            else:
+                print("found five")
+    print(dicoRegions)
     return dicoRegions
 
 
@@ -107,8 +123,8 @@ def make_dat(WD, dicoRegions, TYPE):
         as chromosomes or contigs (or else, see Pathway Tools guide).
     """
     
-    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually \
-correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
+    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",\
+        "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
     CIRC = 'N'
     datFile = []
     if TYPE == "NONE":
@@ -164,17 +180,18 @@ def make_pf(WD, fileEggNOG, dicoRegions):
     for region in dicoRegions.keys():
         subPf = []
         for gene in dicoRegions[region].keys():
-            for transcribe in dicoRegions[region][gene]["Transcribes"]:
+            for transcript in dicoRegions[region][gene]["Transcripts"].keys():
                 found = False
                 for i in list_index:
                     if found:
                         break
-                    if transcribe in tsv[i]:
+                    if transcript in tsv[i]:
                         list_index.remove(i)
                         found = True
                         subPf.append(parse_eggNog(gene,
                                                   dicoRegions[region][gene]["Start"],
-                                                  dicoRegions[region][gene]["End"], 
+                                                  dicoRegions[region][gene]["End"],
+                                                  dicoRegions[region][gene]["Transcripts"][transcript], 
                                                   tsv[i]))
         if subPf:
             f = open(WD + region + ".pf", "w")
@@ -184,14 +201,15 @@ def make_pf(WD, fileEggNOG, dicoRegions):
             f.close()
 
 
-def parse_eggNog(id, start, end, line):
-    """Sub-function of make_pf() to write the info in the correct order for each transcribe.
+def parse_eggNog(id, start, end, exon_pos, line):
+    """Sub-function of make_pf() to write the info in the correct order for each transcript.
     
     ARGS:
-        id (str) -- the gene name for the transcribe.
+        id (str) -- the gene name for the transcript.
         start (int) -- the start position of the sequence.
         end (int) -- the end position of the sequence.
-        line (str) -- the line corresponding to the transcribe in the .tsv file.
+        exon_pos (list of int) -- list of position of the exons.
+        line (str) -- the line corresponding to the transcript in the .tsv file.
     RETURN:
         info (str) -- a string with all the information and with the correct 
         page settings for the .pf file.
@@ -215,6 +233,8 @@ def parse_eggNog(id, start, end, line):
     if spl[7]:
         for res in spl[7].split(","):
             info.append("EC\t" + res + "\n")
+    for exon in exon_pos:
+        info.append("CODING-SEGMENT\t" + str(exon[0]) + "-" + str(exon[1]) + "\n")
     if spl[6]:
         go = spl[6].split(",")
         for i in go:
@@ -248,6 +268,10 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     write_file(WD, "organism-params.dat", info)
 
 
+def run_mpwt(WDin, WDout):
+    mpwt.create_pathologic_file(WDin, WDout)
+
+
 def pipelinePT(ini, TYPE="NONE", mRNA = True):
     """Function to run all the process.
     
@@ -273,21 +297,29 @@ def pipelinePT(ini, TYPE="NONE", mRNA = True):
     """Structure of dicoRegions :
     {Region name:
         {Gene name:
-            {"Start": int, "End": int, "Transcribes":[the transcribe(s) name(s) (list of str)]}
+            {"Start": int, "End": int, "Transcripts":
+                {Transcript name:[[begin, end] the transcript(s)'s exon(s) positions (list of list of int]}
         }
     }
     """
     make_dat(WD, dicoRegions, TYPE)
-    make_fsa(WD, fileFASTA, dicoRegions)
+    # make_fsa(WD, fileFASTA, dicoRegions)
     make_pf(WD, fileEggNOG, dicoRegions)
+    # run_mpwt(WD)
 
 
 if __name__=="__main__":
     #Lauching the program for the 5 organism on which I'm working
-    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
+    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Test/TomatoAracycPT.ini", TYPE=":CHRSM")
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
+    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini", TYPE=":CHRSM")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini", TYPE=":CONTIG")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini", TYPE=":CONTIG", mRNA = False)
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini", TYPE=":CONTIG", mRNA = False)
     
-    # make_organism_params("/home/asa/INRAE/Work/PathwayToolsData/Tomato/", "Solanum lycopersicum ITAG4.0", "Tomato", 195583)
+    # make_organism_params("/home/asa/INRAE/Work/mpwt_test1/", "Solanum lycopersicum ITAG4.0", "Tomato", 195583)
+    
+    ##Does just a copy of my files...
+    # run_mpwt("/home/asa/INRAE/Work/mpwt_test/input2/", "/home/asa/INRAE/Work/mpwt_test/input2_out/")
+    print("nothing")
