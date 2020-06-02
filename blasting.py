@@ -37,9 +37,9 @@ def load_obj(path):
 def read_config(ini):
     """Runs the config file containing all the information to make a new model.
     ARGS :
-        ini -- the path to the .ini file.
+        ini (str) -- the path to the .ini file.
     RETURN :
-        config -- the configuration in a python dictionary.
+        config (dict of str) -- the configuration in a python dictionary.
     """
     config = configparser.ConfigParser()
     config.read(ini)
@@ -50,13 +50,19 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
     """Runs multiple blasts between a subject file and each protein of the query file.
     
     ARGS : 
-        model -- the GEM of reference.
-        workDir -- the working directory where the files are, and where the proteins files
-        will be temporarily stored.
-        subjectFile -- the subject file for the blast.
-        queryFile -- the query file for the blast corresponding to the reference GEM's CDS fasta.
+        model (cobra model) -- the GEM of reference.
+        WDref (str) -- the path of the directory for the reference sbml model 
+        and fasta file.
+        WDsub (str) -- the path of the directory for the subject fasta file 
+        and where the temporary proteins files will be stored.
+        subjectFile (str) -- the name of the subject fasta.
+        queryFile (str) -- the name of the query file.
     RETURN : 
-        blast_res -- dictionary containing the result of the blastp command for each gene of the model.
+        blast_res -- dictionary containing the result of the blastp command 
+        for each gene of the model.
+        Structure :
+        {gene id: [res of blastp as list of value =>
+        qseqid, qlen, sseqid, slen, length, nident, pident, score, evalue, bitscore]}
     """
     ###Concatenation of string to get the exact paths###
     newDir = WDsub + "Proteins_tmp/"

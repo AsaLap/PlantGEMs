@@ -15,6 +15,7 @@ from upsetplot import from_memberships
 import copy
 import cobra
 from supervenn import supervenn
+import re
 
 import blasting
 
@@ -252,10 +253,31 @@ if __name__=="__main__":
     # camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
     ##AraCyc
     tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
-    kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
-    cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
-    cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
-    camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
+    # kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
+    # cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
+    # cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
+    # camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
+    
+    #Getting the AraCyc reconstruction's reactions VS Pathway Tools:
+    print("Nombre réaction Aracyc perso : ", len(tomatoGenesCyc))
+    
+    listeReacPTtomato = []
+    PTtomatoReac = open("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/tomato2cyc/1.0/data/reactions.dat","r")
+    for line in PTtomatoReac:
+        if "UNIQUE-ID" in line:
+            try:
+                listeReacPTtomato.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
+            except AttributeError:
+                pass
+    print("Nombre réactions PT : ", len(listeReacPTtomato))
+    print("Nombre réactions en commun : ", len(set.intersection(set(listeReacPTtomato), set(tomatoGenesCyc))))
+    #Supervenn Aracyc VS Pathway Tools Tomato
+    # sets_list = [set(tomatoGenesCyc), set(listeReacPTtomato)]
+    # species_names = ["Tomato AraCyc", "Tomato Pathway Tools"]
+    # plt.show(supervenn(sets_list, species_names, figsize=(20, 10), rotate_col_annotations=True,
+    #       col_annotations_area_height=1.2, sets_ordering='minimize gaps',
+    #       min_width_for_annotation=10))
+    
     ###Creating the dictionary to fit the function
     # dicoUpset = {"Tomato" : tomatoGenes,
     #              "Kiwi" : kiwiGenes,
