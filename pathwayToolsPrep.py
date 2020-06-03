@@ -4,7 +4,8 @@
 # Université de Bordeaux - INRAE Bordeaux
 # 2020
 """This file is used for the preparation of the required files for the 
-Pathway Tools software reconstruction."""
+Pathway Tools software reconstruction and launching of reconstruction 
+via Pathway Tools using mpwt package from AuReMe."""
 
 import re
 import numpy as np
@@ -12,6 +13,7 @@ import string
 import random
 import configparser
 import mpwt
+import subprocess
 
 
 def read_file(path):
@@ -146,7 +148,7 @@ def make_fsa(WD, fileFASTA, dicoRegions):
         those files (see pipelinePT() for the structure). 
     """
     
-    with open(WD + fileFASTA, "r") as file:
+    with open(fileFASTA, "r") as file:
         fasta = file.read()
     fasta = fasta.split(">")
     fasta = list(filter(None, fasta))
@@ -169,7 +171,7 @@ def make_pf(WD, fileEggNOG, dicoRegions):
         the files (see pipelinePT() for the structure).
     """
     
-    tsv = read_file(WD + fileEggNOG)
+    tsv = read_file(fileEggNOG)
     list_index = list(np.arange(0, len(tsv)))
     for region in dicoRegions.keys():
         subPf = []
@@ -262,22 +264,21 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     write_file(WD, "organism-params.dat", info)
 
 
-def run_mpwt(WDin, WDout):
-    mpwt.create_pathologic_file(WDin, WDout)
-
-
-def pipelinePT(ini, TYPE="NONE", mRNA = True):
+def files_prep(ini, WDout = "none"):
     """Function to run all the process.
     
     ARGS:
         ini (str) -- the path to the initialisation file containing all the following parameters:
             WD (str) -- the path to the working directory where to find/save the files.
+            WDout (str) -- the path where to store the results (dat, pf and fsa files).
             fileGFF (str) -- the name of the .gff file for the organism.
             fileFASTA (str) -- the name of the .fasta file for the organism.
             fileEggNOG (str) -- the name of the .tsv file for the organism from EggNOG.
-        TYPE (str) -- indication if the sequences of the organism are assembled 
-        as chromosomes or contigs (or else, see Pathway Tools guide).
-        mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
+            TYPE (str) -- indication if the sequences of the organism are assembled 
+            as chromosomes or contigs (or else, see Pathway Tools guide).
+            taxon_ID (int) -- the NCBI taxon ID of the species.
+            mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
+            name (str) -- the name of the species.
     """
     #Reading the parameters from the ini file
     param = read_config(ini)
@@ -285,33 +286,52 @@ def pipelinePT(ini, TYPE="NONE", mRNA = True):
     fileGFF = param["FILES"]["GFF"]
     fileFASTA = param["FILES"]["FASTA"]
     fileEggNOG = param["FILES"]["EGGNOG"]
+    TYPE = param["INFO"]["TYPE"]
+    taxon_ID = int(param["INFO"]["NCBI_TAXON_ID"])
+    mRNA = param.getboolean("INFO","mRNA")
+    name = param["INFO"]["SPECIES"]
+    if WDout == "none":
+        WDout = param["PATH"]["DIR_OUT"]
+    else:
+        subprocess.run(["mkdir", WDout + name])
+        WDout += name + "/"
+    
+    print("------\n" + name + "\n------")
     
     gffFile = read_file(WD + fileGFF)
     dicoRegions = get_sequence_region(gffFile, mRNA)
     """Structure of dicoRegions :
-    {Region name:
-        {Gene name:
+    {Region name (str):
+        {Gene name (str):
             {"Start": int, "End": int, "Transcripts":
-                {Transcript name:[[begin, end] the transcript(s)'s CDS positions (list of list of int]}
+                {Transcript name (str):[[begin, end] the transcript(s)'s CDS positions (list of list of int]}
         }
     }
     """
-    make_dat(WD, dicoRegions, TYPE)
-    # make_fsa(WD, fileFASTA, dicoRegions)
-    make_pf(WD, fileEggNOG, dicoRegions)
-    # run_mpwt(WD)
+    make_dat(WDout, dicoRegions, TYPE)
+    make_fsa(WDout, WD + fileFASTA, dicoRegions)
+    make_pf(WDout, WD + fileEggNOG, dicoRegions)
+
+
+def pipeline(data):
+    file = read_file(data)
+    WDinput = file.pop(0).rstrip()
+    for ini in file:
+        files_prep(ini.rstrip(), WDinput)
+
+    # mpwt.create_pathologic_file(WDin, WDout)
+
+
+
 
 
 if __name__=="__main__":
     #Lauching the program for the 5 organism on which I'm working
-    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini", TYPE=":CHRSM")
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini", TYPE=":CONTIG")
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini", TYPE=":CONTIG", mRNA = False)
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini", TYPE=":CONTIG", mRNA = False)
-    
-    # make_organism_params("/home/asa/INRAE/Work/mpwt_test1/", "Solanum lycopersicum ITAG4.0", "Tomato", 195583)
-    
-    ##Does just a copy of my files...
-    # run_mpwt("/home/asa/INRAE/Work/mpwt_test/input2/", "/home/asa/INRAE/Work/mpwt_test/input2_out/")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini")
+    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini")
+
+    pipeline("/home/asa/INRAE/Work/mpwt_test/index.txt")
