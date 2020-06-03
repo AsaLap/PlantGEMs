@@ -19,8 +19,6 @@ import copy
 import re
 import configparser
 
-import graph
-
 
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
@@ -61,8 +59,10 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
         blast_res -- dictionary containing the result of the blastp command 
         for each gene of the model.
         Structure :
-        {gene id: [res of blastp as list of value =>
-        qseqid, qlen, sseqid, slen, length, nident, pident, score, evalue, bitscore]}
+            {gene id (str):
+                [res of blastp = qseqid, qlen, sseqid, slen, length, nident,
+                pident, score, evalue, bitscore) (list of str & int)]
+            }
     """
     ###Concatenation of string to get the exact paths###
     newDir = WDsub + "Proteins_tmp/"
@@ -116,14 +116,17 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
     
     ARGS:
         blast_res -- the dictionary with the results of the blastp.
-        identity -- the treshold value of identity to select the subject genes.
-        diff -- the percentage of length difference tolerated between subject and query. 
-        e_val -- the minimum E-Value chosen. 
-        coverage -- the minimum percentage of coverage of the match.
-        bit_score -- the minimum Bit-Score chosen.
+        identity (int) -- the treshold value of identity to select the subject genes.
+        diff (int) -- the percentage of length difference tolerated between subject and query. 
+        e_val (int) -- the minimum E-Value chosen. 
+        coverage (int) -- the minimum percentage of coverage of the match.
+        bit_score (int) -- the minimum Bit-Score chosen.
     RETURN:
-        dico_genes -- a dictionary with model gene as key and corresponding subject 
-        key and coverage value as values.
+        dico_genes -- a dictionary containing information to make a new model.
+        Structure :
+            {gene name (of model) (str):
+                [list of corresponding gene name(s) of target (list of str)]
+            }
     """
     dico_genes = {}
     for key in blast_res.keys():
@@ -157,8 +160,8 @@ def drafting(model, dico_genes, model_name):
     ARGS:
         model -- the COBRA model used for the reconstruction.
         dico_genes -- the dictionary containing the correspondance
-        between genes of the model and the subject.
-        model_name -- a name for the new model (string)
+        between genes of the model and the subject (See select_genes() for the structure).
+        model_name (str) -- a name for the new model.
     RETURN:
         new_model -- the new COBRA model automatically generated.
     """
@@ -186,19 +189,19 @@ def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, covera
     
     ARGS:
         ini -- the initialistion file containing all the following parameters:
-            WDref -- the working directory where to find the ref_gem.
-            WDsub -- the working directory where to find the queryFile and subjectFile.
-            ref_gem -- the reference model (sbml model compatible with COBRA).
-            queryFile -- the fasta file of the model.
-            subjectFile -- the fasta file of the subject.
-            modelName -- string - the name for the new model.
-        blast -- default value means the blast as not been done 
+            WDref (str)-- the working directory where to find the ref_gem.
+            WDsub (str) -- the working directory where to find the queryFile and subjectFile.
+            ref_gem (str) -- the reference model file name (sbml model compatible with COBRA).
+            queryFile (str) -- the name of the fasta file of the model.
+            subjectFile (str) -- the name of the fasta file of the subject.
+            modelName (str) -- the name for the new model.
+        blast (int) -- default value means the blast as not been done 
         and will be made, else, loads it from the working directory given.
-        identity -- the treshold value of identity to select the subject genes.
-        diff -- the percentage of length difference tolerated between subject and query. 
-        e_val -- the minimum E-Value chosen. 
-        coverage -- the minimum percentage of coverage of the match.
-        bit_score -- the minimum Bit-Score chosen.
+        identity (int) -- the treshold value of identity to select the subject genes.
+        diff (int)-- the percentage of length difference tolerated between subject and query. 
+        e_val (int) -- the minimum E-Value chosen. 
+        coverage (int) -- the minimum percentage of coverage of the match.
+        bit_score (int) -- the minimum Bit-Score chosen.
     RETURN:
         new_model -- the subject COBRA model.
     """
@@ -237,9 +240,9 @@ def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, covera
     for reac in model.reactions:
         if reac.gene_reaction_rule:
             compt += 1
-    print("Model : %s\nStats for the reference model :\n\
-- Nb of genes : %i\n- Nb of reactions : %i\n-> whose are associated to gene(s) : %i\n\
-Stats for the new model :\n- Nb of genes : %i\n- Nb of reactions : %i" 
+    print("Model : %s\nStats for the reference model :\n",
+          "- Nb of genes : %i\n- Nb of reactions : %i\n-> whose are associated to gene(s) : %i\n",
+          "Stats for the new model :\n- Nb of genes : %i\n- Nb of reactions : %i" 
     %(modelName, len(model.genes), len(model.reactions), compt,
     len(new_model.genes), len(new_model.reactions)))
     print("----------------------------------------")
