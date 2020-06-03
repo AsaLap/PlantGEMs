@@ -54,11 +54,11 @@ def get_sequence_region(data, mRNA):
     """
     
     dicoRegions = {}
-    CDSfound = False
+    transcript_found = False
     for line in data:
         ##Searching the gene's informations
         if "\tgene\t" in line:
-            CDSfound = False
+            transcript_found = False
             spl = line.split("\t")
             region = spl[0]
             try:
@@ -80,35 +80,29 @@ def get_sequence_region(data, mRNA):
                 dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Transcripts" : {}}
         ##Searching the transcript's information
         if mRNA:
-            if "RNA\t" in line:
+            if not transcript_found and "RNA\t" in line:
                 try:
                     transcript = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
                     dicoRegions[region][gene]["Transcripts"][transcript] = []
+                    transcript_found = True
                 except AttributeError:
                     print("The mRNA has no attribute 'Name='...")
                     dicoRegions[region][gene]["Transcripts"]["None"] = []
         else:
         #In case the gff file needs to be looked at on the CDS 
         #and not the mRNA to corresponds to the TSV file
-            if not CDSfound and "CDS\t" in line:
+            if not transcript_found and "CDS\t" in line:
                 try: #Searching for CDS ID instead of mRNA.
                     transcript = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
                     dicoRegions[region][gene]["Transcripts"][transcript] = []
-                    CDSfound = True
+                    transcript_found = True
                 except AttributeError:
                     print("The CDS has no attribute 'ID='...")
                     dicoRegions[region][gene]["Transcripts"]["None"] = []
         ##Searching the exon's information
-        if "\texon\t" in line:
+        if "\tCDS\t" in line:
             spl = line.split("\t")
             dicoRegions[region][gene]["Transcripts"][transcript].append([int(spl[3]),int(spl[4])])
-        if "prime_UTR" in line:
-            spl = line.split("\t")
-            if spl[2] == "three_prime_UTR":
-                print("found three")
-            else:
-                print("found five")
-    print(dicoRegions)
     return dicoRegions
 
 
@@ -298,7 +292,7 @@ def pipelinePT(ini, TYPE="NONE", mRNA = True):
     {Region name:
         {Gene name:
             {"Start": int, "End": int, "Transcripts":
-                {Transcript name:[[begin, end] the transcript(s)'s exon(s) positions (list of list of int]}
+                {Transcript name:[[begin, end] the transcript(s)'s CDS positions (list of list of int]}
         }
     }
     """
@@ -310,8 +304,7 @@ def pipelinePT(ini, TYPE="NONE", mRNA = True):
 
 if __name__=="__main__":
     #Lauching the program for the 5 organism on which I'm working
-    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Test/TomatoAracycPT.ini", TYPE=":CHRSM")
-    # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
+    pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini", TYPE=":CHRSM")
     # pipelinePT("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini", TYPE=":CONTIG")
@@ -322,4 +315,3 @@ if __name__=="__main__":
     
     ##Does just a copy of my files...
     # run_mpwt("/home/asa/INRAE/Work/mpwt_test/input2/", "/home/asa/INRAE/Work/mpwt_test/input2_out/")
-    print("nothing")
