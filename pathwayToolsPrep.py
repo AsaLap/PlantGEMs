@@ -14,6 +14,7 @@ import random
 import configparser
 import mpwt
 import subprocess
+import multiprocessing
 
 
 def read_file(path):
@@ -197,6 +198,20 @@ def make_pf(WD, fileEggNOG, dicoRegions):
             f.close()
 
 
+def make_tsv(WD, taxon_name_list):
+    """Function to make the taxon_id.tsv file.
+    
+    ARGS:
+        WD (str) -- the path where to store this file.
+        taxon_name_list (list) -- the list containing the name of the organism and its taxon id. 
+    """
+    
+    res = "species\ttaxon_id\n"
+    for i in taxon_name_list:
+        res += i[0] + "\t" + str(i[1]) + "\n"
+    write_file(WD, "taxon_id.tsv", res)
+
+
 def parse_eggNog(id, start, end, exon_pos, line):
     """Sub-function of make_pf() to write the info in the correct order for each transcript.
     
@@ -264,7 +279,7 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     write_file(WD, "organism-params.dat", info)
 
 
-def files_prep(ini, WDout = "none"):
+def files_prep(ini, WDpt, WDout = "none"):
     """Function to run all the process.
     
     ARGS:
@@ -279,7 +294,10 @@ def files_prep(ini, WDout = "none"):
             taxon_ID (int) -- the NCBI taxon ID of the species.
             mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
             name (str) -- the name of the species.
+        WDpt (str) -- the working directory of Pathway Tools locals to create a pgdb.
+        WDout (str) -- the path to store the result of the pipeline.
     """
+    
     #Reading the parameters from the ini file
     param = read_config(ini)
     WD = param["PATH"]["DIRECTORY"]
@@ -289,17 +307,18 @@ def files_prep(ini, WDout = "none"):
     TYPE = param["INFO"]["TYPE"]
     taxon_ID = int(param["INFO"]["NCBI_TAXON_ID"])
     mRNA = param.getboolean("INFO","mRNA")
-    name = param["INFO"]["SPECIES"]
+    name = param["INFO"]["DATABASE_NAME"]
     if WDout == "none":
         WDout = param["PATH"]["DIR_OUT"]
     else:
         subprocess.run(["mkdir", WDout + name])
         WDout += name + "/"
+    subprocess.run(["mkdir", WDpt + name.lower() + "cyc"])
     
     print("------\n" + name + "\n------")
     
-    gffFile = read_file(WD + fileGFF)
-    dicoRegions = get_sequence_region(gffFile, mRNA)
+    # gffFile = read_file(WD + fileGFF)
+    # dicoRegions = get_sequence_region(gffFile, mRNA)
     """Structure of dicoRegions :
     {Region name (str):
         {Gene name (str):
@@ -308,18 +327,36 @@ def files_prep(ini, WDout = "none"):
         }
     }
     """
-    make_dat(WDout, dicoRegions, TYPE)
-    make_fsa(WDout, WD + fileFASTA, dicoRegions)
-    make_pf(WDout, WD + fileEggNOG, dicoRegions)
+    # make_dat(WDout, dicoRegions, TYPE)
+    # make_fsa(WDout, WD + fileFASTA, dicoRegions)
+    # make_pf(WDout, WD + fileEggNOG, dicoRegions)
+    return name, taxon_ID
+
 
 
 def pipeline(data):
+    """The function to make all the pipeline working,
+    from creation of the files to calling Pathway Tools via mpwt.
+    
+    ARGS:
+        data (str) -- the path to a index.txt file containing the path 
+        to each ini file for each organism to run.
+    """
+    
     file = read_file(data)
     WDinput = file.pop(0).rstrip()
+    WDoutput = file.pop(0).rstrip()
+    WDpt = file.pop(0).rstrip()
+    taxon_name_list = []
     for ini in file:
-        files_prep(ini.rstrip(), WDinput)
-
-    # mpwt.create_pathologic_file(WDin, WDout)
+        taxon_name_list.append(files_prep(ini.rstrip(), WDpt, WDinput))
+    make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
+    #Counting the number of cpu to use
+    if len(file) <= multiprocessing.cpu_count() - 2:
+        nb_cpu = len(file)
+    else:
+        nb_cpu = multiprocessing.cpu_count() - 2
+    mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput)
 
 
 
@@ -334,4 +371,4 @@ if __name__=="__main__":
     # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini")
     # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini")
 
-    pipeline("/home/asa/INRAE/Work/mpwt_test/index.txt")
+    pipeline("/home/asa/INRAE/Work/Plant-GEMs/index.txt")

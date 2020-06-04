@@ -1,6 +1,4 @@
-/home/asa/INRAE/Work/mpwt_test/input_pipeline/
+/home/asa/INRAE/Work/mpwt_test/input_test/
+/home/asa/INRAE/Work/mpwt_test/output_test/
+/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/
 /home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini
-/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini
-/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini
-/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini
-/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini
