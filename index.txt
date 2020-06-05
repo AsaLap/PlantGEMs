@@ -1,4 +1,3 @@
 /home/asa/INRAE/Work/mpwt_test/input_test/
 /home/asa/INRAE/Work/mpwt_test/output_test/
-/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/
-/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini
+/home/asa/INRAE/Work/mpwt_test/Tomato/TomatoAracycPT.ini

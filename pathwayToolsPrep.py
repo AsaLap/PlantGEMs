@@ -293,7 +293,7 @@ def files_prep(ini, WDpt, WDout = "none"):
             as chromosomes or contigs (or else, see Pathway Tools guide).
             taxon_ID (int) -- the NCBI taxon ID of the species.
             mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
-            name (str) -- the name of the species.
+            name (str) -- the name of the species database.
         WDpt (str) -- the working directory of Pathway Tools locals to create a pgdb.
         WDout (str) -- the path to store the result of the pipeline.
     """
@@ -313,7 +313,6 @@ def files_prep(ini, WDpt, WDout = "none"):
     else:
         subprocess.run(["mkdir", WDout + name])
         WDout += name + "/"
-    subprocess.run(["mkdir", WDpt + name.lower() + "cyc"])
     
     print("------\n" + name + "\n------")
     
@@ -346,7 +345,7 @@ def pipeline(data):
     file = read_file(data)
     WDinput = file.pop(0).rstrip()
     WDoutput = file.pop(0).rstrip()
-    WDpt = file.pop(0).rstrip()
+    WDpt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
     for ini in file:
         taxon_name_list.append(files_prep(ini.rstrip(), WDpt, WDinput))
@@ -356,7 +355,20 @@ def pipeline(data):
         nb_cpu = len(file)
     else:
         nb_cpu = multiprocessing.cpu_count() - 2
-    mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput)
+    mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
+                        patho_inference = True, patho_hole_filler = True,
+                        patho_operon_predictor = False, pathway_score = 1,
+                        dat_creation = True, dat_extraction = False,
+                        number_cpu = nb_cpu, size_reduction = False,
+                        patho_log = WDoutput + "../log", ignore_error = False,
+                        taxon_file = True, verbose = True)
+    # mpwt.multiprocess_pwt(input_folder = WDinput, patho_inference = True)
+    # mpwt.multiprocess_pwt(input_folder=WDinput,
+    #     patho_inference=True,
+    #     patho_hole_filler=True,
+    #     patho_operon_predictor=True,
+    #     no_download_articles=True,
+    #     patho_log = WDoutput + "../log")
 
 
 
