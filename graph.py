@@ -116,6 +116,7 @@ def get_all_scores(organism, data):
 
 def make_upsetplot(WD, data, name):
     """Function to make an UpSetPlot.
+    Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
     
     ARGS:
         WD -- the working directory to save the result.
@@ -204,6 +205,20 @@ def help_treshold(WD, ini):
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
     write_file(WD, listValues, "Treshold")
+    
+
+def get_reactions_PT(path):
+    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB."""
+    
+    liste_Reac = []
+    PTtomatoReac = open(path + "/1.0/data/reactions.dat","r")
+    for line in PTtomatoReac:
+        if "UNIQUE-ID" in line:
+            try:
+                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
+            except AttributeError:
+                pass
+    return liste_Reac
 
 
 if __name__=="__main__":
@@ -252,25 +267,44 @@ if __name__=="__main__":
     # cherryGenes = read_file(WDche, "Cherry_id_reac.csv")
     # camelinaGenes = read_file(WDcam, "Camelina_id_reac.csv")
     ##AraCyc
-    tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
+    # tomatoGenesCyc = read_file(WDtomCyc, "TomatoCyc_id_reac.csv")
     # kiwiGenesCyc = read_file(WDkiwCyc, "KiwiCyc_id_reac.csv")
     # cucumberGenesCyc = read_file(WDcucCyc, "CucumberCyc_id_reac.csv")
     # cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
     # camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
     
     #Getting the AraCyc reconstruction's reactions VS Pathway Tools:
-    print("Nombre réaction Aracyc perso : ", len(tomatoGenesCyc))
+    # print("Nombre réaction Aracyc perso : ", len(tomatoGenesCyc))
     
-    listeReacPTtomato = []
-    PTtomatoReac = open("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/tomato2cyc/1.0/data/reactions.dat","r")
-    for line in PTtomatoReac:
-        if "UNIQUE-ID" in line:
-            try:
-                listeReacPTtomato.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
-            except AttributeError:
-                pass
-    print("Nombre réactions PT : ", len(listeReacPTtomato))
-    print("Nombre réactions en commun : ", len(set.intersection(set(listeReacPTtomato), set(tomatoGenesCyc))))
+    listeReacPTtomato = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollycyc/")
+    print("Nombre réactions PT Tomate : ", len(listeReacPTtomato))
+    listeReacPTkiwi = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchcyc/")
+    print("Nombre réactions PT Kiwi : ", len(listeReacPTkiwi))
+    listeReacPTcucumber = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsacyc/")
+    print("Nombre réactions PT Concombre : ", len(listeReacPTcucumber))
+    listeReacPTcherry = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavcyc/")
+    print("Nombre réactions PT Cerise : ", len(listeReacPTcherry))
+    listeReacPTcamelina = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsacyc/")
+    print("Nombre réactions PT Cameline : ", len(listeReacPTcamelina))
+
+    #UpsetPlot on PT data
+    dicoUpset = {"Tomato" : listeReacPTtomato,
+                 "Kiwi" : listeReacPTkiwi,
+                 "Cucumber" : listeReacPTcucumber,
+                 "Cherry" : listeReacPTcherry,
+                 "Camelina" : listeReacPTcamelina}
+    make_upsetplot(WD, dicoUpset, "UpsetPlot Pathway Tools")
+
+    #Supervenn on PT data
+    sets_list = [set(listeReacPTtomato), set(listeReacPTkiwi), set(listeReacPTcucumber),
+                 set(listeReacPTcherry), set(listeReacPTcamelina)]
+    species_names = ["Tomato (Pathway Tools)", "Kiwi (Pathway Tools)", "Cucumber (Pathway Tools)",
+                     "Cherry (Pathway Tools)", "Camelina (Pathway Tools)"]
+    plt.show(supervenn(sets_list, species_names, figsize=(20, 10), rotate_col_annotations=True,
+          col_annotations_area_height=1.2, sets_ordering='minimize gaps',
+          min_width_for_annotation=10))
+    
+    
     #Supervenn Aracyc VS Pathway Tools Tomato
     # sets_list = [set(tomatoGenesCyc), set(listeReacPTtomato)]
     # species_names = ["Tomato AraCyc", "Tomato Pathway Tools"]
