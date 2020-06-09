@@ -6,6 +6,7 @@
 # Mars - Aout 2020
 
 from tkinter import *
+from tkinter import filedialog
 
 import blasting
 
@@ -14,10 +15,16 @@ blastWindow.title("Draft reconstruction with SBML model")
 blastWindow.geometry("600x450")
 
 #Working directory for the files and results
-wd = Label(blastWindow, text = "Working Directory :")
-WD = Entry(blastWindow)
-wd.grid(row = 1, column = 1, sticky = W)
-WD.grid(row = 1, column = 2)
+# wd = Label(blastWindow, text = "Working Directory :")
+# WD = Entry(blastWindow)
+# wd.grid(row = 1, column = 1, sticky = W)
+# WD.grid(row = 1, column = 2)
+
+#The model (browser)
+file = filedialog.askopenfile(parent=blastWindow, mode='r', title='Choose the model file', filetypes=[("xml files", "*.xml"), ("sbml files", "*.sbml")])
+if file != None:
+    data = file.read()
+    file.close()
 
 #The model
 model = Label(blastWindow, text = "COBRA compatible model filename :")
