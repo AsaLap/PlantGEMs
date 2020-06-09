@@ -153,9 +153,9 @@ def make_fsa(WD, fileFASTA, dicoRegions):
         fasta = file.read()
     fasta = fasta.split(">")
     fasta = list(filter(None, fasta))
+    listRegions = list(dicoRegions.keys())
     for i in fasta:
         region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
-        listRegions = list(dicoRegions.keys())
         if region in listRegions:
             listRegions.remove(region)
             write_file(WD, region + ".fsa", i)
@@ -295,7 +295,8 @@ def files_prep(ini, WDpt, WDout = "none"):
             mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
             name (str) -- the name of the species database.
         WDpt (str) -- the working directory of Pathway Tools locals to create a pgdb.
-        WDout (str) -- the path to store the result of the pipeline.
+        WDout (str) -- the path to store the .pf and .fsa files if this function is used 
+        in a pipeline with mpwt.
     """
     
     #Reading the parameters from the ini file
@@ -316,8 +317,8 @@ def files_prep(ini, WDpt, WDout = "none"):
     
     print("------\n" + name + "\n------")
     
-    # gffFile = read_file(WD + fileGFF)
-    # dicoRegions = get_sequence_region(gffFile, mRNA)
+    gffFile = read_file(WD + fileGFF)
+    dicoRegions = get_sequence_region(gffFile, mRNA)
     """Structure of dicoRegions :
     {Region name (str):
         {Gene name (str):
@@ -326,9 +327,9 @@ def files_prep(ini, WDpt, WDout = "none"):
         }
     }
     """
-    # make_dat(WDout, dicoRegions, TYPE)
-    # make_fsa(WDout, WD + fileFASTA, dicoRegions)
-    # make_pf(WDout, WD + fileEggNOG, dicoRegions)
+    make_dat(WDout, dicoRegions, TYPE)
+    make_fsa(WDout, WD + fileFASTA, dicoRegions)
+    make_pf(WDout, WD + fileEggNOG, dicoRegions)
     return name, taxon_ID
 
 
@@ -347,31 +348,26 @@ def pipeline(data):
     WDoutput = file.pop(0).rstrip()
     WDpt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
+    cpu = 0
     for ini in file:
-        taxon_name_list.append(files_prep(ini.rstrip(), WDpt, WDinput))
+        if ini:
+            cpu += 1
+            taxon_name_list.append(files_prep(ini.rstrip(), WDpt, WDinput))
     make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
+    print("------\nCreation of the files finished\n------")
     #Counting the number of cpu to use
-    if len(file) <= multiprocessing.cpu_count() - 2:
-        nb_cpu = len(file)
+    if cpu <= multiprocessing.cpu_count() - 2:
+        nb_cpu = cpu
     else:
         nb_cpu = multiprocessing.cpu_count() - 2
+    print("Number of CPU used : ", nb_cpu)
     mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
-                        patho_inference = True, patho_hole_filler = True,
+                        patho_inference = True, patho_hole_filler = False,
                         patho_operon_predictor = False, pathway_score = 1,
-                        dat_creation = True, dat_extraction = False,
+                        dat_creation = True, dat_extraction = True,
                         number_cpu = nb_cpu, size_reduction = False,
                         patho_log = WDoutput + "../log", ignore_error = False,
                         taxon_file = True, verbose = True)
-    # mpwt.multiprocess_pwt(input_folder = WDinput, patho_inference = True)
-    # mpwt.multiprocess_pwt(input_folder=WDinput,
-    #     patho_inference=True,
-    #     patho_hole_filler=True,
-    #     patho_operon_predictor=True,
-    #     no_download_articles=True,
-    #     patho_log = WDoutput + "../log")
-
-
-
 
 
 if __name__=="__main__":
@@ -383,4 +379,5 @@ if __name__=="__main__":
     # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini")
     # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini")
 
-    pipeline("/home/asa/INRAE/Work/Plant-GEMs/index.txt")
+    # pipeline("/home/asa/INRAE/Work/Plant-GEMs/indexTest.txt")
+    pipeline("/home/asa/INRAE/Work/Plant-GEMs/indexTest.txt")
