@@ -279,47 +279,52 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     write_file(WD, "organism-params.dat", info)
 
 
-def files_prep(ini, WDpt, WDout = "none"):
-    """Function to run all the process.
+def get_reactions_PT(path):
+    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
     
     ARGS:
-        ini (str) -- the path to the initialisation file containing all the following parameters:
-            WD (str) -- the path to the working directory where to find/save the files.
-            WDout (str) -- the path where to store the results (dat, pf and fsa files).
-            fileGFF (str) -- the name of the .gff file for the organism.
-            fileFASTA (str) -- the name of the .fasta file for the organism.
-            fileEggNOG (str) -- the name of the .tsv file for the organism from EggNOG.
-            TYPE (str) -- indication if the sequences of the organism are assembled 
-            as chromosomes or contigs (or else, see Pathway Tools guide).
-            taxon_ID (int) -- the NCBI taxon ID of the species.
-            mRNA (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
-            name (str) -- the name of the species database.
-        WDpt (str) -- the working directory of Pathway Tools locals to create a pgdb.
-        WDout (str) -- the path to store the .pf and .fsa files if this function is used 
-        in a pipeline with mpwt.
+        path (str) -- the path to the reactions.dat file.
+    RETURN:
+        liste_reac (list of str) -- the list containing all the reactions in this model.
     """
     
-    #Reading the parameters from the ini file
-    param = read_config(ini)
-    WD = param["PATH"]["DIRECTORY"]
-    fileGFF = param["FILES"]["GFF"]
-    fileFASTA = param["FILES"]["FASTA"]
-    fileEggNOG = param["FILES"]["EGGNOG"]
-    TYPE = param["INFO"]["TYPE"]
-    taxon_ID = int(param["INFO"]["NCBI_TAXON_ID"])
-    mRNA = param.getboolean("INFO","mRNA")
-    name = param["INFO"]["DATABASE_NAME"]
-    if WDout == "none":
-        WDout = param["PATH"]["DIR_OUT"]
-    else:
-        subprocess.run(["mkdir", WDout + name])
-        WDout += name + "/"
+    liste_Reac = []
+    PTtomatoReac = open(path + "/1.0/data/reactions.dat","r")
+    for line in PTtomatoReac:
+        if "UNIQUE-ID" in line:
+            try:
+                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
+            except AttributeError:
+                pass
+    return liste_Reac
+
+
+# def fusion():
+#     """Function which purpose is to merge two GEM's drafts into one.
     
-    print("------\n" + name + "\n------")
+#     ARGS:
+#     """
+
+
+def pipeline(data):
+    """The function to make all the pipeline working, from creation of 
+    the files to Pathway Tools via mpwt, and merging models.
     
-    gffFile = read_file(WD + fileGFF)
-    dicoRegions = get_sequence_region(gffFile, mRNA)
-    """Structure of dicoRegions :
+    ARGS:
+        data (str) -- the path to a index.txt file containing the path 
+        to each ini file for each organism to run.
+    -- Parameters taken from an ini file:
+        fileGFF (str) -- the name of the .gff file for the organism.
+        fileFASTA (str) -- the name of the .fasta file for the organism.
+        fileEggNOG (str) -- the name of the .tsv file from EggNOG for the organism.
+        TYPE (str) -- indication if the sequences of the organism are assembled 
+        as chromosomes or contigs (or else, see Pathway Tools user guide).
+        taxon_ID (int) -- the NCBI taxon ID of the species.
+        mRNA (bool) -- decides if the function must search the mRNA line (True) 
+        or CDS line (False) to get the name of the transcript.
+        name (str) -- the name of the species database.
+    
+    -- Structure of dicoRegions (created in this function):
     {Region name (str):
         {Gene name (str):
             {"Start": int, "End": int, "Transcripts":
@@ -327,57 +332,64 @@ def files_prep(ini, WDpt, WDout = "none"):
         }
     }
     """
-    make_dat(WDout, dicoRegions, TYPE)
-    make_fsa(WDout, WD + fileFASTA, dicoRegions)
-    make_pf(WDout, WD + fileEggNOG, dicoRegions)
-    return name, taxon_ID
-
-
-
-def pipeline(data):
-    """The function to make all the pipeline working,
-    from creation of the files to calling Pathway Tools via mpwt.
     
-    ARGS:
-        data (str) -- the path to a index.txt file containing the path 
-        to each ini file for each organism to run.
-    """
-    
-    file = read_file(data)
-    WDinput = file.pop(0).rstrip()
-    WDoutput = file.pop(0).rstrip()
+    index = read_file(data)
+    WD = index.pop(0).rstrip()
+    WDfiles = WD + "files/"
+    WDinput = WD + "input/"
+    WDoutput = WD + "output/"
+    WDlog = WD + "log/"
+    subprocess.run(["mkdir", WDinput, WDoutput, WDlog])
     WDpt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
     cpu = 0
-    for ini in file:
+    for ini in index:
         if ini:
             cpu += 1
-            taxon_name_list.append(files_prep(ini.rstrip(), WDpt, WDinput))
+            ###Reading of the parameters of the organism
+            parameters = read_config(ini.rstrip())
+            fileGFF = parameters["FILES"]["GFF"]
+            fileFASTA = parameters["FILES"]["FASTA"]
+            fileEggNOG = parameters["FILES"]["EGGNOG"]
+            TYPE = parameters["INFO"]["TYPE"]
+            taxon_ID = int(parameters["INFO"]["NCBI_TAXON_ID"])
+            mRNA = parameters.getboolean("INFO","mRNA")
+            name = parameters["INFO"]["DATABASE_NAME"]
+            
+            ###Keeping some information for later
+            taxon_name_list.append([name, taxon_ID])
+            
+            ###Preparing the files
+            subprocess.run(["mkdir", WDinput + name])
+            WDorg = WDinput + name + "/"
+            print("------\n" + name + "\n------")
+            gffFile = read_file(WDfiles + fileGFF)
+            dicoRegions = get_sequence_region(gffFile, mRNA) 
+            make_dat(WDorg, dicoRegions, TYPE)
+            make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
+            make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)
+
+    ###Creating the tsv file for the taxon IDs
     make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
     print("------\nCreation of the files finished\n------")
-    #Counting the number of cpu to use
+    
+    ##Counting the number of cpu to use
     if cpu <= multiprocessing.cpu_count() - 2:
         nb_cpu = cpu
     else:
         nb_cpu = multiprocessing.cpu_count() - 2
     print("Number of CPU used : ", nb_cpu)
+    
+    ###Starting the mpwt script
     mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
                         patho_inference = True, patho_hole_filler = False,
                         patho_operon_predictor = False, pathway_score = 1,
                         dat_creation = True, dat_extraction = True,
                         number_cpu = nb_cpu, size_reduction = False,
-                        patho_log = WDoutput + "../log", ignore_error = False,
+                        patho_log = WDlog, ignore_error = False,
                         taxon_file = True, verbose = True)
+    # fusion()
 
 
 if __name__=="__main__":
-    #Lauching the program for the 5 organism on which I'm working
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini", TYPE=":CHRSM")
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Tomato/TomatoAracycPT.ini")
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Kiwi/KiwiAracycPT.ini")
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cucumber/CucumberAracycPT.ini")
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Cherry/CherryAracycPT.ini")
-    # files_prep("/home/asa/INRAE/Work/PathwayToolsData/Camelina/CamelinaAracycPT.ini")
-
-    # pipeline("/home/asa/INRAE/Work/Plant-GEMs/indexTest.txt")
-    pipeline("/home/asa/INRAE/Work/Plant-GEMs/indexTest.txt")
+    pipeline("/home/asa/INRAE/Work/mpwt/index.txt")
