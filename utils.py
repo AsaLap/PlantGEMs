@@ -6,8 +6,9 @@
 # Mars - Aout 2020
 """This file contains utility functions"""
 
-import re
 import configparser
+import json
+import re
 
 def read_file(path):
     f = open(path, "r")
@@ -21,6 +22,14 @@ def write_file(WD, filename, data):
     for i in data:
         f.write(i)
     f.close()
+
+
+def read_json(path):
+    f = open(path, "r")
+    res = f.read()
+    data = json.loads(res)
+    f.close()
+    return data
 
 
 def read_config(ini):
