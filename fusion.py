@@ -47,7 +47,8 @@ def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
             reac_list += dico_matching[reac.name]
         except KeyError:
             try:
-                reac_list.append(dico_matching_rev[reac.name])
+                dico_matching_rev[reac.name]
+                reac_list.append(reac.name)
             except KeyError:
                 no_match_cpt += 1
                 print("No match for reaction :", reac.id, " | ", reac.name)
@@ -76,7 +77,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
     ###Here we take away the reactions of metacyc already present in the aracyc model otherwise 
     ###it will be redundant as we keep all the aracyc model reactions.
     metacyc_reac_set = pwtools_reac_set - set.intersection(pwtools_reac_set, aracyc_reac_set)
-
+    
     ###Then, addition of the metacyc reactions found in the Pathway Tools model to the aracyc model
     new_model = copy.deepcopy(cobra.io.load_json_model(aracyc_model_path))
 
@@ -90,7 +91,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
             new_model.add_reactions([added_reac])
         except KeyError:
             list_fail.append(reac)
-    print("Nb of reactions not found in the metacyc model: ", list_fail)
+    print("Nb of reactions not found in the metacyc model: ", len(list_fail))
     cobra.io.save_json_model(new_model, save_path)
     print(len(new_model.reactions))
 
