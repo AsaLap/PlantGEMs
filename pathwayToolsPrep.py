@@ -251,7 +251,7 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
     info.append("DBNAME\t" + abbrev + "DBcyc\n")
     info.append("NCBI-TAXON-ID\t" + dico_tax[tax+3] + "\n")
-    write_file(WD, "organism-params.dat", info)
+    utils.write_file(WD, "organism-params.dat", info)
 
 
 def main(data):
