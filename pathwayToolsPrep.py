@@ -2,46 +2,21 @@
 # python 3.8.2
 # Antoine Laporte
 # Université de Bordeaux - INRAE Bordeaux
-# 2020
+# Reconstruction de réseaux métaboliques
+# Mars - Aout 2020
 """This file is used for the preparation of the required files for the 
 Pathway Tools software reconstruction and launching of reconstruction 
-via Pathway Tools using mpwt package from AuReMe."""
+using mpwt package from AuReMe."""
 
 import re
 import numpy as np
 import string
 import random
-import configparser
 import mpwt
 import subprocess
 import multiprocessing
 
-
-def read_file(path):
-    f = open(path, "r")
-    res = f.readlines()
-    f.close()
-    return res
-
-
-def write_file(WD, filename, data):
-    f = open(WD + filename, "w")
-    for i in data:
-        f.write(i)
-    f.close()
-
-
-def read_config(ini):
-    """Runs the config file containing all the information to make a new model.
-    
-    ARGS :
-        ini (str) -- the path to the .ini file.
-    RETURN :
-        config (dict of str) -- the configuration in a python dictionary object.
-    """
-    config = configparser.ConfigParser()
-    config.read(ini)
-    return config
+import utils
 
 
 def get_sequence_region(data, mRNA):
@@ -136,7 +111,7 @@ def make_dat(WD, dicoRegions, TYPE):
         for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                            %(i, TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
-    write_file(WD, "genetic-elements" + ".dat", datFile)
+    utils.write_file(WD, "genetic-elements" + ".dat", datFile)
 
 
 def make_fsa(WD, fileFASTA, dicoRegions):
@@ -158,7 +133,7 @@ def make_fsa(WD, fileFASTA, dicoRegions):
         region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
         if region in listRegions:
             listRegions.remove(region)
-            write_file(WD, region + ".fsa", i)
+            utils.write_file(WD, region + ".fsa", i)
 
 
 def make_pf(WD, fileEggNOG, dicoRegions):
@@ -172,7 +147,7 @@ def make_pf(WD, fileEggNOG, dicoRegions):
         the files (see pipelinePT() for the structure).
     """
     
-    tsv = read_file(fileEggNOG)
+    tsv = utils.read_file(fileEggNOG)
     list_index = list(np.arange(0, len(tsv)))
     for region in dicoRegions.keys():
         subPf = []
@@ -209,7 +184,7 @@ def make_tsv(WD, taxon_name_list):
     res = "species\ttaxon_id\n"
     for i in taxon_name_list:
         res += i[0] + "\t" + str(i[1]) + "\n"
-    write_file(WD, "taxon_id.tsv", res)
+    utils.write_file(WD, "taxon_id.tsv", res)
 
 
 def parse_eggNog(id, start, end, exon_pos, line):
@@ -279,34 +254,7 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     write_file(WD, "organism-params.dat", info)
 
 
-def get_reactions_PT(path):
-    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
-    
-    ARGS:
-        path (str) -- the path to the reactions.dat file.
-    RETURN:
-        liste_reac (list of str) -- the list containing all the reactions in this model.
-    """
-    
-    liste_Reac = []
-    PTtomatoReac = open(path + "/1.0/data/reactions.dat","r")
-    for line in PTtomatoReac:
-        if "UNIQUE-ID" in line:
-            try:
-                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
-            except AttributeError:
-                pass
-    return liste_Reac
-
-
-# def fusion():
-#     """Function which purpose is to merge two GEM's drafts into one.
-    
-#     ARGS:
-#     """
-
-
-def pipeline(data):
+def main(data):
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt, and merging models.
     
@@ -333,7 +281,7 @@ def pipeline(data):
     }
     """
     
-    index = read_file(data)
+    index = utils.read_file(data)
     WD = index.pop(0).rstrip()
     WDfiles = WD + "files/"
     WDinput = WD + "input/"
@@ -347,7 +295,7 @@ def pipeline(data):
         if ini:
             cpu += 1
             ###Reading of the parameters of the organism
-            parameters = read_config(ini.rstrip())
+            parameters = utils.read_config(ini.rstrip())
             fileGFF = parameters["FILES"]["GFF"]
             fileFASTA = parameters["FILES"]["FASTA"]
             fileEggNOG = parameters["FILES"]["EGGNOG"]
@@ -363,7 +311,7 @@ def pipeline(data):
             subprocess.run(["mkdir", WDinput + name])
             WDorg = WDinput + name + "/"
             print("------\n" + name + "\n------")
-            gffFile = read_file(WDfiles + fileGFF)
+            gffFile = utils.read_file(WDfiles + fileGFF)
             dicoRegions = get_sequence_region(gffFile, mRNA) 
             make_dat(WDorg, dicoRegions, TYPE)
             make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
@@ -392,4 +340,4 @@ def pipeline(data):
 
 
 if __name__=="__main__":
-    pipeline("/home/asa/INRAE/Work/mpwt/index.txt")
+    main("/home/asa/INRAE/Work/mpwt/index.txt")

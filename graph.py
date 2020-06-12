@@ -201,7 +201,7 @@ def help_treshold(WD, ini):
     for i in range(101):
         test = 10 * i
         ###Putting the test values instead of default values
-        draft = blasting.pipeline(ini, 0, 100, 1, 0, test)
+        draft = blasting.main(ini, 0, 100, 1, 0, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
     write_file(WD, listValues, "Treshold")
@@ -215,7 +215,7 @@ def get_reactions_PT(path):
     for line in PTtomatoReac:
         if "UNIQUE-ID" in line:
             try:
-                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.\w+)*(-\w+)*', line).group(0))
+                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.*\w+)*(-*\w+)*', line).group(0))
             except AttributeError:
                 pass
     return liste_Reac
@@ -223,19 +223,19 @@ def get_reactions_PT(path):
 
 if __name__=="__main__":
     ###Files and working directory###
-    WD = '/home/asa/INRAE/Work/Drafts/'
+    WD = '/home/asa/INRAE/Work/blasting_drafts/'
     #AraGem models
-    WDtom = '/home/asa/INRAE/Work/Drafts/Tomato_Arabidopsis/'
-    WDkiw = '/home/asa/INRAE/Work/Drafts/Kiwi_Arabidopsis/'
-    WDcuc = '/home/asa/INRAE/Work/Drafts/Cucumber_Arabidopsis/'
-    WDche = '/home/asa/INRAE/Work/Drafts/Cherry_Arabidopsis/'
-    WDcam = '/home/asa/INRAE/Work/Drafts/Camelina_Arabidopsis/'
+    WDtom = '/home/asa/INRAE/Work/blasting_drafts/Tomato_Arabidopsis/'
+    WDkiw = '/home/asa/INRAE/Work/blasting_drafts/Kiwi_Arabidopsis/'
+    WDcuc = '/home/asa/INRAE/Work/blasting_drafts/Cucumber_Arabidopsis/'
+    WDche = '/home/asa/INRAE/Work/blasting_drafts/Cherry_Arabidopsis/'
+    WDcam = '/home/asa/INRAE/Work/blasting_drafts/Camelina_Arabidopsis/'
     #AraCyc models
-    WDtomCyc = '/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/'
-    WDkiwCyc = '/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/'
-    WDcucCyc = '/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/'
-    WDcheCyc = '/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/'
-    WDcamCyc = '/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/'
+    WDtomCyc = '/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/'
+    WDkiwCyc = '/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/'
+    WDcucCyc = '/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/'
+    WDcheCyc = '/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/'
+    WDcamCyc = '/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/'
     
     ###The new models (AraGem)
     # tomatoDraft = cobra.io.read_sbml_model(WDtom + "Tomato.xml")
@@ -276,26 +276,26 @@ if __name__=="__main__":
     #Getting the AraCyc reconstruction's reactions VS Pathway Tools:
     # print("Nombre réaction Aracyc perso : ", len(tomatoGenesCyc))
     
-    listeReacPTtomato = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollycyc/")
+    listeReacPTtomato = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/")
     print("Nombre réactions PT Tomate : ", len(listeReacPTtomato))
-    listeReacPTkiwi = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchcyc/")
+    listeReacPTkiwi = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/")
     print("Nombre réactions PT Kiwi : ", len(listeReacPTkiwi))
-    listeReacPTcucumber = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsacyc/")
+    listeReacPTcucumber = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/")
     print("Nombre réactions PT Concombre : ", len(listeReacPTcucumber))
-    listeReacPTcherry = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavcyc/")
+    listeReacPTcherry = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/")
     print("Nombre réactions PT Cerise : ", len(listeReacPTcherry))
-    listeReacPTcamelina = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsacyc/")
+    listeReacPTcamelina = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/")
     print("Nombre réactions PT Cameline : ", len(listeReacPTcamelina))
 
-    #UpsetPlot on PT data
+    ###UpsetPlot on PT data
     dicoUpset = {"Tomato" : listeReacPTtomato,
                  "Kiwi" : listeReacPTkiwi,
                  "Cucumber" : listeReacPTcucumber,
                  "Cherry" : listeReacPTcherry,
                  "Camelina" : listeReacPTcamelina}
-    make_upsetplot(WD, dicoUpset, "UpsetPlot Pathway Tools")
+    make_upsetplot(WD, dicoUpset, "UpsetPlot_PT")
 
-    #Supervenn on PT data
+    ###Supervenn on PT data
     sets_list = [set(listeReacPTtomato), set(listeReacPTkiwi), set(listeReacPTcucumber),
                  set(listeReacPTcherry), set(listeReacPTcamelina)]
     species_names = ["Tomato (Pathway Tools)", "Kiwi (Pathway Tools)", "Cucumber (Pathway Tools)",
@@ -305,7 +305,7 @@ if __name__=="__main__":
           min_width_for_annotation=10))
     
     
-    #Supervenn Aracyc VS Pathway Tools Tomato
+    ###Supervenn Aracyc VS Pathway Tools Tomato
     # sets_list = [set(tomatoGenesCyc), set(listeReacPTtomato)]
     # species_names = ["Tomato AraCyc", "Tomato Pathway Tools"]
     # plt.show(supervenn(sets_list, species_names, figsize=(20, 10), rotate_col_annotations=True,

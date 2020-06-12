@@ -4,9 +4,9 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
-"""This file is the main file for the reconstruction of a draft using a previously 
-made model, which has to be the most curated possible and as close as possible 
-genetically speaking to the target model."""
+"""This file is used for the reconstruction of a draft using a previously 
+made model, which has to be the most possibly curated and as close as possible 
+to the target model, genetically speaking."""
 
 import cobra
 from os.path import join
@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 from statistics import mean
 import copy
 import re
-import configparser
 
+import utils
 
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
@@ -30,18 +30,6 @@ def load_obj(path):
     """Loads a dictionary of Blastp results stored in a pickle file."""
     with open(path + '.pkl', 'rb') as f:
         return pickle.load(f)
-
-
-def read_config(ini):
-    """Runs the config file containing all the information to make a new model.
-    ARGS :
-        ini (str) -- the path to the .ini file.
-    RETURN :
-        config (dict of str) -- the configuration in a python dictionary.
-    """
-    config = configparser.ConfigParser()
-    config.read(ini)
-    return config
 
 
 def blast_run(WDref, WDsub, model, queryFile, subjectFile):
@@ -183,7 +171,7 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+def main(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
     """The function that launches the entire pipeline of analysis
     and selections to create a new model.
     
@@ -206,7 +194,7 @@ def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, covera
         new_model -- the subject COBRA model.
     """
     #Reading of the parameter's file
-    param = read_config(ini)
+    param = utils.read_config(ini)
     WDref = param["MODEL"]["PATH"]
     ref_gem = param["MODEL"]["GEM"]
     queryFile = param["MODEL"]["FASTA"]
@@ -251,8 +239,8 @@ def pipeline(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, covera
 
 if __name__=='__main__':
     #Lauching the program for the 5 organism on which I'm working
-    pipeline("/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
-    pipeline("/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
-    pipeline("/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
-    pipeline("/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/CherryAracyc.ini", blast = False)
-    pipeline("/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)
+    main("/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
+    main("/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
+    main("/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
+    main("/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/CherryAracyc.ini", blast = False)
+    main("/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)
