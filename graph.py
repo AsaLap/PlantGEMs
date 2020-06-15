@@ -18,14 +18,7 @@ from supervenn import supervenn
 import re
 
 import blasting
-
-
-def write_file(WD, list_value, name):
-    """Function to save a file as a CSV format."""
-    with open(WD + name + '.csv', 'w', newline = '') as file:
-        writer = csv.writer(file)
-        for f in list_value:
-            writer.writerow(f)
+import utils
 
 
 def read_file(WD, file):
@@ -190,7 +183,7 @@ def data_venn(WD, model, name):
     list_id = []
     for reac in model.reactions:
         list_id.append([reac.id])
-    write_file(WD, list_id, name + "_id_reac")
+    utils.write_csv(WD, list_id, name + "_id_reac")
 
 
 def help_treshold(WD, ini):
@@ -204,7 +197,7 @@ def help_treshold(WD, ini):
         draft = blasting.main(ini, 0, 100, 1, 0, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
-    write_file(WD, listValues, "Treshold")
+    utils.write_csv(WD, listValues, "Treshold")
     
 
 def get_reactions_PT(path):

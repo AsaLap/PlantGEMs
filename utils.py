@@ -7,6 +7,7 @@
 """This file contains utility functions"""
 
 import configparser
+import csv
 import json
 import re
 
@@ -22,6 +23,14 @@ def write_file(WD, filename, data):
     for i in data:
         f.write(i)
     f.close()
+
+
+def write_csv(WD, list_value, name):
+    """Function to save a file as a CSV format."""
+    with open(WD + name + '.csv', 'w', newline = '') as file:
+        writer = csv.writer(file)
+        for f in list_value:
+            writer.writerow(f)
 
 
 def read_json(path):
