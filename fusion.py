@@ -10,6 +10,7 @@ mpwt package."""
 
 import cobra
 import copy
+import re
 
 import utils
 import pathwayToolsPrep as PT
@@ -96,9 +97,36 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
     print(len(new_model.reactions))
 
 
+def metacyc_correspondance(path):
+    data = utils.read_json(path)
+    res = []
+    for reac in data["reactions"]:
+        long_ID = reac["name"]
+        ###Getting rid of "_" in front of numbers and "_compartment" at the end
+        meta_pattern = re.compile('(_CCO[-]+[INOUT]+)|(^[_])|([_]\D$)')
+        ###Getting rid of the brackets and ".XX." at the end
+        reac_pattern = re.compile('([[][\w\-]*[]][-.\d]*)|([-][.]\d*[.])')
+        for metabolite in reac["metabolites"].keys():
+            try:
+                metabolite = meta_pattern.sub("", metabolite)
+                long_ID = long_ID.replace(metabolite, "") ##ne pas replace si metabolite au début
+            except AttributeError:
+                pass
+        long_ID = long_ID.replace("/", "")
+        try:
+            short_ID = reac_pattern.sub("", long_ID)
+            print(short_ID)
+        except AtttributeError:
+            pass
+        res.append([short_ID, reac["name"]])
+    utils.write_csv("/home/asa/INRAE/Work/fusion_test/", res, "testCorres")
+
+
 if __name__ == "__main__":
-    fusion("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv",
-           "/home/asa/INRAE/Work/fusion_test/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-           "/home/asa/INRAE/Work/fusion_test/metacyc.json",
-           "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
+    # fusion("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv",
+    #        "/home/asa/INRAE/Work/fusion_test/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+    #        "/home/asa/INRAE/Work/fusion_test/metacyc.json",
+    #        "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
+    
+    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/testCorres.json")
