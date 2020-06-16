@@ -103,20 +103,20 @@ def metacyc_correspondance(path):
     for reac in data["reactions"]:
         long_ID = reac["name"]
         ###Getting rid of "_" in front of numbers and "_compartment" at the end
-        meta_pattern = re.compile('(_CCO[-]+[INOUT]+)|(^[_])|([_]\D$)')
+        meta_pattern = re.compile('(_([CO]+[\-INOUTSDE\d]+)+)|(^[_])|([_]\D$)')
         ###Getting rid of the brackets and ".XX." at the end
-        reac_pattern = re.compile('([[][\w\-]*[]][-.\d]*)|([-][.]\d*[.])')
+        reac_pattern = re.compile('([[].*[]][-.\d]*)|([-]*[.]\d*[.])')
         for metabolite in reac["metabolites"].keys():
             try:
                 metabolite = meta_pattern.sub("", metabolite)
-                long_ID = long_ID.replace(metabolite, "") ##ne pas replace si metabolite au début
+                long_ID = long_ID[0] + long_ID[1:].replace(metabolite, "") ##ne pas replace si metabolite au début
             except AttributeError:
                 pass
         long_ID = long_ID.replace("/", "")
         try:
             short_ID = reac_pattern.sub("", long_ID)
             print(short_ID)
-        except AtttributeError:
+        except AttributeError:
             pass
         res.append([short_ID, reac["name"]])
     utils.write_csv("/home/asa/INRAE/Work/fusion_test/", res, "testCorres")
@@ -129,4 +129,6 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/fusion_test/metacyc.json",
     #        "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
     
-    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/testCorres.json")
+    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
+    # metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/testCorres.json")
+    
