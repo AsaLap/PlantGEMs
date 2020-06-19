@@ -105,22 +105,25 @@ def metacyc_correspondance(path):
         long_ID = reac["name"].split("/")[0]
         ###Getting rid of the brackets in the name sometimes!
         reac_pattern = re.compile('([[].*[]])')
-        short_ID = reac_pattern.sub("", long_ID)
+        tmp_ID = reac_pattern.sub("", long_ID)
+        short_ID = tmp_ID
         ###Regexp to "clean" the metabolite's names
-        meta_pattern = re.compile('(_CCO-.*)|(^[_])|([_]\D$)')
+        meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
         meta_list = []
-        for metabolite in reac["metabolites"].keys():
-            ###The metabolite are "cleaned" here
-            metabolite = meta_pattern.sub("", metabolite)
-            len_ID, len_meta = len(short_ID), len(metabolite)
-            diff = len_ID - len_meta
-            ###Small trick to get only the end of the ID removed and not the beginning
-            ###(meta name can be in the reaction's name)
-            short_ID = short_ID[:diff - 1] + short_ID[diff - 1:].replace("-" + metabolite, "")
-        res.append([short_ID, reac["name"]])
-        print(long_ID, " | ", short_ID)
-    utils.write_csv("/home/asa/INRAE/Work/fusion_test/", res, "testCorres")
-    return res
+        # print(len(reac["metabolites"].keys()))
+        if len(reac["metabolites"].keys()) != 0:
+            for metabolite in reac["metabolites"].keys():
+                ###The metabolite are "cleaned" here
+                metabolite = meta_pattern.sub("", metabolite)
+                len_ID, len_meta = len(tmp_ID), len(metabolite)
+                diff = len_ID - len_meta
+                ###Small trick to get only the end of the ID removed and not the beginning
+                ###(metabolite's names can be in the reaction's name)
+                test_ID = tmp_ID[:diff - 1] + tmp_ID[diff - 1:].replace("-" + metabolite, "")
+                if len(test_ID) < len(short_ID):
+                    short_ID = test_ID
+            res.append([short_ID, reac["name"]])
+    utils.write_csv("/home/asa/INRAE/Work/fusion_test/", res, "MetacycCorresIDs")
 
 
 if __name__ == "__main__":
@@ -130,18 +133,4 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/fusion_test/metacyc.json",
     #        "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
     
-    # res = metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
-    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/testCorres.json")
-    
-    # matching = utils.read_file("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv")
-    # short_ID_Sylvain = []
-    # for line in matching:
-    #     if line:
-    #         short_ID_Sylvain.append(line.rstrip().split("\t")[0])
-    # short_ID_Asa = []
-    # for couple in res:
-    #     short_ID_Asa.append(couple[0])
-    # print(len(set(short_ID_Sylvain)))
-    # print(len(set(short_ID_Asa)))
-    # print(len(set.intersection(set(short_ID_Sylvain), set(short_ID_Asa))))
-    # print(set(short_ID_Sylvain) - set(short_ID_Asa))
+    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
