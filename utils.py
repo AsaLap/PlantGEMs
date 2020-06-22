@@ -33,6 +33,14 @@ def write_csv(WD, list_value, name):
             writer.writerow(f)
 
 
+def write_tsv(WD, list_value, name):
+    """Function to save a file as a CSV format."""
+    with open(WD + name + '.tsv', 'w', newline = '') as file:
+        writer = csv.writer(file, delimiter = "\t")
+        for f in list_value:
+            writer.writerow(f)
+
+
 def read_json(path):
     f = open(path, "r")
     res = f.read()
