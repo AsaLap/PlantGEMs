@@ -123,7 +123,7 @@ def metacyc_correspondance(path):
                 if len(test_ID) < len(short_ID):
                     short_ID = test_ID
             res.append([short_ID, reac["name"]])
-    utils.write_csv("/home/asa/INRAE/Work/fusion_test/", res, "MetacycCorresIDs")
+    utils.write_tsv("/home/asa/INRAE/Work/fusion_test/", res, "MetacycCorresIDs")
 
 
 if __name__ == "__main__":
@@ -132,5 +132,35 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
     #        "/home/asa/INRAE/Work/fusion_test/metacyc.json",
     #        "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
+
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/TomatoFusion.json")
+
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/KiwiFusion.json")
+ 
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/CucumberFusion.json")
+
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/CherryFusion.json")
+
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/CamelinaFusion.json")
     
-    metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
+    # metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
