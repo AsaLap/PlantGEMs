@@ -17,8 +17,8 @@ import pathwayToolsPrep as PT
 
 
 ###For Pathway Tools models
-def get_pwtools_reac(path, dico_matching, dico_matching_rev):
-    no_match_cpt = 0
+def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog):
+    no_match_list = []
     reac_list = []
     model_reactions = utils.get_reactions_PT(path)
     for reac in model_reactions:
@@ -29,12 +29,13 @@ def get_pwtools_reac(path, dico_matching, dico_matching_rev):
                 dico_matching_rev[reac]
                 reac_list.append(reac)
             except KeyError:
-                no_match_cpt += 1
+                no_match_list.append(reac + "\n")
                 print("No match for reaction :", reac) ###Store it into a log file
-    print("Nb de réactions du modèle PT : %i\n\
-Nb de ces réactions trouvées dans Metacyc : %i\n\
-Total de réactions non trouvées : %i"
-%(len(model_reactions), len(set(reac_list)), no_match_cpt))
+    utils.write_file(WDlog, "error_reaction.log", no_match_list)
+    print("Number of reactions from PT model : %i\n\
+Number of those reactions found in Metacyc : %i\n\
+Total of reactions not found : %i"
+%(len(model_reactions), len(set(reac_list)), len(no_match_list)))
     return set(reac_list)
 
 
@@ -54,13 +55,13 @@ def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
                 no_match_cpt += 1
                 print("No match for reaction :", reac.id, " | ", reac.name)
     print("Nb de réactions du modèle Aracyc : %i\n\
-Nb de ces réactions trouvées dans Metacyc : %i\n\
-Total de réactions non trouvées : %i"
+Number of those reactions found in Metacyc : %i\n\
+Total of reactions not found : %i"
     %(len(model.reactions), len(reac_list), no_match_cpt))
     return set(reac_list)
 
 
-def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path):
+def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path, WDlog):
     matching = utils.read_file(corres)
     dico_matching = {}
     dico_matching_rev = {}
@@ -73,7 +74,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
                 dico_matching[couple[0]] = [couple[1]]
             dico_matching_rev[couple[1]] = couple[0]
 
-    pwtools_reac_set = get_pwtools_reac(pwtools_reac_path, dico_matching, dico_matching_rev)
+    pwtools_reac_set = get_pwtools_reac(pwtools_reac_path, dico_matching, dico_matching_rev, WDlog)
     aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, dico_matching, dico_matching_rev)
     ###Here we take away the reactions of metacyc already present in the aracyc model otherwise 
     ###it will be redundant as we keep all the aracyc model reactions.
@@ -127,40 +128,46 @@ def metacyc_correspondance(path):
 
 
 if __name__ == "__main__":
-    # fusion("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv",
-    #        "/home/asa/INRAE/Work/fusion_test/reactions.dat",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-    #        "/home/asa/INRAE/Work/fusion_test/metacyc.json",
-    #        "/home/asa/INRAE/Work/fusion_test/test_fusion.json")
-
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+    fusion("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv",
+           "/home/asa/INRAE/Work/fusion_test/reactions.dat",
            "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/TomatoFusion.json")
+           "/home/asa/INRAE/Work/fusion_test/metacyc.json",
+           "/home/asa/INRAE/Work/fusion_test/test_fusion.json",
+           "/home/asa/INRAE/Work/fusion_test/")
 
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/KiwiFusion.json")
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/TomatoFusion.json",
+    #        "/home/asa/INRAE/Work/Fusion/")
+
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/KiwiFusion.json",
+    #        "/home/asa/INRAE/Work/Fusion/")
  
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/CucumberFusion.json")
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/CucumberFusion.json",
+    #        "/home/asa/INRAE/Work/Fusion/")
 
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/CherryFusion.json")
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/CherryFusion.json",
+    #        "/home/asa/INRAE/Work/Fusion/")
 
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/CamelinaFusion.json")
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/reactions.dat",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/CamelinaFusion.json",
+    #        "/home/asa/INRAE/Work/Fusion/")
     
     # metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
