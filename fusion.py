@@ -18,6 +18,21 @@ import pathwayToolsPrep as PT
 
 ###For Pathway Tools models
 def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog):
+    """Function to get the reaction's ID of Metacyc from a Pathway Tools reconstruction.
+    
+    ARGS:
+        path (str) -- the path to the reactions.dat file.
+        dico_matching -- the dictionary containing the correspondance between
+        the short-ID and the long-ID of Metacyc's reactions (see the structure 
+        in fusion()).
+        dico_matching_rev -- same as above but key and values are reversed (see the structure 
+        in fusion()).
+        WDlog (str) -- the working directory to store the log file containing 
+        all the reactions not found.
+    RETURN:
+        set(reac_list) (set of str) -- the list containing all the reaction's long ID.
+    """
+      
     no_match_list = []
     reac_list = []
     model_reactions = utils.get_reactions_PT(path)
@@ -41,6 +56,19 @@ Total of reactions not found : %i"
 
 ###For Aracyc models
 def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
+    """Function to get the reaction's ID of Metacyc from an Aracyc model reconstruction.
+    
+    ARGS:
+        path (str) -- the path to the reactions.dat file.
+        dico_matching -- the dictionary containing the correspondance between
+        the short-ID and the long-ID of Metacyc's reactions (see the structure 
+        in fusion()).
+        dico_matching_rev -- same as above but key and values are reversed (see the structure 
+        in fusion()).
+    RETURN:
+        set(reac_list) (set of str) -- the list containing all the reaction's long ID.
+    """
+    
     no_match_cpt = 0
     reac_list = []
     model = cobra.io.load_json_model(path)
@@ -62,6 +90,19 @@ Total of reactions not found : %i"
 
 
 def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path, WDlog):
+    """Function to merge two models, one from an Aracyc model, the other one from Pathway Tools.
+    
+    ARGS:
+        corres (str) -- the path to the file containing the correspondance 
+        between short and long ID of Metacyc's reactions.
+        pwtools_reac_path (str) -- the path to the Pathway Tools reactions.dat file.
+        aracyc_model_path (str) -- the path to the aracyc based reconstructed model.
+        metacyc_path (str) -- the path to the metacyc model.
+        save_path (str) -- the path to the saving directory.
+        WDlog (str) -- the working directory to store the log file containing 
+        all the reactions not found in get_pwtools_reac().
+    """
+    
     matching = utils.read_file(corres)
     dico_matching = {}
     dico_matching_rev = {}
@@ -99,6 +140,12 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
 
 
 def metacyc_correspondance(path):
+    """Function to make the correspondance file between short and long ID of Metacyc.
+    
+    ARGS:
+        path (str) -- the path to the metacyc model.
+    """
+    
     data = utils.read_json(path)
     res = []
     print(len(data["reactions"]))
