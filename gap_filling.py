@@ -13,11 +13,11 @@ from pyasp.term import *
 from urllib.request import urlopen
 from meneco import query, utils, sbml, run_meneco
 
-# import utils
+import utils as tools
 
 
 def clean(path):
-    file = utils.read_file(path)
+    file = tools.read_file(path)
     res = ""
     for line in file:
         if ">" not in line:
@@ -61,8 +61,24 @@ def make_info(WD, DNA_file, RNA_file, prot_file, name):
     resProt = count(prot_file_clean, letterProt)
     str_res += "Prot stats :\n"
     str_res += stats(resProt)
-    utils.write_file(WD, name + "_stats.txt", str_res)
+    tools.write_file(WD, name + "_stats.txt", str_res)
     print(str_res)
+
+
+def clean_sbml(WD, name):
+    file = tools.read_file(WD + name)
+    new_file = []
+    meta = re.compile('(<species id="M_)')
+    sp_ref = re.compile('(<speciesReference species="M_)')
+    reac = re.compile('(id="R_)')
+    for i in file:
+        i = meta.sub('<species id="', i)
+        i = sp_ref.sub('<speciesReference species="', i)
+        if "<reaction" in i:
+            i = reac.sub('id="', i)
+        new_file.append(i)
+    tools.write_file(WD, "clean_" + name, new_file)
+
 
 
 if __name__=="__main__":
@@ -77,41 +93,20 @@ if __name__=="__main__":
     # "ITAG4.0_proteins.fasta",
     # "Tomato")
     
-    # draft_sbml = utils.open_file("/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/TomatoFusion.sbml")
-    # draftnet = sbml.readSBMLnetwork(draft_sbml, 'draft')
-    # seeds_sbml = urlopen("https://raw.githubusercontent.com/bioasp/meneco/master/Ectodata/seeds.sbml")
-    # seeds = sbml.readSBMLseeds(seeds_sbml)
-    # targets_sbml = utils.open_file("/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/targetsTomato.sbml")
-    # targets = sbml.readSBMLtargets(targets_sbml)
-    # unproducible = TermSet()
-    # model = query.get_unproducible(draftnet, targets, seeds)
-    # for a in model:
-    #     target = str(a)[13:]
-    #     t      = String2TermSet(target)
-    #     unproducible = unproducible.union(t)
-    # unproducible = TermSet(unproducible)
-    # utils.print_met(unproducible.to_list())
-    # repair_sbml = utils.open_file("/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/Metacyc.sbml")
-    # repairnet = sbml.readSBMLnetwork(repair_sbml, 'repairnet')
+    # result = run_meneco(draftnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/TomatoFusion.sbml",
+    #             seeds="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/seeds.sbml",
+    #             targets="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/targetsTomato.sbml",
+    #             repairnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/metacyc.sbml",
+    #             enumeration=False,
+    #             json=False)
+    # print(result)
     
-    # draft_sbml= urlopen('https://raw.githubusercontent.com/bioasp/meneco/master/Ectodata/ectocyc.sbml')
-    # draftnet = sbml.readSBMLnetwork(draft_sbml, 'draft') 
-    # seeds_sbml = urlopen('https://raw.githubusercontent.com/bioasp/meneco/master/Ectodata/seeds.sbml')
-    # seeds = sbml.readSBMLseeds(seeds_sbml)
-    # targets_sbml = urlopen('https://raw.githubusercontent.com/bioasp/meneco/master/Ectodata/targets.sbml')
-    # targets = sbml.readSBMLtargets(targets_sbml)
-    # unproducible = TermSet()
-    # model = query.get_unproducible(draftnet, targets, seeds)
-    # for a in model:
-    #     target = str(a)[13:]
-    #     t = String2TermSet(target)
-    #     unproducible = unproducible.union(t)
-    # unproducible = TermSet(unproducible)
-    # utils.print_met(unproducible.to_list())
+    # result = run_meneco(draftnet="/home/asa/INRAE/Logiciels/meneco/toy/draft.sbml",
+    #             seeds="/home/asa/INRAE/Logiciels/meneco/toy/seeds.sbml",
+    #             targets="/home/asa/INRAE/Logiciels/meneco/toy/targets.sbml",
+    #             repairnet="/home/asa/INRAE/Logiciels/meneco/toy/repair.sbml",
+    #             enumeration=False,
+    #             json=True)
+    # print(result)
     
-    result = run_meneco(draftnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/draft.sbml",
-                seeds="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/seeds.sbml",
-                targets="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/targets.sbml",
-                repairnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/Metacyc.sbml",
-                enumeration=False,
-                json=True)
+    clean_sbml("/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/", "test.sbml")
