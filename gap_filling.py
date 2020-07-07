@@ -9,6 +9,7 @@
 import subprocess
 import string
 import os
+import re
 from pyasp.term import *
 from urllib.request import urlopen
 from meneco import query, utils, sbml, run_meneco
@@ -17,6 +18,14 @@ import utils as tools
 
 
 def clean(path):
+    """Function to get rid of the chevron character and uppercase fasta files.
+    
+    ARGS:
+        path (str) -- the path to the fasta file.
+    RETURN:
+        res (str) -- the string uppercased and without the '>' char.
+    """
+    
     file = tools.read_file(path)
     res = ""
     for line in file:
@@ -26,6 +35,16 @@ def clean(path):
 
 
 def count(file, letters):
+    """Function to count the occurence of the 'letters' given as argument.
+    
+    ARGS:
+        file (str) -- the path to the file to count.
+        letters (list of str) -- the char/str to count.
+    RETURN:
+        res (dic) -- a dictionary, each key is a str counted and the value 
+        the number of occurence.
+    """
+    
     res = {}
     for letter in letters:
         res[letter] = 0
@@ -36,6 +55,15 @@ def count(file, letters):
 
 
 def stats(res):
+    """Function that transforms the dictionary of results from the 'count()' 
+    function into percentages, print and return them.
+    
+    ARGS:
+        res -- the dictionary from 'count()' (see count() for the structure).
+    RETURN:
+        str_res (str) -- a string containing the computed information line by line. 
+    """
+    
     total = 0
     str_res = ""
     for key in res.keys():
@@ -47,6 +75,15 @@ def stats(res):
 
 
 def make_info(WD, DNA_file, RNA_file, prot_file, name):
+    """Function to organize all the previous ones to write a .txt file for an organism.
+    ARGS:
+        WD (str) -- the working directory.
+        DNA_file (str) -- the name of the fasta file of the total DNA.
+        RNA_file (str) -- the name of the fasta file of only the transcripts.
+        prot_file (str) -- the name of the fasta file of the proteins.
+        name (str) -- the name for the output .txt file.
+    """
+    
     letterProt = "ACDEFGHIKLMNPQRSTVWY*"
     letterDNA = "CGTAN"
     str_res = "DNA stats :\n"
@@ -66,6 +103,13 @@ def make_info(WD, DNA_file, RNA_file, prot_file, name):
 
 
 def clean_sbml(WD, name):
+    """Function to get rid of specific character COBRA puts into its sbml models.
+    
+    ARGS:
+        WD (str) -- the working directory.
+        name (str) -- the name of the sbml model.
+    """
+    
     file = tools.read_file(WD + name)
     new_file = []
     meta = re.compile('(<species id="M_)')
@@ -93,20 +137,52 @@ if __name__=="__main__":
     # "ITAG4.0_proteins.fasta",
     # "Tomato")
     
-    # result = run_meneco(draftnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/TomatoFusion.sbml",
-    #             seeds="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/seeds.sbml",
-    #             targets="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/targetsTomato.sbml",
-    #             repairnet="/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/metacyc.sbml",
+    ###Tomato
+    clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "TomatoFusion.sbml")
+    result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_TomatoFusion.sbml",
+                seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+                targets="/home/antoine/INRAE/Work/Gap_filling/targetsTomato.sbml",
+                repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
+                enumeration=False,
+                json=False)
+    print(result)
+    
+    ###Kiwi
+    # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "KiwiFusion.sbml")
+    # result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_KiwiFusion.sbml",
+    #             seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #             targets="/home/antoine/INRAE/Work/Gap_filling/targetsKiwi.sbml",
+    #             repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
     #             enumeration=False,
     #             json=False)
     # print(result)
     
-    # result = run_meneco(draftnet="/home/asa/INRAE/Logiciels/meneco/toy/draft.sbml",
-    #             seeds="/home/asa/INRAE/Logiciels/meneco/toy/seeds.sbml",
-    #             targets="/home/asa/INRAE/Logiciels/meneco/toy/targets.sbml",
-    #             repairnet="/home/asa/INRAE/Logiciels/meneco/toy/repair.sbml",
+    ###Cucumber
+    # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "CucumberFusion.sbml")
+    # result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_CucumberFusion.sbml",
+    #             seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #             targets="/home/antoine/INRAE/Work/Gap_filling/targetsCucumber.sbml",
+    #             repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
     #             enumeration=False,
-    #             json=True)
+    #             json=False)
     # print(result)
     
-    clean_sbml("/home/asa/INRAE/Work/Gap_filling/Gap_filling_test/", "test.sbml")
+    ###Cherry
+    # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "CherryFusion.sbml")
+    # result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_CherryFusion.sbml",
+    #             seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #             targets="/home/antoine/INRAE/Work/Gap_filling/targetsCherry.sbml",
+    #             repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
+    #             enumeration=False,
+    #             json=False)
+    # print(result)
+    
+    ###Camelina
+    # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "CamelinaFusion.sbml")
+    # result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_CamelinaFusion.sbml",
+    #             seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #             targets="/home/antoine/INRAE/Work/Gap_filling/targetsCamelina.sbml",
+    #             repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
+    #             enumeration=False,
+    #             json=False)
+    # print(result)
