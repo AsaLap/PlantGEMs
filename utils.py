@@ -4,14 +4,17 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
-"""This file contains utility functions"""
+"""This file contains utility functions used as is in several scripts."""
 
 import configparser
 import csv
 import json
 import re
 
+
 def read_file(path):
+    """Function to read and return a file line by line in a list."""
+    
     f = open(path, "r")
     res = f.readlines()
     f.close()
@@ -19,6 +22,8 @@ def read_file(path):
 
 
 def write_file(WD, filename, data):
+    """Function to write a file from a list."""
+    
     f = open(WD + filename, "w")
     for i in data:
         f.write(i)
@@ -26,7 +31,9 @@ def write_file(WD, filename, data):
 
 
 def write_csv(WD, list_value, name):
-    """Function to save a file as a CSV format."""
+    """Function to save a file as a CSV format, needs a list of lists, 
+    first list as the column names."""
+    
     with open(WD + name + '.csv', 'w', newline = '') as file:
         writer = csv.writer(file)
         for f in list_value:
@@ -34,7 +41,9 @@ def write_csv(WD, list_value, name):
 
 
 def write_tsv(WD, list_value, name):
-    """Function to save a file as a CSV format."""
+    """Function to save a file as a TSV format, needs a list of lists, 
+    first list as the column names."""
+    
     with open(WD + name + '.tsv', 'w', newline = '') as file:
         writer = csv.writer(file, delimiter = "\t")
         for f in list_value:
@@ -42,6 +51,8 @@ def write_tsv(WD, list_value, name):
 
 
 def read_json(path):
+    """Function to read a JSON file."""
+    
     f = open(path, "r")
     res = f.read()
     data = json.loads(res)
@@ -57,6 +68,7 @@ def read_config(ini):
     RETURN :
         config (dict of str) -- the configuration in a python dictionary object.
     """
+    
     config = configparser.ConfigParser()
     config.read(ini)
     return config
