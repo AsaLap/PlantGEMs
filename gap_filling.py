@@ -6,10 +6,11 @@
 # Mars - Aout 2020
 """This file is used for the gap filling of the previously reconstructed models."""
 
-import subprocess
-import string
+import cobra
 import os
 import re
+import subprocess
+import string
 from pyasp.term import *
 from urllib.request import urlopen
 from meneco import query, utils, sbml, run_meneco
@@ -108,6 +109,8 @@ def clean_sbml(WD, name):
     ARGS:
         WD (str) -- the working directory.
         name (str) -- the name of the sbml model.
+    RETURN:
+        the exact path to the new file.
     """
     
     file = tools.read_file(WD + name)
@@ -122,15 +125,35 @@ def clean_sbml(WD, name):
             i = reac.sub('id="', i)
         new_file.append(i)
     tools.write_file(WD, "clean_" + name, new_file)
+    return WD + "clean_" + name
 
 
+def add_filled_reactions(res, repair, draft):
+    print(res['Union of cardinality minimal completions'])
+    repair_model = cobra.io.read_sbml_model(repair)
+    draft_model = cobra.io.read_sbml_model(draft) ###Problem with COBRA, doesn't read the model
+    for reac in res['Union of cardinality minimal completions']:
+        reac = reac.replace("__45__", "-") ###Lack __46__/__47__
+        try:
+            print(repair_model.reactions.get_by_id(reac))
+            # draft_model.add_reactions([repair_model.reactions.get_by_id(reac)]) ###Standby
+        except KeyError:
+            print("No match for this reaction : ", reac)
+    # cobra.io.write_sbml_model(draft_model, draft) ###Standby
+    
+    
+def pipeline_gap_filling(WD, draft, seeds, targets, repair, enumeration = False, json = False):
+    clean_draft = clean_sbml(WD, draft)
+    result = run_meneco(draftnet=clean_draft,
+                        seeds=seeds,
+                        targets=targets,
+                        repairnet=repair,
+                        enumeration=enumeration,
+                        json=json)
+    add_filled_reactions(result, repair, draft)
 
-if __name__=="__main__":
-    # make_info("/home/asa/INRAE/Work/Gap_filling/",
-    # "testDNA.faa",
-    # "testRNA.faa",
-    # "testProt.faa",
-    # "Tomato")
+
+if __name__=="__main__":  
     # make_info("/home/asa/INRAE/Work/Gap_filling/",
     # "S_lycopersicum_chromosomes.4.00.faa",
     # "ITAG4.0_CDS.fasta",
@@ -138,14 +161,20 @@ if __name__=="__main__":
     # "Tomato")
     
     ###Tomato
-    clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "TomatoFusion.sbml")
-    result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_TomatoFusion.sbml",
-                seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
-                targets="/home/antoine/INRAE/Work/Gap_filling/targetsTomato.sbml",
-                repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
-                enumeration=False,
-                json=False)
-    print(result)
+    # pipeline_gap_filling("/home/antoine/INRAE/Work/Gap_filling/",
+    #                      "/home/antoine/INRAE/Work/Gap_filling/TomatoFusion.sbml",
+    #                      "/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #                      "/home/antoine/INRAE/Work/Gap_filling/targetsTomato.sbml",
+    #                      "/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml")
+    
+    # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "TomatoFusion.sbml")
+    # result = run_meneco(draftnet="/home/antoine/INRAE/Work/Gap_filling/clean_TomatoFusion.sbml",
+    #             seeds="/home/antoine/INRAE/Work/Gap_filling/seedsPlants.sbml",
+    #             targets="/home/antoine/INRAE/Work/Gap_filling/targetsTomato.sbml",
+    #             repairnet="/home/antoine/INRAE/Work/Gap_filling/metacyc.sbml",
+    #             enumeration=False,
+    #             json=False)
+    # print(result)
     
     ###Kiwi
     # clean_sbml("/home/antoine/INRAE/Work/Gap_filling/", "KiwiFusion.sbml")
