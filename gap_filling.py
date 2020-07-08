@@ -115,11 +115,11 @@ def clean_sbml(WD, name):
     
     file = tools.read_file(WD + name)
     new_file = []
-    meta = re.compile('(<species id="M_)')
+    meta = re.compile('( id="M_)')
     sp_ref = re.compile('(<speciesReference species="M_)')
     reac = re.compile('(id="R_)')
     for i in file:
-        i = meta.sub('<species id="', i)
+        i = meta.sub(' id="', i)
         i = sp_ref.sub('<speciesReference species="', i)
         if "<reaction" in i:
             i = reac.sub('id="', i)
