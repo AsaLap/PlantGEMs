@@ -13,7 +13,6 @@ import copy
 import re
 
 import utils
-import pathwayToolsPrep as PT
 
 
 ###For Pathway Tools models
@@ -136,7 +135,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
             list_fail.append(reac)
     print("Nb of reactions not found in the metacyc model: ", len(list_fail))
     cobra.io.save_json_model(new_model, save_path)
-    print(len(new_model.reactions))
+    print("Nb of reactions in the fusioned model : ", len(new_model.reactions))
 
 
 def metacyc_correspondance(path):
@@ -175,20 +174,15 @@ def metacyc_correspondance(path):
 
 
 if __name__ == "__main__":
-    fusion("/home/asa/INRAE/Work/fusion_test/correspondanceMetacycIds.tsv",
-           "/home/asa/INRAE/Work/fusion_test/reactions.dat",
-           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-           "/home/asa/INRAE/Work/fusion_test/metacyc.json",
-           "/home/asa/INRAE/Work/fusion_test/test_fusion.json",
-           "/home/asa/INRAE/Work/fusion_test/")
+    ###Tomato
+    fusion("/home/antoine/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/antoine/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+           "/home/antoine/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+           "/home/antoine/INRAE/Work/Fusion/metacyc.json",
+           "/home/antoine/INRAE/Work/Fusion/TomatoFusion.json",
+           "/home/antoine/INRAE/Work/Fusion/")
 
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/TomatoFusion.json",
-    #        "/home/asa/INRAE/Work/Fusion/")
-
+    ###Kiwi
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
@@ -196,6 +190,7 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/Fusion/KiwiFusion.json",
     #        "/home/asa/INRAE/Work/Fusion/")
  
+    ###Cucumber
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
@@ -203,6 +198,7 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/Fusion/CucumberFusion.json",
     #        "/home/asa/INRAE/Work/Fusion/")
 
+    ###Cherry
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
@@ -210,6 +206,7 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/Fusion/CherryFusion.json",
     #        "/home/asa/INRAE/Work/Fusion/")
 
+    ###Camelina
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
