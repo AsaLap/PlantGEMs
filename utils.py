@@ -92,3 +92,51 @@ def get_reactions_PT(path):
             except AttributeError:
                 pass
     return liste_Reac
+
+
+def clean_sbml(WD, name):
+    """Function to get rid of specific character COBRA puts into its 
+    sbml models, and cannot read (you read it right...).
+    
+    ARGS:
+        WD (str) -- the working directory.
+        name (str) -- the name of the sbml model.
+    RETURN:
+        the name of the new file.
+    """
+    
+    file = read_file(WD + name)
+    new_file = []
+    meta = re.compile('( id="M_)')
+    sp_ref = re.compile('(<speciesReference species="M_)')
+    reac = re.compile('(id="R_)')
+    for i in file:
+        i = meta.sub(' id="', i)
+        i = sp_ref.sub('<speciesReference species="', i)
+        if "<reaction" in i:
+            i = reac.sub('id="', i)
+        new_file.append(i)
+    write_file(WD, "clean_" + name, new_file)
+    return "clean_" + name
+
+
+def cobra_compatibility(reac, side = True):
+    """Function to transform a reaction ID into a cobra readable ID and vice versa.
+    
+    ARGS:
+        reac (str) -- the reaction.
+        side (boolean) -- true if you want to convert and ID into a COBRA readable ID, 
+        false for the reverse.
+    RETURN:
+        reac (str) -- the transformed reaction.
+    """
+    
+    if side:
+        reac = reac.replace("__47__", "/").replace("__46__", ".").replace("__45__", "-")
+        if re.search('(_\d)', reac):
+            reac = reac[1:]
+    else:
+        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__")
+        if re.search('(\d)', reac[0]):
+            reac = "_" + reac
+    return reac
