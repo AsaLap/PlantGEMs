@@ -120,13 +120,22 @@ def make_upsetplot(WD, data, name):
     clusters = get_clusters(list(data.keys()))
     [clusters.insert(0,[key]) for key in data.keys()]
     count = []
+    log = ""
     for c in clusters:
         others = list(data.keys())
         listInter = []
         for x in c:
             others.remove(x)
             listInter.append(set(data[x]))
-        count.append(similiraty_count(data, listInter, others))
+        cluster_data, sim_count = similiraty_count(data, listInter, others)
+        count.append(sim_count)
+        for i in c:
+            log += i + " "
+        log += " :\n"
+        for i in cluster_data:
+            log += str(i) + "\n"
+        log += "\n------\n\n"
+    utils.write_file(WD, "logUpsetplot.txt", log)
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts = '%d', totals_plot_elements = 3)
     plt.suptitle("Unique intersection for each possible cluster")
@@ -141,7 +150,7 @@ def similiraty_count(data, args, others):
     cluster_set = set.intersection(*args)
     for i in others:
         cluster_set = cluster_set.difference(set(data[i]))
-    return len(cluster_set)
+    return cluster_set, len(cluster_set)
 
 
 def get_clusters(liste):
