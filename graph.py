@@ -131,9 +131,9 @@ def make_upsetplot(WD, data, name):
         count.append(sim_count)
         for i in c:
             log += i + " "
-        log += " :\n"
+        log += " (" + str(sim_count) + ") :\n"
         for i in cluster_data:
-            log += str(i) + "\n"
+            log += utils.cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
     utils.write_file(WD, "logUpsetplot.txt", log)
     my_upsetplot = from_memberships(clusters, count)
