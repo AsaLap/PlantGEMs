@@ -21,6 +21,41 @@ def read_file(path):
     return res
 
 
+def read_csv(path, delim):
+    """Function to read and return a csv file in a list, choosing the delimiter."""
+    
+    f = open(path, "r")
+    res = []
+    for row in csv.reader(f, delimiter = delim):
+        res.append(row)
+    f.close()
+    return res
+
+
+def read_json(path):
+    """Function to read a JSON file."""
+    
+    f = open(path, "r")
+    res = f.read()
+    data = json.loads(res)
+    f.close()
+    return data
+
+
+def read_config(ini):
+    """Runs the config file containing all the information to make a new model.
+    
+    ARGS :
+        ini (str) -- the path to the .ini file.
+    RETURN :
+        config (dict of str) -- the configuration in a python dictionary object.
+    """
+    
+    config = configparser.ConfigParser()
+    config.read(ini)
+    return config
+
+
 def write_file(WD, filename, data):
     """Function to write a file from a list."""
     
@@ -48,30 +83,6 @@ def write_tsv(WD, list_value, name):
         writer = csv.writer(file, delimiter = "\t")
         for f in list_value:
             writer.writerow(f)
-
-
-def read_json(path):
-    """Function to read a JSON file."""
-    
-    f = open(path, "r")
-    res = f.read()
-    data = json.loads(res)
-    f.close()
-    return data
-
-
-def read_config(ini):
-    """Runs the config file containing all the information to make a new model.
-    
-    ARGS :
-        ini (str) -- the path to the .ini file.
-    RETURN :
-        config (dict of str) -- the configuration in a python dictionary object.
-    """
-    
-    config = configparser.ConfigParser()
-    config.read(ini)
-    return config
 
 
 def get_reactions_PT(path):
