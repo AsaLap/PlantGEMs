@@ -125,8 +125,8 @@ def cobra_compatibility(reac, side = True):
     
     ARGS:
         reac (str) -- the reaction.
-        side (boolean) -- true if you want to convert and ID into a COBRA readable ID, 
-        false for the reverse.
+        side (boolean) -- True if you want to convert an ID into a COBRA readable ID, 
+        False for the reverse.
     RETURN:
         reac (str) -- the transformed reaction.
     """
