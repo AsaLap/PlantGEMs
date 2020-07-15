@@ -61,7 +61,7 @@ def write_file(WD, filename, data):
     
     f = open(WD + filename, "w")
     for i in data:
-        f.write(i)
+        f.write(i + "\n")
     f.close()
 
 
@@ -101,7 +101,7 @@ def get_reactions_PT(path):
             try:
                 liste_Reac.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
             except AttributeError:
-                pass
+                print("No match for : ", line)
     return liste_Reac
 
 
