@@ -7,6 +7,7 @@
 """This file is used for the gap filling of the previously reconstructed models."""
 
 import cobra
+import copy
 import os
 import re
 import subprocess
@@ -119,12 +120,68 @@ def add_filled_reactions(WD, res, repair, draft):
     cobra.io.write_sbml_model(draft_model, WD + "repair_" + draft)
     
     
+def make_plantnetwork(WD, metacycPath, reactionsPath):
+    reactionsFile = tools.read_file(reactionsPath)
+    list_plant = []
+    for line in reactionsFile:
+        if "UNIQUE-ID" in line:
+            try:
+                unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip()
+            except AttributeError:
+                print("No match for : ", line)
+        if "TAXONOMIC-RANGE" in line and "33090" in line:
+            list_plant.append(unique_id)
+    
+    ###Necessary step for the gathering of short/long IDs
+    matching = tools.read_file("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    dico_matching = {}
+    dico_matching_rev = {}
+    for line in matching:
+        if line:
+            couple = line.rstrip().split("\t")
+            if couple[0] in dico_matching.keys():
+                dico_matching[couple[0]].append(couple[1])
+            else:
+                dico_matching[couple[0]] = [couple[1]]
+            dico_matching_rev[couple[1]] = couple[0]
+    
+    ###Transformation of all IDs in short + long to get them from Metacyc
+    new_plant_list = []
+    for reac in list_plant:
+        try:
+            for long_reac in dico_matching[reac]:
+                new_plant_list.append(long_reac)
+            new_plant_list.append(reac)
+        except KeyError:
+            try:
+                new_plant_list.append(dico_matching_rev[reac])
+                new_plant_list.append(reac)
+            except KeyError:
+                print("No match for reac : ", reac)
+    
+    ###Fetching the plant reactions
+    metacyc = cobra.io.read_sbml_model(metacycPath)
+    meta_plant = cobra.Model(name="Metacyc Plant")
+    for reac in new_plant_list:
+        try:
+            plant_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
+            meta_plant.add_reactions([plant_reac])
+        except KeyError:
+            try:
+                plant_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
+                meta_plant.add_reactions([plant_reac])
+            except KeyError:
+                print("Reaction not found in Metacyc : ", reac)
+    cobra.io.write_sbml_model(meta_plant, WD + "meta_plant.sbml")
+
+
 def pipeline_gap_filling(WD, draft, seeds, targets, repair, enumeration = False, json = False):
     clean_draft = tools.clean_sbml(WD, draft)
+    clean_repair = tools.clean_sbml(WD, repair)
     result = run_meneco(draftnet = WD + clean_draft,
                         seeds = WD + seeds,
                         targets = WD + targets,
-                        repairnet = WD + repair,
+                        repairnet = WD + clean_repair,
                         enumeration = enumeration,
                         json = json)
     print(result)
@@ -139,31 +196,31 @@ if __name__=="__main__":
     # "Tomato")
     
     ##Tomato
-    # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
-    #                      "TomatoFusion.sbml",
-    #                      "seedsPlants.sbml",
-    #                      "targetsTomato.sbml",
-    #                      "metacyc.sbml")
+    pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
+                         "TomatoFusion.sbml",
+                         "seedsPlants.sbml",
+                         "targetsTomato.sbml",
+                         "metacyc.sbml")
     
     ###Kiwi
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "KiwiFusion.sbml",
     #                      "seedsPlants.sbml",
-    #                      "targetsTomato.sbml",
+    #                      "targetsKiwi.sbml",
     #                      "metacyc.sbml")
     
     ###Cucumber
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "CucumberFusion.sbml",
     #                      "seedsPlants.sbml",
-    #                      "targetsTomato.sbml",
+    #                      "targetsCucumber.sbml",
     #                      "metacyc.sbml")
     
     ###Cherry
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "CherryFusion.sbml",
     #                      "seedsPlants.sbml",
-    #                      "targetsTomato.sbml",
+    #                      "targetsCherry.sbml",
     #                      "metacyc.sbml")
     
     ###Camelina
@@ -172,3 +229,7 @@ if __name__=="__main__":
     #                      "seedsPlants.sbml",
     #                      "targetsTomato.sbml",
     #                      "metacyc.sbml")
+    
+    # make_plantnetwork("/home/asa/INRAE/Work/Gap_filling/",
+    #                 "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.sbml",
+    #                 "/home/asa/INRAE/Logiciels/pathway-tools/24.0/data/#reactions.dat#")
