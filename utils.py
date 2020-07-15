@@ -61,7 +61,7 @@ def write_file(WD, filename, data):
     
     f = open(WD + filename, "w")
     for i in data:
-        f.write(i + "\n")
+        f.write(i)
     f.close()
 
 
