@@ -143,11 +143,32 @@ def cobra_compatibility(reac, side = True):
     """
     
     if side:
-        reac = reac.replace("__47__", "/").replace("__46__", ".").replace("__45__", "-")
+        reac = reac.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace("__91__", "[").replace("__93__", "]")
         if re.search('(_\d)', reac):
             reac = reac[1:]
     else:
-        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__")
+        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace("[", "__91__").replace("]", "__93")
         if re.search('(\d)', reac[0]):
             reac = "_" + reac
     return reac
+
+
+def corres_dico(path):
+    """Function to create a ditionary of correspondance between short and long IDs from a file.
+    
+    ARGS:
+        path (str) -- the path to the file containing the correspondance information.
+    """
+    
+    matching = read_file(path)
+    dico_matching = {}
+    dico_matching_rev = {}
+    for line in matching:
+        if line:
+            couple = line.rstrip().split("\t")
+            if couple[0] in dico_matching.keys():
+                dico_matching[couple[0]].append(couple[1])
+            else:
+                dico_matching[couple[0]] = [couple[1]]
+            dico_matching_rev[couple[1]] = couple[0]
+    return dico_matching, dico_matching_rev
