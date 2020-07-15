@@ -99,7 +99,7 @@ def get_reactions_PT(path):
     for line in PT_reac:
         if "UNIQUE-ID" in line:
             try:
-                liste_Reac.append(re.search('(?<=UNIQUE-ID - )\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+                liste_Reac.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
             except AttributeError:
                 pass
     return liste_Reac
