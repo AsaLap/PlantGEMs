@@ -133,17 +133,7 @@ def make_plantnetwork(WD, metacycPath, reactionsPath):
             list_plant.append(unique_id)
     
     ###Necessary step for the gathering of short/long IDs
-    matching = tools.read_file("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    dico_matching = {}
-    dico_matching_rev = {}
-    for line in matching:
-        if line:
-            couple = line.rstrip().split("\t")
-            if couple[0] in dico_matching.keys():
-                dico_matching[couple[0]].append(couple[1])
-            else:
-                dico_matching[couple[0]] = [couple[1]]
-            dico_matching_rev[couple[1]] = couple[0]
+    dico_matching, dico_matching_rev = tools.corres_dico("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     
     ###Transformation of all IDs in short + long to get them from Metacyc
     new_plant_list = []
