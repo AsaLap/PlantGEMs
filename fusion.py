@@ -138,11 +138,12 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
     print("Nb of reactions in the fusioned model : ", len(new_model.reactions))
 
 
-def metacyc_correspondance(path):
+def metacyc_correspondance(WD, path):
     """Function to make the correspondance file between short and long ID of Metacyc.
     
     ARGS:
-        path (str) -- the path to the metacyc model.
+    WD (str) -- the directory to save the correspondance file.
+        path (str) -- the path to the metacyc model in JSON format.
     """
     
     data = utils.read_json(path)
@@ -170,17 +171,17 @@ def metacyc_correspondance(path):
                 if len(test_ID) < len(short_ID):
                     short_ID = test_ID
             res.append([short_ID, reac["name"]])
-    utils.write_tsv("/home/asa/INRAE/Work/fusion_test/", res, "MetacycCorresIDs")
+    utils.write_tsv(WD, res, "MetacycCorresIDs")
 
 
 if __name__ == "__main__":
     ###Tomato
-    fusion("/home/antoine/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/antoine/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
-           "/home/antoine/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-           "/home/antoine/INRAE/Work/Fusion/metacyc.json",
-           "/home/antoine/INRAE/Work/Fusion/TomatoFusion.json",
-           "/home/antoine/INRAE/Work/Fusion/")
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/TomatoFusion.json",
+           "/home/asa/INRAE/Work/Fusion/")
 
     ###Kiwi
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
@@ -213,5 +214,3 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/CamelinaFusion.json",
     #        "/home/asa/INRAE/Work/Fusion/")
-    
-    # metacyc_correspondance("/home/asa/INRAE/Work/fusion_test/metacyc.json")
