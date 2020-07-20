@@ -256,7 +256,7 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
 
 def main(data):
     """The function to make all the pipeline working, from creation of 
-    the files to Pathway Tools via mpwt, and merging models.
+    the files to Pathway Tools via mpwt.
     
     ARGS:
         data (str) -- the path to a index.txt file containing the path 
