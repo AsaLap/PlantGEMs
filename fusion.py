@@ -124,12 +124,11 @@ def metacyc_correspondance(WD, path):
     utils.write_tsv(WD, res, "MetacycCorresIDs")
 
 
-def correct_gene_reac(WD_pgdb, reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev):
+def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev):
     """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
     to make it fit the organism for which the model is reconstructed.
     
     ARGS:
-        WD_pgdb (str) -- the working directory of the .dat files in ptools_local.
         reac -- the reaction to correct.
         reactionsFile -- the .dat file containing the associated enzymatic reaction(s).
         enzrxnsFile -- the .dat file containing the associated protein name.
@@ -140,62 +139,70 @@ def correct_gene_reac(WD_pgdb, reac, reactionsFile, enzrxnsFile, proteinsFile, d
         reac -- the reaction with the correct gene reaction rule.
     """
     
-    global_stop = False
+    ###First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID)
     stop = False
     global_stop = False
     enzrxns = []
-    for line in reactionsFile:
-        if "UNIQUE-ID" in line:
+    for lineReac in reactionsFile:
+        if "UNIQUE-ID" in lineReac and not "#" in lineReac:
             if stop == True:
                 stop = False
                 break
             try:
-                unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip()
-                if unique_id == reac.name or dico_matching_rev[reac.name]:
+                unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip()
+                if unique_id == reac.name or unique_id == dico_matching_rev[reac.name]:
                     stop = True
             except AttributeError:
-                pass
-        if stop == True and "ENZYMATIC-REACTION" in line:
+                print("No UNIQUE-ID match for reactions.dat : ", lineReac)
+        if stop == True and "ENZYMATIC-REACTION" in lineReac and not "#" in lineReac:
             try:
-                enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+                enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip())
             except AttributeError:
-                print("No match for : ", line)
-    # print("%s : %i enzymatic reactions found associated to this reaction." %(reac.name, len(enzrxns)))
+                print("No ENZYMATIC-REACTION match for reactions.dat : ", lineReac)
+    print("%s : %i enzymatic reactions found associated to this reaction." %(reac.name, len(enzrxns)))
+    
+    ###Second step : getting the corresponding ENZYME for each ENZYME-REACTION
     geneList = []
-    for enzrxn in enzrxns:
-        for line in enzrxnsFile:
-            if "UNIQUE-ID" in line:
-                if stop == True:
-                    stop = False
-                    break
-                try:
-                    unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip()
-                    if unique_id_rxn == enzrxn:
-                        stop = True
-                except AttributeError:
-                    pass
-            if stop == True and "ENZYME" in line:
-                try:
-                    enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip()
-                except AttributeError:
-                    print("No match for : ", line)
-        for line in proteinsFile:
-            if "UNIQUE-ID" in line:
-                if stop == True:
-                    stop = False
-                    break
-                try:
-                    unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip()
-                    if unique_id_prot == enzyme:
-                        stop = True
-                except AttributeError:
-                    pass
-            if stop == True and "GENE" in line:
-                try:
-                    geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
-                except AttributeError:
-                    print("No match for : ", line)
-    reac.gene_reaction_rule = " or ".join(geneList)
+    if enzrxns:
+        for enzrxn in enzrxns:
+            for lineEnzrxn in enzrxnsFile:
+                if "UNIQUE-ID" in lineEnzrxn and not "#" in lineEnzrxn:
+                    if stop == True:
+                        stop = False
+                        break
+                    try:
+                        unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(0).rstrip()
+                        if unique_id_rxn == enzrxn:
+                            stop = True
+                    except AttributeError:
+                        print("No UNIQUE-ID match for enzrxns.Dat : ", lineEnzrxn)
+                if stop == True and "ENZYME" in lineEnzrxn and not "#" in lineEnzrxn:
+                    try:
+                        enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(0).rstrip()
+                    except AttributeError:
+                        print("No ENZYME match for enzrxns.dat : ", lineEnzrxn)
+            ###Third step into the second one : getting the corresponding GENE for each ENZYME
+            ###and put it into geneList (which contains all that we're looking for)
+            for lineProt in proteinsFile:
+                if "UNIQUE-ID" in lineProt and not "#" in lineProt:
+                    if stop == True:
+                        stop = False
+                        break
+                    try:
+                        unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip()
+                        if unique_id_prot == enzyme:
+                            stop = True
+                    except AttributeError:
+                        print("No UNIQUE-ID match for proteins.dat : ", lineProt)
+                if stop == True and "GENE" in lineProt:
+                    try:
+                        geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
+                    except AttributeError:
+                        print("No GENE match for proteins.dat : ", lineProt)
+        print(unique_id, "\n", " or ".join(set(geneList)))
+    else:
+        pass
+    reac.gene_reaction_rule = " or ".join(set(geneList))
     return reac
 
 
@@ -234,7 +241,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
             if reac[0] in ['0','1','2','3','4','5','6','7','8','9']:
                 reac = "_" + reac
             added_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
-            added_reac = correct_gene_reac(WD_pgdb, added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev)
+            added_reac = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev)
             new_model.add_reactions([added_reac])
         except KeyError:
             list_fail.append(reac)
@@ -245,13 +252,13 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
 
 if __name__ == "__main__":
     ###Tomato
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/TomatoFusionTest.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
+    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
+           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+           "/home/asa/INRAE/Work/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/Fusion/TomatoFusionTest.json",
+           "/home/asa/INRAE/Work/Fusion/",
+           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
 
     ###Kiwi
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
@@ -287,7 +294,7 @@ if __name__ == "__main__":
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/CamelinaFusionTest.json",
     #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/")
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/")
     
     # metacyc = cobra.io.load_json_model("/home/asa/INRAE/Work/Fusion/metacyc.json")
     # fileTest = utils.read_file("/home/asa/INRAE/Work/Fusion_repair/liste_reac.txt")
