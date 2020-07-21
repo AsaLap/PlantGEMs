@@ -143,6 +143,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
     stop = False
     global_stop = False
     enzrxns = []
+    log_reactions = ""
     for lineReac in reactionsFile:
         if "UNIQUE-ID" in lineReac and not "#" in lineReac:
             if stop == True:
@@ -154,12 +155,12 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                     stop = True
             except AttributeError:
                 print("No UNIQUE-ID match for reactions.dat : ", lineReac)
-        if stop == True and "ENZYMATIC-REACTION" in lineReac and not "#" in lineReac:
+        if stop == True and "ENZYMATIC-REACTION " in lineReac and not "#" in lineReac:
             try:
                 enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip())
             except AttributeError:
                 print("No ENZYMATIC-REACTION match for reactions.dat : ", lineReac)
-    print("%s : %i enzymatic reactions found associated to this reaction." %(reac.name, len(enzrxns)))
+    print("%s : %i enzymatic reaction(s) found associated to this reaction." %(reac.name, len(enzrxns)))
     
     ###Second step : getting the corresponding ENZYME for each ENZYME-REACTION
     stop = False
@@ -177,7 +178,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                             stop = True
                     except AttributeError:
                         print("No UNIQUE-ID match for enzrxns.Dat : ", lineEnzrxn)
-                if stop == True and "ENZYME" in lineEnzrxn and not "#" in lineEnzrxn:
+                if stop == True and "ENZYME " in lineEnzrxn and not "#" in lineEnzrxn:
                     try:
                         enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(0).rstrip()
                     except AttributeError:
@@ -185,7 +186,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
             ###Third step into the second one : getting the corresponding GENE for each ENZYME
             ###and put it into geneList (which contains all that we're looking for)
             for lineProt in proteinsFile:
-                if "UNIQUE-ID" in lineProt and not "#" in lineProt:
+                if "UNIQUE-ID " in lineProt and not "#" in lineProt:
                     if stop == True:
                         stop = False
                         break
@@ -195,7 +196,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                             stop = True
                     except AttributeError:
                         print("No UNIQUE-ID match for proteins.dat : ", lineProt)
-                if stop == True and "GENE" in lineProt and not "#" in lineProt:
+                if stop == True and "GENE " in lineProt and not "#" in lineProt:
                     try:
                         geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
                     except AttributeError:
@@ -252,12 +253,12 @@ def fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb):
 
 if __name__ == "__main__":
     ###Tomato
-    fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-           "/home/asa/INRAE/Work/Fusion/metacyc.json",
-           "/home/asa/INRAE/Work/Fusion/TomatoFusionTest.json",
-           "/home/asa/INRAE/Work/Fusion/",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
+    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
+    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
+    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
+    #        "/home/asa/INRAE/Work/Fusion/TomatoFusionGenes.json",
+    #        "/home/asa/INRAE/Work/Fusion/",
+    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
 
     ###Debug
     # WD_pgdb = "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/"
@@ -275,7 +276,7 @@ if __name__ == "__main__":
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/KiwiFusionTest.json",
+    #        "/home/asa/INRAE/Work/Fusion/KiwiFusionGenes.json",
     #        "/home/asa/INRAE/Work/Fusion/",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/")
  
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CucumberFusionTest.json",
+    #        "/home/asa/INRAE/Work/Fusion/CucumberFusionGenes.json",
     #        "/home/asa/INRAE/Work/Fusion/",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/")
 
@@ -291,7 +292,7 @@ if __name__ == "__main__":
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CherryFusionTest.json",
+    #        "/home/asa/INRAE/Work/Fusion/CherryFusionGenes.json",
     #        "/home/asa/INRAE/Work/Fusion/",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/")
 
@@ -299,7 +300,7 @@ if __name__ == "__main__":
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
     #        "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CamelinaFusionTest.json",
+    #        "/home/asa/INRAE/Work/Fusion/CamelinaFusionGenes.json",
     #        "/home/asa/INRAE/Work/Fusion/",
     #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/")
     
