@@ -162,6 +162,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
     print("%s : %i enzymatic reactions found associated to this reaction." %(reac.name, len(enzrxns)))
     
     ###Second step : getting the corresponding ENZYME for each ENZYME-REACTION
+    stop = False
     geneList = []
     if enzrxns:
         for enzrxn in enzrxns:
@@ -206,13 +207,12 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
     return reac
 
 
-def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb):
+def fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb):
     """Function to merge two models, one from an Aracyc model, the other one from Pathway Tools.
     
     ARGS:
         corres (str) -- the path to the file containing the correspondance 
         between short and long ID of Metacyc's reactions.
-        pwtools_reac_path (str) -- the path to the Pathway Tools reactions.dat file.
         aracyc_model_path (str) -- the path to the aracyc based reconstructed model.
         metacyc_path (str) -- the path to the metacyc model.
         save_path (str) -- the path and name to the saving directory.
@@ -222,7 +222,7 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
     """
     
     dico_matching, dico_matching_rev = utils.corres_dico(corres)
-    pwtools_reac_set = get_pwtools_reac(pwtools_reac_path, dico_matching, dico_matching_rev, WDlog)
+    pwtools_reac_set = get_pwtools_reac(WD_pgdb + "reactions.dat", dico_matching, dico_matching_rev, WDlog)
     aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, dico_matching, dico_matching_rev)
     ###Here we take away the reactions of metacyc already present in the aracyc model otherwise 
     ###it will be redundant as we keep all the aracyc model reactions.
@@ -253,16 +253,26 @@ def fusion(corres, pwtools_reac_path, aracyc_model_path, metacyc_path, save_path
 if __name__ == "__main__":
     ###Tomato
     fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-           "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/reactions.dat",
            "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
            "/home/asa/INRAE/Work/Fusion/metacyc.json",
            "/home/asa/INRAE/Work/Fusion/TomatoFusionTest.json",
            "/home/asa/INRAE/Work/Fusion/",
            "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
 
+    ###Debug
+    # WD_pgdb = "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/"
+    # reactionsFile = reactionsFile = utils.read_file(WD_pgdb + "reactions.dat")
+    # enzrxnsFile = utils.read_file(WD_pgdb + "enzrxns.dat")
+    # proteinsFile = utils.read_file(WD_pgdb + "proteins.dat")
+    # metacyc = cobra.io.load_json_model("/home/asa/INRAE/Work/Fusion/metacyc.json")
+    # dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    
+    # reac = "RXN-14093"
+    # added_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
+    # added_reac = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev)
+
     ###Kiwi
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/KiwiFusionTest.json",
@@ -271,7 +281,6 @@ if __name__ == "__main__":
  
     ###Cucumber
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/CucumberFusionTest.json",
@@ -280,7 +289,6 @@ if __name__ == "__main__":
 
     ###Cherry
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/CherryFusionTest.json",
@@ -289,7 +297,6 @@ if __name__ == "__main__":
 
     ###Camelina
     # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/reactions.dat",
     #        "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
     #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
     #        "/home/asa/INRAE/Work/Fusion/CamelinaFusionTest.json",
