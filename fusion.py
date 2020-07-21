@@ -124,7 +124,7 @@ def metacyc_correspondance(WD, path):
     utils.write_tsv(WD, res, "MetacycCorresIDs")
 
 
-def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev):
+def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev, verbose = True):
     """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
     to make it fit the organism for which the model is reconstructed.
     
@@ -135,6 +135,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
         proteinsFile -- the .dat file containing the associated gene name.
         dico_matching_rev -- the dictionary of the correspondance between short IDs 
         and long IDs, in reverse (see construction in utils.py).
+        verbose (boolean) -- print or not enzyme matches.
     RETURN:
         reac -- the reaction with the correct gene reaction rule.
     """
@@ -160,7 +161,8 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                 enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip())
             except AttributeError:
                 print("No ENZYMATIC-REACTION match for reactions.dat : ", lineReac)
-    print("%s : %i enzymatic reaction(s) found associated to this reaction." %(reac.name, len(enzrxns)))
+    if verbose:
+        print("%s : %i enzymatic reaction(s) found associated to this reaction." %(reac.name, len(enzrxns)))
     
     ###Second step : getting the corresponding ENZYME for each ENZYME-REACTION
     stop = False
