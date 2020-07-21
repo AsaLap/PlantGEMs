@@ -1,3 +1,15 @@
-/home/asa/INRAE/Work/mpwt_test/input_test/
-/home/asa/INRAE/Work/mpwt_test/output_test/
-/home/asa/INRAE/Work/mpwt_test/Tomato/TomatoAracycPT.ini
+{% comment %} 
+- First line is the path of the main directory where you're supposed to have:
+    dir : /files
+        --> containing all the files for each organism you build (fasta + gff + tsv annotations from EggNog).
+    dir : /initialisation
+        --> containing one .ini file for each organism.
+- All the other lines are the path and name for each .ini file (in a future update : automatic read of those filenames).
+{% endcomment %}
+
+/home/myname/MyDirectory/mpwt/
+/home/myname/MyDirectory/mpwt/initialisation/TomatoAracycPT.ini
+/home/myname/MyDirectory/mpwt/initialisation/KiwiAracycPT.ini
+/home/myname/MyDirectory/mpwt/initialisation/CucumberAracycPT.ini
+/home/myname/MyDirectory/mpwt/initialisation/CherryAracycPT.ini
+/home/myname/MyDirectory/mpwt/initialisation/CamelinaAracycPT.ini
