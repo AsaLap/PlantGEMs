@@ -195,7 +195,7 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                             stop = True
                     except AttributeError:
                         print("No UNIQUE-ID match for proteins.dat : ", lineProt)
-                if stop == True and "GENE" in lineProt:
+                if stop == True and "GENE" in lineProt and not "#" in lineProt:
                     try:
                         geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
                     except AttributeError:
