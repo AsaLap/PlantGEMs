@@ -105,6 +105,15 @@ def make_info(WD, DNA_file, RNA_file, prot_file, name):
 
 
 def add_filled_reactions(WD, res, repair, draft):
+    """Function to add the retrieved reactions to the model.
+    
+    ARGS:
+        WD (str) -- the path to the working directory where there are the repair model and the draft.
+        res -- the result of Meneco (containing the reactions' name).
+        repair -- the repair model.
+        draft -- the draft model.
+    """
+    
     print(res['Union of cardinality minimal completions'])
     repair_model = cobra.io.read_sbml_model(WD + repair)
     draft_model = cobra.io.read_sbml_model(WD + draft)
@@ -121,6 +130,13 @@ def add_filled_reactions(WD, res, repair, draft):
     
     
 def make_plantnetwork(WD, metacycPath, reactionsPath):
+    """Function to create a subnetwork of Metacyc containing only the Viridiplantae taxon.
+    
+    ARGS:
+        WD (str) -- the path to the working directory where to save the new model.
+        metacycPath (str) -- the exact path and filename of the Metacyc model.
+        reactionsPath (str) the exact path and filename of the reactions.dat file of the organism.  
+    """
     reactionsFile = tools.read_file(reactionsPath)
     list_plant = []
     for line in reactionsFile:
@@ -166,6 +182,18 @@ def make_plantnetwork(WD, metacycPath, reactionsPath):
 
 
 def pipeline_gap_filling(WD, draft, seeds, targets, repair, enumeration = False, json = False):
+    """The main function to make all the process.
+    
+    ARGS:
+        WD (str) -- the path to the directory where to find all the needed files.
+        draft (str) -- the filename of the model to enhance.
+        seeds (str) -- the filename of the seeds.
+        targets (str) -- the filename of the targets.
+        repair (str) -- the filename of the repair model.
+        enumeration (boolean) -- Meneco choice to list all the reactions found or not.
+        json (boolean) -- Meneco choice of getting the result as a JSON (not working).
+    """
+    
     clean_draft = tools.clean_sbml(WD, draft)
     clean_repair = tools.clean_sbml(WD, repair)
     result = run_meneco(draftnet = WD + clean_draft,
