@@ -97,7 +97,7 @@ def get_reactions_PT(path):
     liste_Reac = []
     PT_reac = open(path, "r")
     for line in PT_reac:
-        if "UNIQUE-ID" in line:
+        if "UNIQUE-ID" in line and not "#" in line:
             try:
                 liste_Reac.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
             except AttributeError:
