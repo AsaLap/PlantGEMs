@@ -214,11 +214,11 @@ if __name__=="__main__":
     # "Tomato")
     
     ##Tomato
-    pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
-                         "TomatoFusion.sbml",
-                         "seedsPlants.sbml",
-                         "targetsTomato.sbml",
-                         "metacyc.sbml")
+    # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
+    #                      "TomatoFusion.sbml",
+    #                      "seedsPlants.sbml",
+    #                      "targetsTomato.sbml",
+    #                      "metacyc.sbml")
     
     ###Kiwi
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
@@ -251,3 +251,17 @@ if __name__=="__main__":
     # make_plantnetwork("/home/asa/INRAE/Work/Gap_filling/",
     #                 "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.sbml",
     #                 "/home/asa/INRAE/Logiciels/pathway-tools/24.0/data/#reactions.dat#")
+    
+    ###Manual curation
+    # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling_tests/",
+    #                      "clean_KiwiFusion.sbml",
+    #                      "seedsPlantsCorrected.sbml",
+    #                      "unrec_targetsKiwi.sbml",
+    #                      "metacyc.sbml")
+    
+    ###Photosynthesis
+    pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling_tests/",
+                        "clean_KiwiFusion.sbml",
+                        "seeds_photo.sbml",
+                        "targets_photo.sbml",
+                        "metacyc.sbml")
