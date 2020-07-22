@@ -23,6 +23,7 @@ import utils
 
 def read_file(WD, file):
     """Function to load a file and get rid of special characters."""
+    
     res = []
     f = open(WD + file, "r")
     for line in f.readlines():
@@ -107,14 +108,16 @@ def get_all_scores(organism, data):
     return list_value
 
 
-def make_upsetplot(WD, data, name):
+def make_upsetplot(WD, name, data, title):
     """Function to make an UpSetPlot.
     Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
     
     ARGS:
-        WD -- the working directory to save the result.
+        WD (str) -- the working directory to save the result.
+        name (str) -- name of the file to save.
         data -- the dictionary containing the organisms as keys
         and the genes/reactions/others to treat for the UpSetPlot.
+        title (str) -- title of the graph.
     """
     
     clusters = get_clusters(list(data.keys()))
@@ -135,10 +138,10 @@ def make_upsetplot(WD, data, name):
         for i in cluster_data:
             log += utils.cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
-    utils.write_file(WD, "logUpsetplot.txt", log)
+    utils.write_file(WD, name + ".log", log)
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts = '%d', totals_plot_elements = 3)
-    plt.suptitle("Unique intersection for each possible cluster")
+    plt.suptitle(title)
     plt.savefig(WD + name + ".pdf")
     plt.show()
 
@@ -261,9 +264,6 @@ if __name__=="__main__":
     # cherryGenesCyc = read_file(WDcheCyc, "CherryCyc_id_reac.csv")
     # camelinaGenesCyc = read_file(WDcamCyc, "CamelinaCyc_id_reac.csv")
     
-    #Getting the AraCyc reconstruction's reactions VS Pathway Tools:
-    # print("Nombre réaction Aracyc perso : ", len(tomatoGenesCyc))
-    
     # listeReacPTtomato = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/")
     # print("Nombre réactions PT Tomate : ", len(listeReacPTtomato))
     # listeReacPTkiwi = get_reactions_PT("/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/")
@@ -342,87 +342,8 @@ if __name__=="__main__":
     # help_treshold(WDcuc, CucumberAracyc.ini)
     # help_treshold(WDche, CherryAracyc.ini)
     # help_treshold(WDcam, CamelinaAracyc.ini)
-
-    #------Identity------#
-    # tomato = graph_identity(tom)
-    # kiwi = graph_identity(kiw)
-    # cucumber = graph_identity(cuc)
-    # cherry = graph_identity(che)
-    # plt.plot(tomato[0], tomato[1], 'r', label = 'Tomato')
-    # plt.plot(kiwi[0], kiwi[1], 'g', label = 'Kiwi')
-    # plt.plot(cucumber[0], cucumber[1], 'b', label = 'Cucumber')
-    # plt.plot(cherry[0], cherry[1], 'y', label = 'Cherry' )
-    # plt.ylabel('Number of mappings')
-    # plt.xlabel('Percentage of identity')
-    # plt.legend(fancybox=True, framealpha=1, shadow=True, borderpad=1)
-    # plt.savefig(WD + '4plots.png', dpi=300)
-    # plt.show()
     
-    #------E-Value------#
-    # tomato_e_value = get_e_value(tom)
-    # tomato_e_value.insert(0, "Tomato")
-    # kiwi_e_value = get_e_value(kiw)
-    # kiwi_e_value.insert(0, "Kiwi")
-    # cucumber_e_value = get_e_value(cuc)
-    # cucumber_e_value.insert(0, "Cucumber")
-    # cherry_e_value = get_e_value(che)
-    # cherry_e_value.insert(0, "Cherry")
-    # total_list = [tomato_e_value, kiwi_e_value, cucumber_e_value, cherry_e_value]
-    # write_csv(WD, total_list)
-    
-    #------Score------#
-    # tomato = get_score(tom)
-    # print("Mean : %f, max : %f, min : %f" % (mean(tomato), max(tomato), min(tomato)))
-    
-    #------Bit-Score------#
-    # tomato = get_bit_score(tom)
-    # print("Mean : %f, max : %f, min : %f" % (mean(tomato), max(tomato), min(tomato)))
-    
-    #------All Scores------#
-    # tomato = get_all_scores("Tomato", tom)
-    # tomato.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WDtom, tomato, "tomato_values")
-    
-    # kiwi = get_all_scores("Kiwi", kiw)
-    # kiwi.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WDkiw, kiwi, "kiwi_values")
-    
-    # cucumber = get_all_scores("Cucumber", cuc)
-    # cucumber.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WDcuc, cucumber, "cucumber_values")
-    
-    # cherry = get_all_scores("Cherry", che)
-    # cherry.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WDche, cherry, "cherry_values")
-    
-    # camelina = get_all_scores("Camelina", cam)
-    # camelina.insert(0,["Organism", "Gene", "Identity", "Score", "E_Value", "Bit_Score"])
-    # write_csv(WDcam, camelina, "camelina_values")
-    
-    #---Calculs savants---#    
-    # x = 10
-    # mean_score = 0
-    # mean_e_value = 0
-    # mean_bit_score = 0
-    # score = 0
-    # e_value = 0
-    # bit_score = 0
-    # count = 0
-    # for i in total:
-    #     mean_score += i[2]
-    #     mean_e_value += i[3]
-    #     mean_bit_score += i[4]
-    #     if i[1] > x:
-    #         score += i[2]
-    #         e_value += i[3]
-    #         bit_score += i[4]
-    #         count += 1
-    # mean_score /= len(total)
-    # mean_e_value /= len(total)
-    # mean_bit_score /= len(total)
-    # print("- Means with identity > %i :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (x, score/count, e_value/count, bit_score/count))
-    # print("\n- Total means :\nScore : %f\nE-Value : %f\nBit-Score : %f" % (mean_score, mean_e_value, mean_bit_score))
-    
+    ###Making an upsetplot on the reactions found with Meneco
     # resTomato = {'Draft network file': '/home/asa/INRAE/Work/Gap_filling/clean_TomatoFusion.sbml', 'Seeds file': '/home/asa/INRAE/Work/Gap_filling/seedsPlants.sbml', 'Targets file': '/home/asa/INRAE/Work/Gap_filling/targetsTomato.sbml', 'Unproducible targets': ['TRP_c', 'MET_c', 'ARG_c', 'GLN_c', 'HIS_c', 'CYS_c', 'PRO_c', 'ILE_c', 'CIT_c', 'LYS_c', 'GLT_c', 'L__45__SELENOCYSTEINE_c', 'LEU_c', 'VAL_c'], 'Repair db file': '/home/asa/INRAE/Work/Gap_filling/clean_metacyc.sbml', 'Unreconstructable targets': ['L__45__SELENOCYSTEINE_c'], 'Reconstructable targets': ['TRP_c', 'MET_c', 'ARG_c', 'HIS_c', 'GLN_c', 'CYS_c', 'PRO_c', 'ILE_c', 'CIT_c', 'LYS_c', 'GLT_c', 'LEU_c', 'VAL_c'], 'Essential reactions': {'TRP_c': [], 'MET_c': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'ARG_c': [], 'HIS_c': [], 'GLN_c': [], 'CYS_c': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'PRO_c': [], 'ILE_c': [], 'CIT_c': [], 'LYS_c': [], 'GLT_c': [], 'LEU_c': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'VAL_c': []}, 'One minimal completion': ['RXN__45__9772', 'SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'Intersection of cardinality minimal completions': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'Union of cardinality minimal completions': ['FESO3OXI__45__RXN', 'RXN__45__1744', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__9772', 'FUMARATE__45__REDUCTASE__45__NADH__45__RXN', 'RXN__45__9929']}
     # resKiwi = {'Draft network file': '/home/asa/INRAE/Work/Gap_filling/clean_KiwiFusion.sbml', 'Seeds file': '/home/asa/INRAE/Work/Gap_filling/seedsPlants.sbml', 'Targets file': '/home/asa/INRAE/Work/Gap_filling/targetsKiwi.sbml', 'Unproducible targets': ['STEARIC_ACID_c', 'THREO__45__DS__45__ISO__45__CITRATE_c', 'RHAMNOSE_c', 'GLN_c', 'L__45__ASPARTATE_c', 'TRP_c', 'ASN_c', 'LINOLEIC_ACID_c', 'CPD__45__13293_c', 'ASCORBATE_c', 'LYS_c', 'MET_c', 'CPD__45__12521_c', 'GLY_c', 'PALMITATE_c', 'TYR_c', 'LEU_c', 'ARG_c', 'ARACHIDIC_ACID_c', 'CIT_c', 'ILE_c', 'CPD__45__12524_c', 'TETRACOSANOATE_c', 'ARABINOSE_c', 'XYLOSE_c', 'THR_c', 'PRO_c', 'L__45__SELENOCYSTEINE_c', 'GLT_c', 'CYS_c', 'LINOLENIC_ACID_c', 'VAL_c', 'HIS_c', 'OLEATE__45__CPD_c'], 'Repair db file': '/home/asa/INRAE/Work/Gap_filling/clean_metacyc.sbml', 'Unreconstructable targets': ['STEARIC_ACID_c', 'L__45__SELENOCYSTEINE_c', 'CPD__45__13293_c', 'RHAMNOSE_c', 'LINOLENIC_ACID_c', 'ARACHIDIC_ACID_c', 'CPD__45__12524_c', 'TETRACOSANOATE_c', 'CPD__45__12521_c', 'LINOLEIC_ACID_c', 'PALMITATE_c', 'OLEATE__45__CPD_c'], 'Reconstructable targets': ['THREO__45__DS__45__ISO__45__CITRATE_c', 'L__45__ASPARTATE_c', 'GLN_c', 'TRP_c', 'ASN_c', 'ASCORBATE_c', 'LYS_c', 'MET_c', 'GLY_c', 'TYR_c', 'LEU_c', 'ARG_c', 'CIT_c', 'ILE_c', 'ARABINOSE_c', 'XYLOSE_c', 'THR_c', 'PRO_c', 'GLT_c', 'CYS_c', 'VAL_c', 'HIS_c'], 'Essential reactions': {'THREO__45__DS__45__ISO__45__CITRATE_c': [], 'L__45__ASPARTATE_c': [], 'GLN_c': [], 'TRP_c': [], 'ASN_c': [], 'ASCORBATE_c': [], 'LYS_c': [], 'MET_c': ['FESO3OXI__45__RXN', 'SULFITE__45__REDUCT__45__RXN'], 'GLY_c': [], 'TYR_c': [], 'LEU_c': ['FESO3OXI__45__RXN', 'SULFITE__45__REDUCT__45__RXN'], 'ARG_c': [], 'CIT_c': [], 'ILE_c': [], 'ARABINOSE_c': ['L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN'], 'XYLOSE_c': [], 'THR_c': [], 'PRO_c': [], 'GLT_c': [], 'CYS_c': ['FESO3OXI__45__RXN', 'SULFITE__45__REDUCT__45__RXN'], 'VAL_c': [], 'HIS_c': []}, 'One minimal completion': ['RXN0__45__703', 'DEHYDRO__45__L__45__GULONATE__45__DECARBOXYLASE__45__RXN', 'L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'SULFITE__45__REDUCT__45__RXN', 'TRANS__45__RXN__45__10__45__CPD__45__12045__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'FESO3OXI__45__RXN', 'RXN__45__18377', 'RXN__45__14102', 'RXN__45__11825', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12045__47__PROTON__46__35__46__', 'RXN__45__8633', 'TRANS__45__RXN__45__284', '_2__45__DEHYDROPANTOATE__45__REDUCT__45__RXN', '_1__46__3__46__3__46__12__45__RXN', 'KETOPANTOALDOLASE__45__RXN'], 'Intersection of cardinality minimal completions': ['DEHYDRO__45__L__45__GULONATE__45__DECARBOXYLASE__45__RXN', 'L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__18377', 'FESO3OXI__45__RXN', 'RXN__45__14102', '_1__46__3__46__3__46__12__45__RXN'], 'Union of cardinality minimal completions': ['TRANS__45__RXN__45__10__45__BETA__45__L__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__42__46__', 'L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__12046__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'TRANS__45__RXN__45__10__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'PANTOATE__45__4__45__DEHYDROGENASE__45__RXN', 'FESO3OXI__45__RXN', 'L__45__XYLULOSE__45__REDUCTASE__45__RXN', 'ABC__45__2__45__RXN__45__ATP__47__L__45__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__47__46__', 'TRANS__45__RXN__45__10__45__CPD__45__12046__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'RXN__45__10065', '_1__46__3__46__3__46__12__45__RXN', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__15699__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'DIMETHYLMALATE__45__DEHYDROGENASE__45__RXN', 'TRANS__45__RXN__45__10__45__CPD__45__15699__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'DEHYDRO__45__L__45__GULONATE__45__DECARBOXYLASE__45__RXN', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12046__47__PROTON__46__35__46__', 'ATPSYN__45__RXN__91__CCO__45__PERI__45__BAC__45__CCO__45__CYTOSOL__93____45__ATP__47__WATER__47__PROTON__47____47__ADP__47__Pi__47__PROTON__46__58__46__', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12045__47__PROTON__46__35__46__', 'RXN__45__11825', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__L__45__ARABINOSE__47__PROTON__46__37__46__', 'TRANS__45__RXN0__45__571', 'RXN0__45__703', 'TRANS__45__RXN__45__10__45__L__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__37__46__', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__18377', 'RXN__45__14102', 'R__45__DEHYDROPANTOATE__45__DEHYDROGENASE__45__RXN', 'ATPSYN__45__RXN__91__CCO__45__PM__45__BAC__45__NEG__93____45__ATP__47__WATER__47__PROTON__47____47__ADP__47__Pi__47__PROTON__46__48__46__', 'RXN__45__8633', 'ABC__45__2__45__RXN__45__ATP__47__BETA__45__L__45__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__52__46__', 'TRANS__45__RXN__45__284', '_2__45__DEHYDROPANTOATE__45__REDUCT__45__RXN', 'ABC__45__2__45__RXN__45__ATP__47__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'TRANS__45__RXN__45__10__45__CPD__45__12045__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', '_3__45__DEHYDRO__45__L__45__GULONATE__45__2__45__DEHYDROGENASE__45__RXN__45__3__45__KETO__45__L__45__GULONATE__47__NADP__47____47__CPD__45__334__47__NADPH__47__PROTON__46__45__46__', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__15699__47__PROTON__46__35__46__', 'TRANS__45__RXN__45__262', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'TRANS__45__RXN__45__300', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__12045__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'KETOPANTOALDOLASE__45__RXN', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__BETA__45__L__45__ARABINOSE__47__PROTON__46__42__46__']}
     # resCucumber = {'Draft network file': '/home/asa/INRAE/Work/Gap_filling/clean_CucumberFusion.sbml', 'Seeds file': '/home/asa/INRAE/Work/Gap_filling/seedsPlants.sbml', 'Targets file': '/home/asa/INRAE/Work/Gap_filling/targetsCucumber.sbml', 'Unproducible targets': ['HIS_c', 'ARABINOSE_c', 'LYS_c', 'CPD__45__12521_c', 'STEARIC_ACID_c', 'CPD__45__12524_c', 'LEU_c', 'L__45__SELENOCYSTEINE_c', 'RHAMNOSE_c', 'ILE_c', 'TETRACOSANOATE_c', 'MET_c', 'VAL_c', 'CPD__45__13293_c', 'ARG_c', 'TRP_c', 'ARACHIDIC_ACID_c', 'LINOLEIC_ACID_c', 'GLN_c', 'OLEATE__45__CPD_c', 'ASCORBATE_c', 'PRO_c', 'GLT_c', 'LINOLENIC_ACID_c', 'CYS_c', 'CIT_c', 'PALMITATE_c', 'XYLOSE_c'], 'Repair db file': '/home/asa/INRAE/Work/Gap_filling/clean_metacyc.sbml', 'Unreconstructable targets': ['STEARIC_ACID_c', 'ARACHIDIC_ACID_c', 'LINOLEIC_ACID_c', 'OLEATE__45__CPD_c', 'TETRACOSANOATE_c', 'CPD__45__12524_c', 'LINOLENIC_ACID_c', 'L__45__SELENOCYSTEINE_c', 'CPD__45__13293_c', 'PALMITATE_c', 'RHAMNOSE_c'], 'Reconstructable targets': ['CPD__45__12521_c', 'TRP_c', 'GLN_c', 'CIT_c', 'HIS_c', 'CYS_c', 'ILE_c', 'MET_c', 'LYS_c', 'VAL_c', 'LEU_c', 'ASCORBATE_c', 'PRO_c', 'GLT_c', 'ARABINOSE_c', 'ARG_c', 'XYLOSE_c'], 'Essential reactions': {'CPD__45__12521_c': ['RXN__45__13942', 'LUTEOLIN__45__7__45__O__45__GLUCORONOSYLTRANSFERASE__45__RXN', 'DIHYDROXYISOVALDEHYDRAT__45__RXN', 'FESO3OXI__45__RXN', 'SULFITE__45__REDUCT__45__RXN'], 'TRP_c': [], 'GLN_c': [], 'CIT_c': [], 'HIS_c': [], 'CYS_c': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'ILE_c': ['DIHYDROXYMETVALDEHYDRAT__45__RXN'], 'MET_c': ['SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'LYS_c': [], 'VAL_c': ['DIHYDROXYISOVALDEHYDRAT__45__RXN'], 'LEU_c': ['DIHYDROXYISOVALDEHYDRAT__45__RXN', 'SULFITE__45__REDUCT__45__RXN', 'FESO3OXI__45__RXN'], 'ASCORBATE_c': [], 'PRO_c': [], 'GLT_c': [], 'ARABINOSE_c': ['L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN'], 'ARG_c': [], 'XYLOSE_c': []}, 'One minimal completion': ['L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'RXN__45__13942', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12045__47__PROTON__46__35__46__', 'LUTEOLIN__45__7__45__O__45__GLUCORONOSYLTRANSFERASE__45__RXN', 'DIHYDROXYMETVALDEHYDRAT__45__RXN', 'RXN__45__18378', 'RXN__45__16249', 'D__45__XYLULOSE__45__REDUCTASE__45__RXN', 'DIHYDROXYISOVALDEHYDRAT__45__RXN', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__12045__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'FESO3OXI__45__RXN', 'TRANS__45__RXN__45__284', '_1__46__3__46__3__46__12__45__RXN', 'RXN__45__13935', 'RXN__45__1744', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__14102', 'L__45__XYLULOSE__45__REDUCTASE__45__RXN'], 'Intersection of cardinality minimal completions': ['L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'RXN__45__13942', 'LUTEOLIN__45__7__45__O__45__GLUCORONOSYLTRANSFERASE__45__RXN', 'DIHYDROXYMETVALDEHYDRAT__45__RXN', 'DIHYDROXYISOVALDEHYDRAT__45__RXN', 'FESO3OXI__45__RXN', '_1__46__3__46__3__46__12__45__RXN', 'RXN__45__13935', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__14102'], 'Union of cardinality minimal completions': ['TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12046__47__PROTON__46__35__46__', 'TRANS__45__RXN__45__262', 'RXN__45__13942', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__12045__47__PROTON__46__35__46__', 'RXN__45__18378', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__15699__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'ABC__45__2__45__RXN__45__ATP__47__L__45__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__47__46__', 'D__45__XYLULOSE__45__REDUCTASE__45__RXN', 'RXN__45__9929', 'TRANS__45__RXN__45__10__45__BETA__45__L__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__42__46__', 'RXN__45__11315', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__BETA__45__L__45__ARABINOSE__47__PROTON__46__42__46__', 'TRANS__45__RXN__45__284', 'RXN__45__13935', 'RXN__45__11825', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__CPD__45__15699__47__PROTON__46__35__46__', 'TRANS__45__RXN__45__300', 'TRANS__45__RXN__45__10__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'ABC__45__2__45__RXN__45__ATP__47__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'TRANS__45__RXN__45__10__45__CPD__45__15699__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'DIHYDROXYISOVALDEHYDRAT__45__RXN', 'FESO3OXI__45__RXN', 'RXN__45__1744', 'L__45__XYLULOSE__45__REDUCTASE__45__RXN', 'TRANS__45__RXN__45__10__45__CPD__45__12046__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'TRANS__45__RXN__45__10__45__L__45__ARABINOSE__47__PROTON__47____47__ARABINOSE__47__PROTON__46__37__46__', 'TRANS__45__RXN__45__10__45__CPD__45__12045__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'L__45__ARABINITOL__45__4__45__DEHYDROGENASE__45__RXN', 'ATPSYN__45__RXN__91__CCO__45__PM__45__BAC__45__NEG__93____45__ATP__47__WATER__47__PROTON__47____47__ADP__47__Pi__47__PROTON__46__48__46__', 'XYLISOM__45__RXN__45__XYLOSE__47____47__D__45__XYLULOSE__46__19__46__', 'DIHYDROXYMETVALDEHYDRAT__45__RXN', 'RXN__45__18377', 'RXN__45__9772', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__12046__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'FUMARATE__45__REDUCTASE__45__NADH__45__RXN', 'RXN__45__11759', '_1__46__3__46__3__46__12__45__RXN', 'TRANS__45__RXN0__45__571', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__L__45__ARABINOSE__47__PROTON__46__37__46__', 'ATPSYN__45__RXN__91__CCO__45__PERI__45__BAC__45__CCO__45__CYTOSOL__93____45__ATP__47__WATER__47__PROTON__47____47__ADP__47__Pi__47__PROTON__46__58__46__', 'TRANS__45__RXN__45__40__45__CPD__45__15699__47__PROTON__47____47__ARABINOSE__47__PROTON__46__35__46__', 'LUTEOLIN__45__7__45__O__45__GLUCORONOSYLTRANSFERASE__45__RXN', 'RXN__45__16249', 'RXN__45__11315__45__XYLITOL__47__NAD__47____47__D__45__Xylose__47__NADH__47__PROTON__46__34__46__', 'DIHYDRONEOPTERIN__45__MONO__45__P__45__DEPHOS__45__RXN', 'RXN__45__8773', 'ABC__45__2__45__RXN__45__ATP__47__BETA__45__L__45__ARABINOSE__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__52__46__', 'ABC__45__2__45__RXN__45__ATP__47__CPD__45__12045__47__WATER__47____47__ADP__47__ARABINOSE__47__Pi__47__PROTON__46__45__46__', 'SULFITE__45__REDUCT__45__RXN', 'RXN__45__14102']}
