@@ -1,4 +1,4 @@
-# Plant-GEMs : Projects that aims to the reconstruction of several plants metabolic networks.
+# Plant-GEMs : Project that aims to the automatic reconstruction of several plants metabolic networks.
 
 -- Python files --
 
