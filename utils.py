@@ -154,10 +154,16 @@ def cobra_compatibility(reac, side = True):
 
 
 def corres_dico(path):
-    """Function to create a ditionary of correspondance between short and long IDs from a file.
+    """Function to create a ditionary of correspondance between 
+    short and long IDs from a correspondance file (Metacyc IDs).
     
     ARGS:
         path (str) -- the path to the file containing the correspondance information.
+    RETURN:
+        dico_matching -- dictionary with short IDs as key and list of long IDs 
+        as values (NB : one short ID can have several long IDs correspondance).
+        dico_matching_rev -- dictionary with long IDs as key and the
+        corresponding short ID as value (NB : one long ID as only one short ID correspondance).
     """
     
     matching = read_file(path)
@@ -172,3 +178,44 @@ def corres_dico(path):
                 dico_matching[couple[0]] = [couple[1]]
             dico_matching_rev[couple[1]] = couple[0]
     return dico_matching, dico_matching_rev
+
+
+def trans_short_ID(list_IDs, corres, short = True):
+    """Function to transform short IDs that can be ambiguous
+    into long ones thanks to the correspondance ID file.
+    
+    ARGS:
+        list_IDs (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
+        corres (str) -- the path to the correspondance file of Metacyc IDs.
+        short (boolean) -- True if you want to have short IDs becoming long,
+        False if you want long IDs to become short (not implemented yet).
+    RETURN:
+        new_list (list of str) -- the list with the converted IDs.
+    """
+    
+    dico_matching, dico_matching_rev = corres_dico(corres)
+    new_list = []
+    if short:
+        for reac in list_IDs:
+            reac = reac.rstrip()
+            try:
+                for long_reac in dico_matching[reac]:
+                    new_list.append(long_reac)
+            except KeyError:
+                try:
+                    dico_matching_rev[reac]
+                    new_list.append(reac)
+                except KeyError:
+                    print("No match for reac : ", reac)
+    else:
+        for reac in list_IDs:
+            reac = reac.rstrip()
+            try:
+                dico_matching[reac]
+                new_list.append(reac)
+            except KeyError:
+                try:
+                    new_list.append(dico_matching_rev[reac])
+                except KeyError:
+                    print("No match for reac : ", reac)
+    return new_list
