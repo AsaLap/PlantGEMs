@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Plant-GEMs : Project that aims to the automatic reconstruction of several plants metabolic networks.
+=======
+# Plant-GEMs : Project that aims to the automatic reconstruction of several plant metabolic networks.
+>>>>>>> bbb8783c6c529e5eef0f5e5fc5f75463b93b7672
 
 -- Python files --
 
