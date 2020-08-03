@@ -360,7 +360,7 @@ if __name__=="__main__":
     # make_upsetplot(WD, dicoUpset, "UpsetPlot_Meneco_Metacyc")
     
     ###Change the reactions ID from long to short (Metacyc)
-    # log = utils.read_file("/home/asa/INRAE/Work/Gap_filling/logUpsetplot.txt")
+    # log = utils.read_file("/home/asa/INRAE/Work/Gap_filling/finalUpsetPlot.log")
     # corres = utils.read_csv("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv", "\t")
     # res = ""
     # dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
@@ -370,4 +370,25 @@ if __name__=="__main__":
     #     except KeyError:
     #         res += line
     #         print("No match for : ", line)
-    # utils.write_file("/home/asa/INRAE/Work/Gap_filling/", "logUpsetplot15_07.txt", res)
+    # utils.write_file("/home/asa/INRAE/Work/Gap_filling/", "finalUpsetPlot_shortIDs.log", res)
+    
+    # def list_reactions(data):
+    #     res = []
+    #     for reaction in data.reactions:
+    #         res.append(reaction.id)
+    #     return res
+    
+    # ###Final UpsetPlot
+    # WD = "/home/asa/INRAE/Work/Gap_filling/"
+    # tomatoDraftCyc = cobra.io.load_json_model(WD + "filled_clean_FusionGenesTomato.sbml.json")
+    # kiwiDraftCyc = cobra.io.load_json_model(WD + "filled_clean_FusionGenesKiwi.sbml.json")
+    # cucumberDraftCyc = cobra.io.load_json_model(WD + "filled_clean_FusionGenesCucumber.sbml.json")
+    # cherryDraftCyc = cobra.io.load_json_model(WD + "filled_clean_FusionGenesCherry.sbml.json")
+    # camelinaDraftCyc = cobra.io.load_json_model(WD + "filled_clean_FusionGenesCamelina.sbml.json")
+    
+    # dicoUpset = {"Tomato" : list_reactions(tomatoDraftCyc),
+    #              "Kiwi" : list_reactions(kiwiDraftCyc),
+    #              "Cucumber" : list_reactions(cucumberDraftCyc),
+    #              "Cherry" : list_reactions(cherryDraftCyc),
+    #              "Camelina" : list_reactions(camelinaDraftCyc)}
+    # make_upsetplot(WD, "finalUpsetPlot", dicoUpset, "Total reactions intersections of reconstructed models")
