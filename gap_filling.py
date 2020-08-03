@@ -129,9 +129,9 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
             print("No match for this reaction : ", reac)
     print("Number of reactions of the unrepaired model : %i\nNumber of reactions of the repaired model : %i" %(old_size, len(draft_model.reactions)))
     if json:
-        cobra.io.save_json_model(draft_model, WD + "repair_" + draft)
+        cobra.io.save_json_model(draft_model, WD + "filled_" + draft + ".json")
     else:
-        cobra.io.write_sbml_model(draft_model, WD + "repair_" + draft)
+        cobra.io.write_sbml_model(draft_model, WD + "filled_" + draft + ".sbml")
     
     
 def make_plantnetwork(WD, metacycPath, reactionsPath):
