@@ -2,9 +2,9 @@
 
 -- Python files --
 
-blasting.py : Creation of plant draft model from a template model.
+blasting.py : Creation of plant draft from a template model.
 
-blastingTK.py : GUI of blasting.py (work in progress).
+blastingTK.py : GUI of blasting.py (aborted).
 
 fusion.py : Merge two metabolic networks, one from a Metacyc reconstruction with Pathway Tools (cf. pathwayToolsPrep.py) and the other one from an homemade script which is reconstructed based on an already curated model (cf. blasting.py).
 
@@ -31,3 +31,18 @@ example_Blasting.ini : Example of an ini file for the blasting pipeline.
 example_PT.ini : Example of an ini file for the pathwayToolsPrep pipeline.
 
 index.txt : Example of index file for the pathwayToolsPrep pipeline.
+
+rapport.ipynb : Jupyter NoteBook file to help for the writing of the internship report.
+
+
+HOW TO USE :
+
+For the moment, each script output is part or all the next script's input.
+Each script has a pipeline function wich makes all the things work.
+
+1. blasting.py
+2. pathwayToolsPrep.py
+3. fusion.py
+4. gap_filling.py
+
+Further improvement are to come, such has a complete pipeline, all in one command.
