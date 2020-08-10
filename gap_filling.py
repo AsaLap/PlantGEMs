@@ -120,11 +120,14 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
     repair_model = cobra.io.read_sbml_model(WD + repair)
     draft_model = cobra.io.read_sbml_model(WD + draft)
     old_size = len(draft_model.reactions)
+    reac_to_blast = []
     for reac in reacs:
         reac = tools.cobra_compatibility(reac.rstrip())
         try:
-            print(repair_model.reactions.get_by_id(reac))
-            draft_model.add_reactions([repair_model.reactions.get_by_id(reac)])
+            new_reac = copy.deepcopy(repair_model.reactions.get_by_id(reac))
+            reac_to_blast.append([new_reac.id, new_reac.gene_reaction_rule])
+            new_reac.gene_reaction_rule = ""
+            draft_model.add_reactions([new_reac])
         except KeyError:
             print("No match for this reaction : ", reac)
     print("Number of reactions of the unrepaired model : %i\nNumber of reactions of the repaired model : %i" %(old_size, len(draft_model.reactions)))
@@ -132,6 +135,7 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
         cobra.io.save_json_model(draft_model, WD + "filled_" + draft.split(".")[0] + ".json")
     else:
         cobra.io.write_sbml_model(draft_model, WD + "filled_" + draft.split(".")[0] + ".sbml")
+    tools.write_csv(WD, reac_to_blast, "rxns_to_blast_" + draft_model.id, "\t")
     
     
 def make_plantnetwork(WD, metacycPath, reactionsPath):
@@ -300,19 +304,19 @@ if __name__=="__main__":
     #                      True)
     
     ###Cherry
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-    #                      reacs,
-    #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesCherry.sbml",
-    #                      True)
-    
-    ###Camelina
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Camelina.txt")
+    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
     reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
                          reacs,
                          "clean_metacyc.sbml",
-                         "clean_FusionGenesCamelina.sbml",
+                         "clean_FusionGenesCherry.sbml",
                          True)
+    
+    ###Camelina
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Camelina.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesCamelina.sbml",
+    #                      True)
