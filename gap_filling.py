@@ -110,9 +110,9 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
     ARGS:
         WD (str) -- the path to the working directory where there are the repair
         model and the draft.
-        reacs (list of str)-- the list of reaction names.
-        repair -- the repair model (SBML format).
-        draft -- the draft model (SBML format).
+        reacs (list of str) -- the list of reaction names.
+        repair -- the repair model file (SBML format).
+        draft -- the draft model file (SBML format).
         json (boolean) -- True if you want a save of the model in the JSON
         format instead of SBML (default).
     """
@@ -129,9 +129,9 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
             print("No match for this reaction : ", reac)
     print("Number of reactions of the unrepaired model : %i\nNumber of reactions of the repaired model : %i" %(old_size, len(draft_model.reactions)))
     if json:
-        cobra.io.save_json_model(draft_model, WD + "filled_" + draft + ".json")
+        cobra.io.save_json_model(draft_model, WD + "filled_" + draft.split(".")[0] + ".json")
     else:
-        cobra.io.write_sbml_model(draft_model, WD + "filled_" + draft + ".sbml")
+        cobra.io.write_sbml_model(draft_model, WD + "filled_" + draft.split(".")[0] + ".sbml")
     
     
 def make_plantnetwork(WD, metacycPath, reactionsPath):
@@ -273,40 +273,40 @@ if __name__=="__main__":
     
     ###Adding manually curated reactions
     ###Tomato
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Tomato.txt")
-    reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-                         reacs,
-                         "clean_metacyc.sbml",
-                         "clean_FusionGenesTomato.sbml",
-                         True)
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Tomato.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesTomato.sbml",
+    #                      True)
     
     ###Kiwi
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Kiwi.txt")
-    reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-                         reacs,
-                         "clean_metacyc.sbml",
-                         "clean_FusionGenesKiwi.sbml",
-                         True)
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Kiwi.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesKiwi.sbml",
+    #                      True)
     
     ###Cucumber
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cucumber.txt")
-    reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-                         reacs,
-                         "clean_metacyc.sbml",
-                         "clean_FusionGenesCucumber.sbml",
-                         True)
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cucumber.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesCucumber.sbml",
+    #                      True)
     
     ###Cherry
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
-    reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-                         reacs,
-                         "clean_metacyc.sbml",
-                         "clean_FusionGenesCherry.sbml",
-                         True)
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesCherry.sbml",
+    #                      True)
     
     ###Camelina
     reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Camelina.txt")
