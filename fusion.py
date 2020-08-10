@@ -121,7 +121,7 @@ def metacyc_correspondance(WD, path):
                 if len(test_ID) < len(short_ID):
                     short_ID = test_ID
             res.append([short_ID, reac["name"]])
-    utils.write_tsv(WD, res, "MetacycCorresIDs")
+    utils.write_csv(WD, res, "MetacycCorresIDs", "\t")
 
 
 def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev, verbose = True):

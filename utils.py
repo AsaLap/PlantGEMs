@@ -65,22 +65,12 @@ def write_file(WD, filename, data):
     f.close()
 
 
-def write_csv(WD, list_value, name):
+def write_csv(WD, list_value, name, separator = ","):
     """Function to save a file as a CSV format, needs a list of lists, 
     first list as the column names."""
     
     with open(WD + name + '.csv', 'w', newline = '') as file:
-        writer = csv.writer(file)
-        for f in list_value:
-            writer.writerow(f)
-
-
-def write_tsv(WD, list_value, name):
-    """Function to save a file as a TSV format, needs a list of lists, 
-    first list as the column names."""
-    
-    with open(WD + name + '.tsv', 'w', newline = '') as file:
-        writer = csv.writer(file, delimiter = "\t")
+        writer = csv.writer(file, delimiter = separator)
         for f in list_value:
             writer.writerow(f)
 
