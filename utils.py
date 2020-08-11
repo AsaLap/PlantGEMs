@@ -4,7 +4,7 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
-"""This file contains utility functions used as is in several scripts."""
+"""This file contains utility functions used in several scripts."""
 
 import configparser
 import csv
