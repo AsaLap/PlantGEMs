@@ -143,12 +143,13 @@ def cobra_compatibility(reac, side = True):
     return reac
 
 
-def corres_dico(path):
+def corres_dico(path, sep = "\t"):
     """Function to create a ditionary of correspondance between 
     short and long IDs from a correspondance file (Metacyc IDs).
     
     ARGS:
         path (str) -- the path to the file containing the correspondance information.
+        sep (str) -- the separator of the correspondance file (default = tab).
     RETURN:
         dico_matching -- dictionary with short IDs as key and list of long IDs 
         as values (NB : one short ID can have several long IDs correspondance).
@@ -161,7 +162,7 @@ def corres_dico(path):
     dico_matching_rev = {}
     for line in matching:
         if line:
-            couple = line.rstrip().split("\t")
+            couple = line.rstrip().split(sep)
             if couple[0] in dico_matching.keys():
                 dico_matching[couple[0]].append(couple[1])
             else:
