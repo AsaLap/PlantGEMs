@@ -58,17 +58,18 @@ def get_sequence_region(data, mRNA):
                 dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Transcripts" : {}}
         ##Searching the transcript's information
         if mRNA:
-            if not transcript_found and "RNA\t" in line:
+            if "RNA\t" in line:
                 try:
                     transcript = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
                     dicoRegions[region][gene]["Transcripts"][transcript] = []
-                    transcript_found = True
                 except AttributeError:
                     print("The mRNA has no attribute 'Name='...")
                     dicoRegions[region][gene]["Transcripts"]["None"] = []
         else:
         #In case the gff file needs to be looked at on the CDS 
         #and not the mRNA to corresponds to the TSV file
+            if "RNA\t" in line:
+                transcript_found = False 
             if not transcript_found and "CDS\t" in line:
                 try: #Searching for CDS ID instead of mRNA.
                     transcript = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
@@ -96,7 +97,7 @@ def make_transcript_corres(WD, name, dicoRegions):
     for region in dicoRegions.keys():
         for gene in dicoRegions[region].keys():
             for transcript in dicoRegions[region][gene]["Transcripts"].keys():
-                corres.append([transcript, gene])
+                corres.append([gene.upper(), transcript.upper()])
     utils.write_csv(WD, corres, "transcript_corres_" + name, separator = "\t")
 
 
@@ -303,8 +304,8 @@ def pipelinePT(data):
     WDinput = WD + "input/"
     WDoutput = WD + "output/"
     WDlog = WD + "log/"
-    subprocess.run(["mkdir", WDinput, WDoutput, WDlog])
-    WDpt = mpwt.find_ptools_path() + "/pgdbs/user/"
+    # subprocess.run(["mkdir", WDinput, WDoutput, WDlog])
+    # WDpt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
     cpu = 0
     for ini in index:
@@ -320,39 +321,39 @@ def pipelinePT(data):
             mRNA = parameters.getboolean("INFO","mRNA")
             name = parameters["INFO"]["DATABASE_NAME"]
             
-            ###Keeping some information for later
-            taxon_name_list.append([name, taxon_ID])
+            # ###Keeping some information for later
+            # taxon_name_list.append([name, taxon_ID])
             
-            ###Preparing the files
-            subprocess.run(["mkdir", WDinput + name])
-            WDorg = WDinput + name + "/"
-            print("------\n" + name + "\n------")
+            # ###Preparing the files
+            # subprocess.run(["mkdir", WDinput + name])
+            # WDorg = WDinput + name + "/"
+            # print("------\n" + name + "\n------")
             gffFile = utils.read_file(WDfiles + fileGFF)
             dicoRegions = get_sequence_region(gffFile, mRNA) 
             make_transcript_corres(WDlog, name, dicoRegions)
-            make_dat(WDorg, dicoRegions, TYPE)
-            make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
-            make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)
+    #         make_dat(WDorg, dicoRegions, TYPE)
+    #         make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
+    #         make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)
 
-    ###Creating the tsv file for the taxon IDs
-    make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
-    print("------\nCreation of the files finished\n------")
+    # ###Creating the tsv file for the taxon IDs
+    # make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
+    # print("------\nCreation of the files finished\n------")
     
-    ##Counting the number of cpu to use
-    if cpu <= multiprocessing.cpu_count() - 2:
-        nb_cpu = cpu
-    else:
-        nb_cpu = multiprocessing.cpu_count() - 2
-    print("Number of CPU used : ", nb_cpu)
+    # ##Counting the number of cpu to use
+    # if cpu <= multiprocessing.cpu_count() - 2:
+    #     nb_cpu = cpu
+    # else:
+    #     nb_cpu = multiprocessing.cpu_count() - 2
+    # print("Number of CPU used : ", nb_cpu)
     
-    ###Starting the mpwt script
-    mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
-                        patho_inference = True, patho_hole_filler = False,
-                        patho_operon_predictor = False, pathway_score = 1,
-                        dat_creation = True, dat_extraction = True,
-                        number_cpu = nb_cpu, size_reduction = False,
-                        patho_log = WDlog, ignore_error = False,
-                        taxon_file = True, verbose = True)
+    # ###Starting the mpwt script
+    # mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
+    #                     patho_inference = True, patho_hole_filler = False,
+    #                     patho_operon_predictor = False, pathway_score = 1,
+    #                     dat_creation = True, dat_extraction = True,
+    #                     number_cpu = nb_cpu, size_reduction = False,
+    #                     patho_log = WDlog, ignore_error = False,
+    #                     taxon_file = True, verbose = True)
 
 
 if __name__=="__main__":
