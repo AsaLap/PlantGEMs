@@ -1,5 +1,6 @@
 # Plant-GEMs : Project that aims to automatically reconstruct several plant metabolic networks, using the Metacyc database.
 
+
 ## Files description :
 
 ### -- Python files --
@@ -33,10 +34,6 @@ example_Blasting.ini : Example of an ini file for the blasting pipeline.
 example_PT.ini : Example of an ini file for the pathwayToolsPrep pipeline.
 
 index.txt : Example of index file for the pathwayToolsPrep pipeline.
-
-### -- Others --
-
-rapport.ipynb : Jupyter NoteBook file to help for the writing of the internship report.
 
 
 ## HOW TO USE :
