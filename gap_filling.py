@@ -140,6 +140,8 @@ def add_filled_reactions(WD, reacs, repair, draft, json = False):
     
 def make_plantnetwork(WD, metacycPath, reactionsPath):
     """Function to create a subnetwork of Metacyc containing only the Viridiplantae taxon.
+    This function revealed itself useless as the output model is way too small,
+    and the TAXONOMIC-RANGE field is not maintained anymore.
     
     ARGS:
         WD (str) -- the path to the working directory where to save the new model.
@@ -190,6 +192,32 @@ def make_plantnetwork(WD, metacycPath, reactionsPath):
     cobra.io.write_sbml_model(meta_plant, WD + "meta_plant.sbml")
 
 
+def final_model(WD, model, transcript_corres, name):
+    """Temporary function to transform the transcripts in gene_reaction_rule into corresponding genes.
+    It creates a new model that will be rid of all the 'false' genes."""
+    
+    dico_corres, dico_corres_rev = tools.corres_dico(transcript_corres) 
+    transcript_model = cobra.io.load_json_model(WD + model)
+    gene_model = cobra.Model(transcript_model.id)
+    for reaction in transcript_model.reactions:
+        genes = []
+        list_transcripts = reaction.gene_reaction_rule.split(" or ")
+        for transcript in [trans.upper() for trans in list_transcripts]:
+            try:
+                genes.append(dico_corres_rev[transcript])
+            except KeyError:
+                try:
+                    dico_corres[transcript]
+                    genes.append(transcript)
+                except KeyError:
+                    print("No match for : ", transcript)
+        new_reaction = copy.deepcopy(reaction)
+        new_reaction.gene_reaction_rule = " or ".join(set(genes))
+        gene_model.add_reactions([new_reaction])
+    cobra.io.save_json_model(gene_model, WD + name + transcript_model.id + ".json")
+            
+
+
 def pipeline_gap_filling(WD, draft, seeds, targets, repair, enumeration = False, json = False):
     """The main function to make all the process.
     
@@ -212,6 +240,8 @@ def pipeline_gap_filling(WD, draft, seeds, targets, repair, enumeration = False,
                         enumeration = enumeration,
                         json = json)
     print(result)
+    ###This next function line will add every reactions without manual curation,
+    ###uncommenting it is not advised, as it is unspecific.
     # add_filled_reactions(WD, result['Union of cardinality minimal completions'], repair, clean_draft)
 
 
@@ -222,35 +252,35 @@ if __name__=="__main__":
     # "ITAG4.0_proteins.fasta",
     # "Tomato")
     
-    ##Tomato
+    # ##Tomato
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "TomatoFusion.sbml",
     #                      "seedsPlants.sbml",
     #                      "targetsTomato.sbml",
     #                      "metacyc.sbml")
     
-    ###Kiwi
+    # ##Kiwi
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "KiwiFusion.sbml",
     #                      "seedsPlants.sbml",
     #                      "targetsKiwi.sbml",
     #                      "metacyc.sbml")
     
-    ###Cucumber
+    # ##Cucumber
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "CucumberFusion.sbml",
     #                      "seedsPlants.sbml",
     #                      "targetsCucumber.sbml",
     #                      "metacyc.sbml")
     
-    ###Cherry
+    # ##Cherry
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "CherryFusion.sbml",
     #                      "seedsPlants.sbml",
     #                      "targetsCherry.sbml",
     #                      "metacyc.sbml")
     
-    ###Camelina
+    # ##Camelina
     # pipeline_gap_filling("/home/asa/INRAE/Work/Gap_filling/",
     #                      "CamelinaFusion.sbml",
     #                      "seedsPlants.sbml",
@@ -276,7 +306,7 @@ if __name__=="__main__":
     #                     "metacyc.sbml")
     
     ###Adding manually curated reactions
-    ###Tomato
+    # ##Tomato
     # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Tomato.txt")
     # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
@@ -285,7 +315,7 @@ if __name__=="__main__":
     #                      "clean_FusionGenesTomato.sbml",
     #                      True)
     
-    ###Kiwi
+    # ##Kiwi
     # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Kiwi.txt")
     # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
@@ -294,7 +324,7 @@ if __name__=="__main__":
     #                      "clean_FusionGenesKiwi.sbml",
     #                      True)
     
-    ###Cucumber
+    # ##Cucumber
     # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cucumber.txt")
     # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
@@ -303,16 +333,16 @@ if __name__=="__main__":
     #                      "clean_FusionGenesCucumber.sbml",
     #                      True)
     
-    ###Cherry
-    reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
-    reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
-                         reacs,
-                         "clean_metacyc.sbml",
-                         "clean_FusionGenesCherry.sbml",
-                         True)
+    # ##Cherry
+    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
+    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    #                      reacs,
+    #                      "clean_metacyc.sbml",
+    #                      "clean_FusionGenesCherry.sbml",
+    #                      True)
     
-    ###Camelina
+    # ##Camelina
     # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Camelina.txt")
     # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
     # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
@@ -320,3 +350,22 @@ if __name__=="__main__":
     #                      "clean_metacyc.sbml",
     #                      "clean_FusionGenesCamelina.sbml",
     #                      True)
+    
+    
+    # ##Tomato
+    # final_model("/home/asa/INRAE/Work/", "finalTomato.json", "/home/asa/INRAE/Work/mpwt/log/transcript_corres_SolLyPHFalse.csv", "final_gene")
+    
+    # ##Kiwi
+    # final_model("/home/asa/INRAE/Work/", "finalKiwi.json", "/home/asa/INRAE/Work/mpwt/log/transcript_corres_ActChPHFalse.csv", "final_gene")
+    
+    # ##Cucumber
+    # final_model("/home/asa/INRAE/Work/", "finalCucumber.json", "/home/asa/INRAE/Work/mpwt/log/transcript_corres_CucSaPHFalse.csv", "final_gene")
+    
+    # ##Cherry
+    # ##To get rid of the "new_gene" (add "genes.append(transcript)" after the last except to keep the normal genes !)
+    # final_model("/home/asa/INRAE/Work/", "finalCherry.json", "/home/asa/INRAE/Work/Fusion/corres_gff_genes_cherry_upper.csv", "final_cor")
+    # ##Regular treatment
+    # final_model("/home/asa/INRAE/Work/", "final_corCherry.json", "/home/asa/INRAE/Work/mpwt/log/transcript_corres_PruAvPHFalse.csv", "final_gene")
+    
+    # ##Camelina
+    # final_model("/home/asa/INRAE/Work/", "finalCamelina.json", "/home/asa/INRAE/Work/mpwt/log/transcript_corres_CamSaPHFalse.csv", "final_gene")
