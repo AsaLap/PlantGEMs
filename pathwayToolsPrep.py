@@ -84,6 +84,22 @@ def get_sequence_region(data, mRNA):
     return dicoRegions
 
 
+def make_transcript_corres(WD, name, dicoRegions):
+    """Function to create a csv file with the correspondance between a transcript and the associated gene.
+    
+    ARGS:
+        WD (str) -- the path of the working directory to save the file.
+        name (str) -- the name of the model being treated.
+        dicoRegions -- the dictionary that contains the information needed (see pipelinePT() for the structure).
+    """
+    corres = []
+    for region in dicoRegions.keys():
+        for gene in dicoRegions[region].keys():
+            for transcript in dicoRegions[region][gene]["Transcripts"].keys():
+                corres.append([transcript, gene])
+    utils.write_csv(WD, corres, "transcript_corres_" + name, separator = "\t")
+
+
 def make_dat(WD, dicoRegions, TYPE):
     """Function to create the .dat file.
     
@@ -313,6 +329,7 @@ def pipelinePT(data):
             print("------\n" + name + "\n------")
             gffFile = utils.read_file(WDfiles + fileGFF)
             dicoRegions = get_sequence_region(gffFile, mRNA) 
+            make_transcript_corres(WDlog, name, dicoRegions)
             make_dat(WDorg, dicoRegions, TYPE)
             make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
             make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)
