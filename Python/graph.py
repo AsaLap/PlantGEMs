@@ -206,7 +206,7 @@ def help_treshold(WD, ini):
     for i in range(101):
         test = 10 * i
         ###Putting the test values instead of default values
-        draft = blasting.main(ini, 0, 100, 1, 0, test)
+        draft = blasting.pipeline_blast(ini, 0, 100, 1, 0, test)
         listValues.append([test, len(draft.genes), len(draft.reactions)])
     listValues.insert(0,["Bit_Score", "Nb genes", "Nb reactions"])
     utils.write_csv(WD, listValues, "Treshold")
@@ -360,17 +360,16 @@ if __name__=="__main__":
     # make_upsetplot(WD, dicoUpset, "UpsetPlot_Meneco_Metacyc")
     
     ###Change the reactions ID from long to short (Metacyc)
-    # log = utils.read_file("/home/asa/INRAE/Work/Almost_last_upsetplot.log")
-    # corres = utils.read_csv("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv", "\t")
-    # res = ""
-    # dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # for line in log:
-    #     try:
-    #         res += dico_matching_rev[line.rstrip()] + "\n"
-    #     except KeyError:
-    #         res += line
-    #         print("No match for : ", line)
-    # utils.write_file("/home/asa/INRAE/Work/", "Almost_last_upsetplot_short.log", res)
+    log = utils.read_file("/home/asa/INRAE/Work/Last_upsetplot.log")
+    res = ""
+    dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    for line in log:
+        try:
+            res += dico_matching_rev[line.rstrip()] + "\n"
+        except KeyError:
+            res += line
+            print("No match for : ", line)
+    utils.write_file("/home/asa/INRAE/Work/", "Last_upsetplot_short.log", res)
     
     # def list_reactions(data):
     #     res = []
@@ -380,15 +379,15 @@ if __name__=="__main__":
     
     # ###Final UpsetPlot
     # WD = "/home/asa/INRAE/Work/"
-    # tomatoDraftCyc = cobra.io.load_json_model(WD + "final_geneTomato.json")
-    # kiwiDraftCyc = cobra.io.load_json_model(WD + "final_geneKiwi.json")
-    # cucumberDraftCyc = cobra.io.load_json_model(WD + "final_geneCucumber.json")
-    # cherryDraftCyc = cobra.io.load_json_model(WD + "final_geneCherry.json")
-    # camelinaDraftCyc = cobra.io.load_json_model(WD + "final_geneCamelina.json")
+    # tomatoDraftCyc = cobra.io.load_json_model(WD + "final_Tomato.json")
+    # kiwiDraftCyc = cobra.io.load_json_model(WD + "final_Kiwi.json")
+    # cucumberDraftCyc = cobra.io.load_json_model(WD + "final_Cucumber.json")
+    # cherryDraftCyc = cobra.io.load_json_model(WD + "final_Cherry.json")
+    # camelinaDraftCyc = cobra.io.load_json_model(WD + "final_Camelina.json")
     
     # dicoUpset = {"Tomato" : list_reactions(tomatoDraftCyc),
     #              "Kiwi" : list_reactions(kiwiDraftCyc),
     #              "Cucumber" : list_reactions(cucumberDraftCyc),
     #              "Cherry" : list_reactions(cherryDraftCyc),
     #              "Camelina" : list_reactions(camelinaDraftCyc)}
-    # make_upsetplot(WD, "Almost_last_upsetplot", dicoUpset, "Total reactions intersections of reconstructed models")
+    # make_upsetplot(WD, "Last_upsetplot", dicoUpset, "Total reactions intersections of reconstructed models")

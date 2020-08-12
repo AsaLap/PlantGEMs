@@ -255,51 +255,51 @@ if __name__=="__main__":
     # pipeline_gap_filling("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      "CamelinaFusion.sbml",
     #                      "seedsPlantsCorrected.sbml",
-    #                      "targetsTomato.sbml",
+    #                      "targetsCamelina.sbml",
     #                      "metacyc.sbml")
     
     ###Second step : adding manually curated reactions
     # ##Tomato
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Tomato.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    # reacs = tools.read_file("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/reactions_to_add_Tomato.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # add_filled_reactions("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      reacs,
     #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesTomato.sbml",
+    #                      "clean_TomatoFusion.sbml",
     #                      True)
     
     # ##Kiwi
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Kiwi.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    # reacs = tools.read_file("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/reactions_to_add_Kiwi.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # add_filled_reactions("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      reacs,
     #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesKiwi.sbml",
+    #                      "clean_KiwiFusion.sbml",
     #                      True)
     
     # ##Cucumber
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cucumber.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    # reacs = tools.read_file("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/reactions_to_add_Cucumber.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # add_filled_reactions("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      reacs,
     #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesCucumber.sbml",
+    #                      "clean_CucumberFusion.sbml",
     #                      True)
     
     # ##Cherry
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Cherry.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    # reacs = tools.read_file("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/reactions_to_add_Cherry.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # add_filled_reactions("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      reacs,
     #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesCherry.sbml",
+    #                      "clean_CherryFusion.sbml",
     #                      True)
     
     # ##Camelina
-    # reacs = tools.read_file("/home/asa/INRAE/Work/Gap_filling/reactions_to_add_Camelina.txt")
-    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv")
-    # add_filled_reactions("/home/asa/INRAE/Work/Gap_filling/",
+    # reacs = tools.read_file("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/reactions_to_add_Camelina.txt")
+    # reacs = tools.trans_short_ID(reacs, "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # add_filled_reactions("/home/asa/INRAE/Work/FichiersRelancePipeline/gap_filling/",
     #                      reacs,
     #                      "clean_metacyc.sbml",
-    #                      "clean_FusionGenesCamelina.sbml",
+    #                      "clean_CamelinaFusion.sbml",
     #                      True)
