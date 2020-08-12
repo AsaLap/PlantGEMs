@@ -271,7 +271,7 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     utils.write_file(WD, "organism-params.dat", info)
 
 
-def pipelinePT(data):
+def pipeline_PWT(data):
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
@@ -357,4 +357,4 @@ def pipelinePT(data):
 
 
 if __name__=="__main__":
-    pipelinePT("/home/asa/INRAE/Work/mpwt/index.txt")
+    pipeline_PWT("/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/index.txt")

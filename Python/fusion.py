@@ -16,7 +16,7 @@ import utils
 
 
 ###For Pathway Tools models
-def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog):
+def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog, name):
     """Function to get the reaction's ID of Metacyc from a Pathway Tools reconstruction.
     
     ARGS:
@@ -28,6 +28,7 @@ def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog):
         in fusion()).
         WDlog (str) -- the working directory to store the log file containing 
         all the reactions not found.
+        name (str) -- the name of the model.
     RETURN:
         set(reac_list) (set of str) -- the list containing all the reaction's long ID.
     """
@@ -44,17 +45,17 @@ def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog):
                 reac_list.append(reac)
             except KeyError:
                 no_match_list.append(reac + "\n")
-                print("No match for reaction :", reac) ###Store it into a log file
-    utils.write_file(WDlog, "error_reaction.log", no_match_list)
     print("Number of reactions from PT model : %i\n\
 Number of those reactions found in Metacyc : %i\n\
 Total of reactions not found : %i"
 %(len(model_reactions), len(set(reac_list)), len(no_match_list)))
+    no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
+    utils.write_file(WDlog, name + "_error_reaction_pwt.log", no_match_list)
     return set(reac_list)
 
 
 ###For Aracyc models
-def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
+def get_aracyc_model_reac(path, dico_matching, dico_matching_rev, WDlog, name):
     """Function to get the reaction's ID of Metacyc from an Aracyc model reconstruction.
     
     ARGS:
@@ -68,7 +69,7 @@ def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
         set(reac_list) (set of str) -- the list containing all the reaction's long ID.
     """
     
-    no_match_cpt = 0
+    no_match_list = []
     reac_list = []
     model = cobra.io.load_json_model(path)
     for reac in model.reactions:
@@ -79,12 +80,14 @@ def get_aracyc_model_reac(path, dico_matching, dico_matching_rev):
                 dico_matching_rev[reac.name]
                 reac_list.append(reac.name)
             except KeyError:
-                no_match_cpt += 1
+                no_match_list.append(reac + "\n")
                 print("No match for reaction :", reac.id, " | ", reac.name)
     print("Nb of reactions from Aracyc model : %i\n\
 Number of those reactions found in Metacyc : %i\n\
 Total of reactions not found : %i"
-    %(len(model.reactions), len(reac_list), no_match_cpt))
+    %(len(model.reactions), len(reac_list), len(no_match_list)))
+    no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
+    utils.write_file(WDlog, name + "_error_reaction_aracyc.log", no_match_list)
     return set(reac_list)
 
 
@@ -167,14 +170,15 @@ def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_match
                         geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
                     except AttributeError:
                         print("No GENE match for proteins.dat : ", lineProt)
-        print(unique_id, "\n", " or ".join(set(geneList)))
+        if verbose:
+            print(unique_id, "\n", " or ".join(set(geneList)))
     else:
         pass
     reac.gene_reaction_rule = " or ".join(set(geneList))
     return reac
 
 
-def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb):
+def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb, verbose = False):
     """Function to merge two models, one from an Aracyc model, the other one from Pathway Tools.
     
     ARGS:
@@ -185,18 +189,20 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
         save_path (str) -- the path and name to the saving directory.
         WDlog (str) -- the working directory to store the log file containing 
         all the reactions not found in get_pwtools_reac().
-        WD_pgdb (str) -- path to the .dat files in ptools_local for the organism.
+        WD_pgdb (str) -- path to the .dat files for the organism (from the mpwt script).
+        verbose (boolean) -- print or not enzyme matches.
     """
     
     dico_matching, dico_matching_rev = utils.corres_dico(corres)
-    pwtools_reac_set = get_pwtools_reac(WD_pgdb + "reactions.dat", dico_matching, dico_matching_rev, WDlog)
-    aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, dico_matching, dico_matching_rev)
+    aracyc_model = cobra.io.load_json_model(aracyc_model_path)
+    pwtools_reac_set = get_pwtools_reac(WD_pgdb + "reactions.dat", dico_matching, dico_matching_rev, WDlog, aracyc_model.id)
+    aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, dico_matching, dico_matching_rev, WDlog, aracyc_model.id)
     ###Here we take away the reactions of metacyc already present in the aracyc model otherwise 
     ###it will be redundant as we keep all the aracyc model reactions.
     metacyc_reac_set = pwtools_reac_set - set.intersection(pwtools_reac_set, aracyc_reac_set)
     
     ###Then, addition of the metacyc reactions found in the Pathway Tools model to the aracyc model
-    new_model = copy.deepcopy(cobra.io.load_json_model(aracyc_model_path))
+    new_model = copy.deepcopy(aracyc_model)
 
     reactionsFile = utils.read_file(WD_pgdb + "reactions.dat")
     enzrxnsFile = utils.read_file(WD_pgdb + "enzrxns.dat")
@@ -208,7 +214,7 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
             if reac[0] in ['0','1','2','3','4','5','6','7','8','9']:
                 reac = "_" + reac
             added_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
-            added_reac_cor = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev)
+            added_reac_cor = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev, verbose)
             new_model.add_reactions([added_reac_cor])
         except KeyError:
             list_fail.append(reac)
@@ -219,45 +225,45 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
 
 if __name__ == "__main__":
     ###Making of the IDs correspondence file which will be needed here
-    utils.metacyc_IDs("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
-                      "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.json")
+    # utils.metacyc_IDs("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+    #                   "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.json")
     
-    ###Tomato
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Tomato_Aracyc/Tomato.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/TomatoFusionGenes.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/sollyphfalsecyc/1.0/data/")
+    ##Tomato
+    pipeline_fusion("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Tomato_Aracyc/Aracyc_genes_Tomato.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/TomatoFusion.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/output/SolLyPHFalse/")
 
-    ###Kiwi
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Kiwi_Aracyc/Kiwi.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/KiwiFusionGenes.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/actchphfalsecyc/1.0/data/")
+    ##Kiwi
+    pipeline_fusion("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Kiwi_Aracyc/Aracyc_genes_Kiwi.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/KiwiFusion.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/output/ActChPHFalse/")
  
-    ###Cucumber
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Cucumber_Aracyc/Cucumber.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CucumberFusionGenes.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/cucsaphfalsecyc/1.0/data/")
+    ##Cucumber
+    pipeline_fusion("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cucumber_Aracyc/Aracyc_genes_Cucumber.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/CucumberFusion.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/output/CucSaPHFalse/")
 
-    ###Cherry
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Cherry_Aracyc/Cherry.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CherryFusionGenes.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/pruavphfalsecyc/1.0/data/")
+    ##Cherry
+    pipeline_fusion("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cherry_Aracyc/Aracyc_genes_Cherry.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/CherryFusion.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/output/PruAvPHFalse/")
 
-    ###Camelina
-    # fusion("/home/asa/INRAE/Work/Fusion/MetacycCorresIDs.tsv",
-    #        "/home/asa/INRAE/Work/blasting_drafts/Camelina_Aracyc/Camelina.json",
-    #        "/home/asa/INRAE/Work/Fusion/metacyc.json",
-    #        "/home/asa/INRAE/Work/Fusion/CamelinaFusionGenes.json",
-    #        "/home/asa/INRAE/Work/Fusion/",
-    #        "/home/asa/INRAE/Logiciels/ptools-local/pgdbs/user/camsaphfalsecyc/1.0/data/")
+    ##Camelina
+    pipeline_fusion("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Camelina_Aracyc/Aracyc_genes_Camelina.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/metacyc.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/CamelinaFusion.json",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+           "/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/output/CamSaPHFalse/")

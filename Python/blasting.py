@@ -22,12 +22,14 @@ import utils
 
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
+    
     with open(path + '.pkl', 'wb+') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(path):
     """Loads a dictionary of Blastp results stored in a pickle file."""
+    
     with open(path + '.pkl', 'rb') as f:
         return pickle.load(f)
 
@@ -52,6 +54,7 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
                 pident, score, evalue, bitscore) (list of str & int)]
             }
     """
+    
     ###Concatenation of string to get the exact paths###
     newDir = WDsub + "Proteins_tmp/"
     queryDir = WDref + queryFile
@@ -116,6 +119,7 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
                 [list of corresponding gene name(s) of target (list of str)]
             }
     """
+    
     dico_genes = {}
     for key in blast_res.keys():
         for res in blast_res[key]:
@@ -153,6 +157,7 @@ def drafting(model, dico_genes, model_name):
     RETURN:
         new_model -- the new COBRA model automatically generated.
     """
+    
     new_model = cobra.Model(model_name)
     ###Browsing the model reactions and associating the subject's genes to them
     for reac in model.reactions:
@@ -172,7 +177,7 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def main(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+def pipeline_blast(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
     """The function that launches the entire pipeline of analysis
     and selections to create a new model.
     
@@ -194,6 +199,7 @@ def main(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage =
     RETURN:
         new_model -- the subject COBRA model.
     """
+    
     ###Reading of the parameter's file
     param = utils.read_config(ini)
     WDref = param["MODEL"]["PATH"]
@@ -211,7 +217,6 @@ def main(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage =
         blast_res = load_obj(WDsub + "resBlastp")
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
-    new_model.add_metabolites(model.metabolites)
     cobra.io.save_json_model(new_model, WDsub + modelName + ".json")
     
     ###Printing of verifications
@@ -225,23 +230,24 @@ def main(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage =
     for val in dico_genes.values():
         for i in val:
             nb_values.append(i)
-    compt = 0
-    for reac in model.reactions:
-        if reac.gene_reaction_rule:
-            compt += 1
-    print("Model : %s\nStats for the reference model :\n",
-          "- Nb of genes : %i\n- Nb of reactions : %i\n-> whose are associated to gene(s) : %i\n",
-          "Stats for the new model :\n- Nb of genes : %i\n- Nb of reactions : %i" 
-    %(modelName, len(model.genes), len(model.reactions), compt,
-    len(new_model.genes), len(new_model.reactions)))
+    print("""Model : %s\nStats for the reference model :
+- Nb of genes : %i
+- Nb of reactions : %i
+- Nb of metabolites : %i
+Stats for the new model :
+- Nb of genes : %i
+- Nb of reactions : %i
+- Nb of metabolites : %i"""
+    %(modelName, len(model.genes), len(model.reactions), len(model.metabolites),
+    len(new_model.genes), len(new_model.reactions), len(new_model.metabolites)))
     print("----------------------------------------")
     return new_model
 
 
 if __name__=='__main__':
     #Lauching the program for the 5 organism on which I'm working
-    main("/home/asa/INRAE/Work/Drafts/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
-    main("/home/asa/INRAE/Work/Drafts/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
-    main("/home/asa/INRAE/Work/Drafts/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
-    main("/home/asa/INRAE/Work/Drafts/Cherry_Aracyc/CherryAracyc.ini", blast = False)
-    main("/home/asa/INRAE/Work/Drafts/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)
+    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
+    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
+    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
+    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cherry_Aracyc/CherryAracyc.ini", blast = False)
+    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)

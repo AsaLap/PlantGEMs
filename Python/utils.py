@@ -6,7 +6,9 @@
 # Mars - Aout 2020
 """This file contains utility functions used in several scripts."""
 
+import cobra
 import configparser
+import copy
 import csv
 import json
 import re
@@ -151,7 +153,7 @@ def metacyc_IDs(WD, path):
         path (str) -- the path to the metacyc model in JSON format.
     """
     
-    data = utils.read_json(path)
+    data = read_json(path)
     res = []
     print(len(data["reactions"]))
     for reac in data["reactions"]:
@@ -246,3 +248,36 @@ def trans_short_ID(list_IDs, corres, short = True):
                 except KeyError:
                     print("No match for reac : ", reac)
     return new_list
+
+
+def transcript_to_gene(WD, model, transcript_corres, name):
+    """Function to transform the transcripts in gene_reaction_rule into its corresponding genes.
+    It creates a new model that will be rid of all the transcripts.
+    
+    ARGS:
+        WD (str) -- the path where to find the model.
+        model (str) -- the model file in json format.
+        transcript_corres (str) -- the exact path of the csv file of the
+        correspondance between a transcript and its gene.
+        name (str) -- the new name for the new corrected model.
+    """
+    
+    dico_corres, dico_corres_rev = corres_dico(transcript_corres) 
+    transcript_model = cobra.io.load_json_model(WD + model)
+    gene_model = cobra.Model(transcript_model.id)
+    for reaction in transcript_model.reactions:
+        genes = []
+        list_transcripts = reaction.gene_reaction_rule.split(" or ")
+        for transcript in list(filter(None, [trans.upper() for trans in list_transcripts])):
+            try:
+                genes.append(dico_corres_rev[transcript])
+            except KeyError:
+                try:
+                    dico_corres[transcript]
+                    genes.append(transcript)
+                except KeyError:
+                    print("No match for : ", transcript)
+        new_reaction = copy.deepcopy(reaction)
+        new_reaction.gene_reaction_rule = " or ".join(set(genes))
+        gene_model.add_reactions([new_reaction])
+    cobra.io.save_json_model(gene_model, WD + name + transcript_model.id + ".json")
