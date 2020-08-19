@@ -250,34 +250,34 @@ def trans_short_ID(list_IDs, corres, short = True):
     return new_list
 
 
-def protein_to_gene(WD, model, transcript_corres, name):
-    """Function to transform the transcripts in gene_reaction_rule into its corresponding genes.
-    It creates a new model that will be rid of all the transcripts.
+def protein_to_gene(WD, model, protein_corres, name):
+    """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
+    It creates a new model that will be rid of all the proteins.
     
     ARGS:
         WD (str) -- the path where to find the model.
         model (str) -- the model file in json format.
-        transcript_corres (str) -- the exact path of the csv file of the
-        correspondance between a transcript and its gene.
+        protein_corres (str) -- the exact path of the csv file of the
+        correspondance between a protein and its gene.
         name (str) -- the new name for the new corrected model.
     """
     
-    dico_corres, dico_corres_rev = corres_dico(transcript_corres) 
-    transcript_model = cobra.io.load_json_model(WD + model)
-    gene_model = cobra.Model(transcript_model.id)
-    for reaction in transcript_model.reactions:
+    dico_corres, dico_corres_rev = corres_dico(protein_corres) 
+    protein_model = cobra.io.load_json_model(WD + model)
+    gene_model = cobra.Model(protein_model.id)
+    for reaction in protein_model.reactions:
         genes = []
-        list_transcripts = reaction.gene_reaction_rule.split(" or ")
-        for transcript in list(filter(None, [trans.upper() for trans in list_transcripts])):
+        list_proteins = reaction.gene_reaction_rule.split(" or ")
+        for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
             try:
-                genes.append(dico_corres_rev[transcript])
+                genes.append(dico_corres_rev[protein])
             except KeyError:
                 try:
-                    dico_corres[transcript]
-                    genes.append(transcript)
+                    dico_corres[protein]
+                    genes.append(protein)
                 except KeyError:
-                    print("No match for : ", transcript)
+                    print("No match for : ", protein)
         new_reaction = copy.deepcopy(reaction)
         new_reaction.gene_reaction_rule = " or ".join(set(genes))
         gene_model.add_reactions([new_reaction])
-    cobra.io.save_json_model(gene_model, WD + name + transcript_model.id + ".json")
+    cobra.io.save_json_model(gene_model, WD + name + protein_model.id + ".json")
