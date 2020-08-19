@@ -168,7 +168,7 @@ def drafting(model, dico_genes, model_name):
                 to_add += dico_genes[gene]
             except KeyError:
                 pass
-        ###TODO : changer l'ID des transcrits en gènes ici (contenus dans to_add)
+        ###TODO : change the proteins's ID in to_add in corresponding genes
         string_reaction_rule = " or ".join(to_add)
         if string_reaction_rule:
             x = copy.deepcopy(reac)

@@ -21,7 +21,7 @@ import utils
 
 def get_sequence_region(data, mRNA):
     """Function which browse the .gff file and get the name of each gene, 
-    the position in the genome and each corresponding region and transcript(s).
+    the position in the genome and each corresponding region and protein(s).
     
     ARGS:
         data (file) -- the gff file to browse (already put in memory by the function "read_file").
@@ -32,11 +32,11 @@ def get_sequence_region(data, mRNA):
     """
     
     dicoRegions = {}
-    transcript_found = False
+    protein_found = False
     for line in data:
         ##Searching the gene's informations
         if "\tgene\t" in line:
-            transcript_found = False
+            protein_found = False
             spl = line.split("\t")
             region = spl[0]
             try:
@@ -53,40 +53,40 @@ def get_sequence_region(data, mRNA):
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
             if spl[6] == "+":
-                dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Transcripts" : {}}
+                dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins" : {}}
             else:
-                dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Transcripts" : {}}
-        ##Searching the transcript's information
+                dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins" : {}}
+        ##Searching the protein's information
         if mRNA:
             if "RNA\t" in line:
                 try:
-                    transcript = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    dicoRegions[region][gene]["Transcripts"][transcript] = []
+                    protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    dicoRegions[region][gene]["Proteins"][protein] = []
                 except AttributeError:
                     print("The mRNA has no attribute 'Name='...")
-                    dicoRegions[region][gene]["Transcripts"]["None"] = []
+                    dicoRegions[region][gene]["Proteins"]["None"] = []
         else:
         #In case the gff file needs to be looked at on the CDS 
         #and not the mRNA to corresponds to the TSV file
             if "RNA\t" in line:
-                transcript_found = False 
-            if not transcript_found and "CDS\t" in line:
+                protein_found = False 
+            if not protein_found and "CDS\t" in line:
                 try: #Searching for CDS ID instead of mRNA.
-                    transcript = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
-                    dicoRegions[region][gene]["Transcripts"][transcript] = []
-                    transcript_found = True
+                    protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
+                    dicoRegions[region][gene]["Proteins"][protein] = []
+                    protein_found = True
                 except AttributeError:
                     print("The CDS has no attribute 'ID='...")
-                    dicoRegions[region][gene]["Transcripts"]["None"] = []
+                    dicoRegions[region][gene]["Proteins"]["None"] = []
         ##Searching the exon's information
         if "\tCDS\t" in line:
             spl = line.split("\t")
-            dicoRegions[region][gene]["Transcripts"][transcript].append([int(spl[3]),int(spl[4])])
+            dicoRegions[region][gene]["Proteins"][protein].append([int(spl[3]),int(spl[4])])
     return dicoRegions
 
 
-def make_transcript_corres(WD, name, dicoRegions):
-    """Function to create a csv file with the correspondence between a transcript and the associated gene.
+def make_protein_corres(WD, name, dicoRegions):
+    """Function to create a csv file with the correspondence between a protein and the associated gene.
     
     ARGS:
         WD (str) -- the path of the working directory to save the file.
@@ -96,9 +96,9 @@ def make_transcript_corres(WD, name, dicoRegions):
     corres = []
     for region in dicoRegions.keys():
         for gene in dicoRegions[region].keys():
-            for transcript in dicoRegions[region][gene]["Transcripts"].keys():
-                corres.append([gene.upper(), transcript.upper()])
-    utils.write_csv(WD, corres, "transcript_corres_" + name, "\t")
+            for protein in dicoRegions[region][gene]["Proteins"].keys():
+                corres.append([gene.upper(), protein.upper()])
+    utils.write_csv(WD, corres, "protein_corres_" + name, "\t")
 
 
 def make_dat(WD, dicoRegions, TYPE):
@@ -169,18 +169,18 @@ def make_pf(WD, fileEggNOG, dicoRegions):
     for region in dicoRegions.keys():
         subPf = []
         for gene in dicoRegions[region].keys():
-            for transcript in dicoRegions[region][gene]["Transcripts"].keys():
+            for protein in dicoRegions[region][gene]["Proteins"].keys():
                 found = False
                 for i in list_index:
                     if found:
                         break
-                    if transcript in tsv[i]:
+                    if protein in tsv[i]:
                         list_index.remove(i)
                         found = True
                         subPf.append(parse_eggNog(gene,
                                                   dicoRegions[region][gene]["Start"],
                                                   dicoRegions[region][gene]["End"],
-                                                  dicoRegions[region][gene]["Transcripts"][transcript], 
+                                                  dicoRegions[region][gene]["Proteins"][protein], 
                                                   tsv[i]))
         if subPf:
             f = open(WD + region + ".pf", "w")
@@ -205,14 +205,14 @@ def make_tsv(WD, taxon_name_list):
 
 
 def parse_eggNog(id, start, end, exon_pos, line):
-    """Sub-function of make_pf() to write the info in the correct order for each transcript.
+    """Sub-function of make_pf() to write the info in the correct order for each protein.
     
     ARGS:
-        id (str) -- the gene name for the transcript.
+        id (str) -- the gene name for the protein.
         start (int) -- the start position of the sequence.
         end (int) -- the end position of the sequence.
         exon_pos (list of int) -- list of position of the exons.
-        line (str) -- the line corresponding to the transcript in the .tsv file.
+        line (str) -- the line corresponding to the protein in the .tsv file.
     RETURN:
         info (str) -- a string with all the information and with the correct 
         page settings for the .pf file.
@@ -286,14 +286,14 @@ def pipeline_PWT(data):
         as chromosomes or contigs (or else, see Pathway Tools user guide).
         taxon_ID (int) -- the NCBI taxon ID of the species.
         mRNA (bool) -- decides if the function must search the mRNA line (True) 
-        or CDS line (False) to get the name of the transcript.
+        or CDS line (False) to get the name of the protein.
         name (str) -- the name of the species database.
     
     -- Structure of dicoRegions (created in this function):
     {Region name (str):
         {Gene name (str):
-            {"Start": int, "End": int, "Transcripts":
-                {Transcript name (str):[[begin, end] the transcript(s)'s CDS positions (list of list of int]}
+            {"Start": int, "End": int, "Proteins":
+                {Protein name (str):[[begin, end] the protein(s)'s CDS positions (list of list of int]}
         }
     }
     """
@@ -330,7 +330,7 @@ def pipeline_PWT(data):
             print("------\n" + name + "\n------")
             gffFile = utils.read_file(WDfiles + fileGFF)
             dicoRegions = get_sequence_region(gffFile, mRNA) 
-            make_transcript_corres(WDlog, name, dicoRegions)
+            make_protein_corres(WDlog, name, dicoRegions)
             make_dat(WDorg, dicoRegions, TYPE)
             make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
             make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)

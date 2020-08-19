@@ -214,7 +214,7 @@ def help_treshold(WD, ini):
 
 if __name__=="__main__":
     ###Files and working directory###
-    WD = '/home/asa/INRAE/Work/Gap_filling/'
+    WD = '/home/asa/INRAE/Work/'
     #AraGem models
     # WDtom = '/home/asa/INRAE/Work/blasting_drafts/Tomato_Arabidopsis/'
     # WDkiw = '/home/asa/INRAE/Work/blasting_drafts/Kiwi_Arabidopsis/'
@@ -360,16 +360,16 @@ if __name__=="__main__":
     # make_upsetplot(WD, dicoUpset, "UpsetPlot_Meneco_Metacyc")
     
     ###Change the reactions ID from long to short (Metacyc)
-    log = utils.read_file("/home/asa/INRAE/Work/Last_upsetplot.log")
-    res = ""
-    dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
-    for line in log:
-        try:
-            res += dico_matching_rev[line.rstrip()] + "\n"
-        except KeyError:
-            res += line
-            print("No match for : ", line)
-    utils.write_file("/home/asa/INRAE/Work/", "Last_upsetplot_short.log", res)
+    # log = utils.read_file("/home/asa/INRAE/Work/Last_upsetplot.log")
+    # res = ""
+    # dico_matching, dico_matching_rev = utils.corres_dico("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/MetacycCorresIDs.csv")
+    # for line in log:
+    #     try:
+    #         res += dico_matching_rev[line.rstrip()] + "\n"
+    #     except KeyError:
+    #         res += line
+    #         print("No match for : ", line)
+    # utils.write_file("/home/asa/INRAE/Work/", "Last_upsetplot_short.log", res)
     
     # def list_reactions(data):
     #     res = []
@@ -391,3 +391,13 @@ if __name__=="__main__":
     #              "Cherry" : list_reactions(cherryDraftCyc),
     #              "Camelina" : list_reactions(camelinaDraftCyc)}
     # make_upsetplot(WD, "Last_upsetplot", dicoUpset, "Total reactions intersections of reconstructed models")
+    
+    ##Upsetplot de test
+    dicoUpset = {"Tomato" : [],
+                 "Kiwi" : [],
+                 "Cucumber" : [],
+                 "Cherry" : [],
+                 "Camelina" : [],
+                 "Elephant" : [],
+                 "Koala" : []}
+    make_upsetplot(WD, "Test", dicoUpset, "Test")

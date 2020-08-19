@@ -83,7 +83,7 @@ def make_info(WD, DNA_file, RNA_file, prot_file, name):
     ARGS:
         WD (str) -- the working directory.
         DNA_file (str) -- the name of the fasta file of the total DNA.
-        RNA_file (str) -- the name of the fasta file of only the transcripts.
+        RNA_file (str) -- the name of the fasta file of only the proteins.
         prot_file (str) -- the name of the fasta file of the proteins.
         name (str) -- the name for the output .txt file.
     """

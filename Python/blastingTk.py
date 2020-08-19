@@ -5,6 +5,8 @@
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
 
+"""Project Aborted"""
+
 from tkinter import *
 from tkinter import filedialog
 

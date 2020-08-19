@@ -250,7 +250,7 @@ def trans_short_ID(list_IDs, corres, short = True):
     return new_list
 
 
-def transcript_to_gene(WD, model, transcript_corres, name):
+def protein_to_gene(WD, model, transcript_corres, name):
     """Function to transform the transcripts in gene_reaction_rule into its corresponding genes.
     It creates a new model that will be rid of all the transcripts.
     
