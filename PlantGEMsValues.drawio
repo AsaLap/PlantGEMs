@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2020-08-24T13:47:22.355Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36" etag="x3LzQMX-1SaSK7NwZ89u" version="13.6.4" type="github">
+<mxfile host="app.diagrams.net" modified="2020-08-24T15:19:06.476Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36" etag="Z9cO4lMqC5keiduZN9f_" version="13.6.4" type="github">
   <diagram id="JveY3QWZHjiY71MnFOfb" name="Page-1">
     <mxGraphModel dx="1422" dy="723" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -201,7 +201,7 @@
         <mxCell id="GCRvmyEsP8-aKzz3nm86-6" value="&lt;b&gt;&lt;font style=&quot;font-size: 14px&quot;&gt;MPWT&lt;/font&gt;&lt;/b&gt;&lt;br&gt;(Pathway&amp;nbsp;&lt;br&gt;Tools)" style="rhombus;whiteSpace=wrap;html=1;strokeWidth=3;gradientDirection=east;fillColor=#FF0000;gradientColor=#C4C4C4;" vertex="1" parent="1">
           <mxGeometry x="700" y="101" width="100" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="GCRvmyEsP8-aKzz3nm86-7" style="edgeStyle=orthogonalEdgeStyle;curved=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=none;startFill=0;fontColor=#6F0000;strokeWidth=4;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="GCRvmyEsP8-aKzz3nm86-8" target="GCRvmyEsP8-aKzz3nm86-202">
+        <mxCell id="GCRvmyEsP8-aKzz3nm86-7" style="edgeStyle=orthogonalEdgeStyle;curved=1;orthogonalLoop=1;jettySize=auto;html=1;startArrow=none;startFill=0;fontColor=#6F0000;strokeWidth=4;entryX=1.009;entryY=0.1;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="1" source="GCRvmyEsP8-aKzz3nm86-8" target="GCRvmyEsP8-aKzz3nm86-202">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="420" y="380" as="targetPoint" />
           </mxGeometry>
@@ -221,7 +221,7 @@
         <mxCell id="GCRvmyEsP8-aKzz3nm86-13" value="Manual Curation" style="rhombus;whiteSpace=wrap;html=1;gradientColor=none;fillColor=none;dashed=1;dashPattern=1 1;" vertex="1" parent="1">
           <mxGeometry x="711" y="455" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="GCRvmyEsP8-aKzz3nm86-27" style="edgeStyle=orthogonalEdgeStyle;curved=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=none;startFill=0;fillColor=#a20025;strokeWidth=4;fontColor=#AF0000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="GCRvmyEsP8-aKzz3nm86-202" target="GCRvmyEsP8-aKzz3nm86-11">
+        <mxCell id="GCRvmyEsP8-aKzz3nm86-27" style="edgeStyle=orthogonalEdgeStyle;curved=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=none;startFill=0;fillColor=#a20025;strokeWidth=4;fontColor=#AF0000;exitX=1.004;exitY=-0.133;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="GCRvmyEsP8-aKzz3nm86-207" target="GCRvmyEsP8-aKzz3nm86-11">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="420" y="560" as="sourcePoint" />
           </mxGeometry>
