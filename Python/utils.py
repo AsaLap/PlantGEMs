@@ -63,7 +63,7 @@ def write_file(WD, filename, data):
     
     f = open(WD + filename, "w")
     for i in data:
-        f.write(i)
+        f.write(i.rstrip() + "\n")
     f.close()
 
 
@@ -209,7 +209,7 @@ def corres_dico(path, sep = "\t"):
     return dico_matching, dico_matching_rev
 
 
-def trans_short_ID(list_IDs, corres, short = True):
+def trans_short_ID(list_IDs, corres, short = True, keep = False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
     
@@ -217,7 +217,8 @@ def trans_short_ID(list_IDs, corres, short = True):
         list_IDs (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
         corres (str) -- the path to the correspondence file of Metacyc IDs.
         short (boolean) -- True if you want to have short IDs becoming long,
-        False if you want long IDs to become short (not implemented yet).
+        False if you want long IDs to become short.
+        still (boolean) -- True if you want to keep the reactions even if they are not found.
     RETURN:
         new_list (list of str) -- the list with the converted IDs.
     """
@@ -236,6 +237,9 @@ def trans_short_ID(list_IDs, corres, short = True):
                     new_list.append(reac)
                 except KeyError:
                     print("No match for reac : ", reac)
+                    if keep:
+                        new_list.append(reac)
+                        print("Keeping it anyway...")
     else:
         for reac in list_IDs:
             reac = reac.rstrip()
@@ -247,6 +251,9 @@ def trans_short_ID(list_IDs, corres, short = True):
                     new_list.append(dico_matching_rev[reac])
                 except KeyError:
                     print("No match for reac : ", reac)
+                    if keep:
+                        new_list.append(reac)
+                        print("Keeping it anyway...")
     return new_list
 
 
