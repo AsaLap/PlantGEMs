@@ -47,7 +47,7 @@ def read_pathways_csv(file):
 def add(variable, x = 1):
     return variable + x
 
-def count_firstLvl(dico_res, precision = None, size = 2):
+def count_pathways(dico_res, precision = None, size = 2):
     """Function to gather information about pathways
     ARGS:
         dico_res -- python dictionary resulting from the read_pathways_csv() function.
@@ -73,6 +73,27 @@ def count_firstLvl(dico_res, precision = None, size = 2):
                     else:
                         dico_count[dico_res[key]["Precision1"]] = 1 #First appearance
     return dico_count
+
+
+def make_dico_all(path, extension, precision, size):
+    """Helpfull function to go faster making graphs for the pathways analysis."""
+    
+    dico_all = {"Tomato" : count_pathways(read_pathways_csv(path + "Tomato" + extension), precision, size), 
+            "Kiwi" : count_pathways(read_pathways_csv(path + "Kiwi" + extension), precision, size),
+            "Cucumber" : count_pathways(read_pathways_csv(path + "Cucumber" + extension), precision, size),
+            "Cherry" : count_pathways(read_pathways_csv(path + "Cherry" + extension), precision, size),
+            "Camelina" : count_pathways(read_pathways_csv(path + "Camelina" + extension), precision, size)}
+    ###Add the keys that are not in every dictionary for the plot to work###
+    all_keys = []
+    for key in dico_all.keys():
+        for type_key in dico_all[key].keys():
+            all_keys.append(type_key)
+    all_keys = set(all_keys)
+    for bio_type in all_keys:
+        for key in dico_all.keys():
+            if bio_type not in list(dico_all[key].keys()):
+                dico_all[key][bio_type] = 0
+    return dico_all
 
 def multi_barplot(dico_all, x_lab, y_lab, title):
     """Code coming mainly from matplotlib.org
@@ -146,27 +167,51 @@ if __name__=="__main__":
     # multi_barplot(dico_all_genes, "Nombre de gènes", "Nombre de réactions", "Nombre de réactions en fonction du nombre de gènes associés")
     
     ###Graph for the pathways's types (first level) distribution between the species
-    # tomatoCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Tomato-80.tsv"), "Type", 0)
-    # kiwiCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Kiwi-80.tsv"), "Type", 0)
-    # cucumberCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cucumber-80.tsv"), "Type", 0)
-    # cherryCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cherry-80.tsv"), "Type", 0)
-    # camelinaCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Camelina-80.tsv"), "Type", 0)
-    # dico_all = {"Tomato" : tomatoCount, 
+    # tomatoCount = count_pathways(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Tomato-80.tsv"), size = 3)
+    # kiwiCount = count_pathways(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Kiwi-80.tsv"), size = 3)
+    # cucumberCount = count_pathways(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cucumber-80.tsv"), size = 3)
+    # cherryCount = count_pathways(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cherry-80.tsv"), size = 3)
+    # camelinaCount = count_pathways(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Camelina-80.tsv"), size = 3)
+    # dico_all = {"Tomato" : tomatoCount,
     #         "Kiwi" : kiwiCount,
     #         "Cucumber" : cucumberCount,
     #         "Cherry" : cherryCount,
     #         "Camelina" : camelinaCount}
-    # multi_barplot(dico_all, 'Nombre de pathways', 'Quantité de pathways associés à différentes fonctions métaboliques', 'Title')
+    # multi_barplot(dico_all, 'Nature des voies métaboliques', 'Nombre de voies métaboliques (taille mini = 3)', 'Nature et nombre de voies métaboliques par espèce')
     
     ###Graph for the pathways's types (Biomass only) distribution between the species
-    tomatoCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Tomato-80.tsv"), precision = "Biosynthesis", size = 0)
-    kiwiCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Kiwi-80.tsv"), precision = "Biosynthesis", size = 0)
-    cucumberCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cucumber-80.tsv"), precision = "Biosynthesis", size = 0)
-    cherryCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Cherry-80.tsv"), precision = "Biosynthesis", size = 0)
-    camelinaCount = count_firstLvl(read_pathways_csv("/home/asa/INRAE/Work/Analyse/perSpecies/Camelina-80.tsv"), precision = "Biosynthesis", size = 0)
-    dico_all = {"Tomato" : tomatoCount, 
-            "Kiwi" : kiwiCount,
-            "Cucumber" : cucumberCount,
-            "Cherry" : cherryCount,
-            "Camelina" : camelinaCount}
-    multi_barplot(dico_all, 'Nature de la biosynthèse', 'Nombre de voies métaboliques (taille mini = 0)', 'Nature et nombre de voies métaboliques pour la biosynthèse')
+    ###Biosynthesis
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Biosynthesis", 4)
+    # multi_barplot(dico_all, 'Type de biosynthèse',
+    # 'Nombre de voies métaboliques (taille mini = 4)',
+    # 'Type et nombre de voies métaboliques pour la biosynthèse')
+    
+    ###Degradation
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Degradation", 4)
+    # multi_barplot(dico_all, 'Type de degradation',
+    # 'Nombre de voies métaboliques (taille mini = 4)',
+    # 'Type et nombre de voies métaboliques pour la dégradation')
+    
+    ###NRJ
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Energy-Metabolism", 2)
+    # multi_barplot(dico_all, 'Type de métabolisme énergétique',
+    # 'Nombre de voies métaboliques (taille mini = 2)',
+    # "Type et nombre de voies métaboliques pour la production d'énergie")
+    
+    ###Activation, inactivation and interconversion
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Activation-Inactivation-Interconversion", 2)
+    # multi_barplot(dico_all, "Type d'activation, désactivation et interconversion",
+    # 'Nombre de voies métaboliques (taille mini = 2)',
+    # "Type et nombre de voies métaboliques pour l'activation, la désactivation et l'interconversion")
+    
+    ###Macromolecule modification
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Macromolecule-Modification", 4)
+    # multi_barplot(dico_all, "Type de modification des macromolécules",
+    # 'Nombre de voies métaboliques (taille mini = 4)',
+    # "Type et nombre de voies métaboliques pour la modification des macromolécules")
+    
+    ###Metabolic clusters
+    # dico_all = make_dico_all("/home/asa/INRAE/Work/Analyse/perSpecies/", "-80.tsv", "Metabolic-Clusters", 4)
+    # multi_barplot(dico_all, "Type de clusters métaboliques",
+    # 'Nombre de voies métaboliques (taille mini = 4)',
+    # "Type et nombre de voies métaboliques pour les clusters métaboliques")
