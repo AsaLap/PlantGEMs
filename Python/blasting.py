@@ -20,16 +20,17 @@ import re
 
 import utils
 
+
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
-    
+
     with open(path + '.pkl', 'wb+') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(path):
     """Loads a dictionary of Blastp results stored in a pickle file."""
-    
+
     with open(path + '.pkl', 'rb') as f:
         return pickle.load(f)
 
@@ -54,7 +55,7 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
                 pident, score, evalue, bitscore) (list of str & int)]
             }
     """
-    
+
     ###Concatenation of string to get the exact paths###
     newDir = WDsub + "Proteins_tmp/"
     queryDir = WDref + queryFile
@@ -84,10 +85,10 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
     total_time = lap_time = time.time()
     blast_res = {}
     for gene in model.genes:
-        if i%10==0:
-            print("Protein %i out of %i\nTime : %f s" %(i,x, time.time() - lap_time))
+        if i % 10 == 0:
+            print("Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
             lap_time = time.time()
-        i+=1
+        i += 1
         requestBlast = [
             "blastp",
             "-subject",
@@ -98,7 +99,7 @@ def blast_run(WDref, WDsub, model, queryFile, subjectFile):
             "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
         blast_res[gene.id] = subprocess.run(requestBlast, capture_output=True).stdout.decode('ascii').split("\n")[:-1]
     subprocess.run(["rm", "-rf", newDir])
-    print("Blast done !\nTotal time : %f s" %(time.time() - total_time))
+    print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
     return blast_res
 
 
@@ -119,7 +120,7 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
                 [list of corresponding gene name(s) of target (list of str)]
             }
     """
-    
+
     dico_genes = {}
     for key in blast_res.keys():
         for res in blast_res[key]:
@@ -132,11 +133,11 @@ def select_genes(blast_res, identity, diff, e_val, coverage, bit_score):
             len_subject = spl[3]
             len_query = [spl[1] * (100 - diff) / 100, spl[1] * (100 + diff) / 100]
             min_align = coverage / 100 * spl[1]
-            if spl[6] >= identity\
-            and len_subject >= len_query[0]\
-            and len_subject <= len_query[1]\
-            and spl[4] >= min_align\
-            and spl[9] >= bit_score:
+            if spl[6] >= identity \
+                    and len_subject >= len_query[0] \
+                    and len_subject <= len_query[1] \
+                    and spl[4] >= min_align \
+                    and spl[9] >= bit_score:
                 try:
                     if spl[8] <= e_val:
                         dico_genes[key].append(spl[2])
@@ -157,7 +158,7 @@ def drafting(model, dico_genes, model_name):
     RETURN:
         new_model -- the new COBRA model automatically generated.
     """
-    
+
     new_model = cobra.Model(model_name)
     ###Browsing the model reactions and associating the subject's genes to them
     for reac in model.reactions:
@@ -177,7 +178,7 @@ def drafting(model, dico_genes, model_name):
     return new_model
 
 
-def pipeline_blast(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, coverage = 20, bit_score = 300):
+def pipeline_blast(ini, blast=True, identity=50, diff=30, e_val=1e-100, coverage=20, bit_score=300):
     """The function that launches the entire pipeline of analysis
     and selections to create a new model.
     
@@ -199,7 +200,7 @@ def pipeline_blast(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, 
     RETURN:
         new_model -- the subject COBRA model.
     """
-    
+
     ###Reading of the parameter's file
     param = utils.read_config(ini)
     WDref = param["MODEL"]["PATH"]
@@ -208,7 +209,7 @@ def pipeline_blast(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, 
     WDsub = param["SUBJECT"]["PATH"]
     subjectFile = param["SUBJECT"]["FASTA"]
     modelName = param["SUBJECT"]["NAME"]
-    
+
     model = cobra.io.read_sbml_model(WDref + ref_gem)
     if blast:
         blast_res = blast_run(WDref, WDsub, model, queryFile, subjectFile)
@@ -218,13 +219,13 @@ def pipeline_blast(ini, blast = True, identity = 50, diff = 30, e_val = 1e-100, 
     dico_genes = select_genes(blast_res, identity, diff, e_val, coverage, bit_score)
     new_model = drafting(model, dico_genes, modelName)
     cobra.io.save_json_model(new_model, WDsub + modelName + ".json")
-    
+
     ###Printing of verifications
     no_results = []
     for key in blast_res.keys():
         if not blast_res[key]:
             no_results.append(key)
-    print("The",len(no_results),"genes that have no matches : ", no_results)
+    print("The", len(no_results), "genes that have no matches : ", no_results)
     ###Counting of different values
     nb_values = []
     for val in dico_genes.values():
@@ -238,16 +239,18 @@ Stats for the new model :
 - Nb of genes : %i
 - Nb of reactions : %i
 - Nb of metabolites : %i"""
-    %(modelName, len(model.genes), len(model.reactions), len(model.metabolites),
-    len(new_model.genes), len(new_model.reactions), len(new_model.metabolites)))
+          % (modelName, len(model.genes), len(model.reactions), len(model.metabolites),
+             len(new_model.genes), len(new_model.reactions), len(new_model.metabolites)))
     print("----------------------------------------")
     return new_model
 
 
-if __name__=='__main__':
-    #Lauching the program for the 5 organism on which I'm working
-    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Tomato_Aracyc/TomatoAracyc.ini", blast = False)
-    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Kiwi_Aracyc/KiwiAracyc.ini", blast = False)
-    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cucumber_Aracyc/CucumberAracyc.ini", blast = False)
-    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Cherry_Aracyc/CherryAracyc.ini", blast = False)
-    pipeline_blast("/home/asa/INRAE/Work/FichiersRelancePipeline/blasting/Camelina_Aracyc/CamelinaAracyc.ini", blast = False)
+if __name__ == '__main__':
+    # Lauching the program for the 5 organism on which I'm working
+    pipeline_blast("/home/asa/INRAE/StageMaster_2020/Work/FichiersRelancePipeline/blasting/Tomato_Aracyc/TomatoAracyc.ini", blast=False)
+    pipeline_blast("/home/asa/INRAE/StageMaster_2020/Work/FichiersRelancePipeline/blasting/Kiwi_Aracyc/KiwiAracyc.ini", blast=False)
+    pipeline_blast("/home/asa/INRAE/StageMaster_2020/Work/FichiersRelancePipeline/blasting/Cucumber_Aracyc/CucumberAracyc.ini",
+                   blast=False)
+    pipeline_blast("/home/asa/INRAE/StageMaster_2020/Work/FichiersRelancePipeline/blasting/Cherry_Aracyc/CherryAracyc.ini", blast=False)
+    pipeline_blast("/home/asa/INRAE/StageMaster_2020/Work/FichiersRelancePipeline/blasting/Camelina_Aracyc/CamelinaAracyc.ini",
+                   blast=False)
