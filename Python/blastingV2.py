@@ -7,6 +7,7 @@ import utils
 
 
 class Blasting:
+    name = None
     model = None
     model_fasta_path = None
     model_fasta = None
@@ -30,13 +31,14 @@ class Blasting:
     bit_score (int) -- the minimum Bit-Score chosen.
     """
 
-    def __init__(self, _model, _model_fasta_path, _subject_fasta_path):
+    def __init__(self, _name, _model, _model_fasta_path, _subject_fasta_path):
         """
         ARGS:
             _model -- the path to the SBML file containing the model for the reconstruction.
             _model_fasta_path -- the path to the fasta file of the model.
             _subject_fasta_path -- the path to the fasta file of the subject.
         """
+        self.name = _name
         self.model = cobra.io.read_sbml_model(_model)
         self.model_fasta_path = _model_fasta_path
         self.model_directory = os.path.split(self.model_fasta_path)[0]
@@ -119,7 +121,7 @@ class Blasting:
 
 
 if __name__ == '__main__':
-    test = Blasting("/home/asa/INRAE/Tests/aracyc.sbml", "/home/asa/INRAE/Tests/query.fasta",
+    test = Blasting("Test", "/home/asa/INRAE/Tests/aracyc.sbml", "/home/asa/INRAE/Tests/query.fasta",
                     "/home/asa/INRAE/Tests/subject.fasta")
     test.blast_run()
     utils.save_obj(test, "/home/asa/INRAE/Tests/test")
