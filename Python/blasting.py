@@ -24,8 +24,8 @@ import utils
 def save_obj(obj, path):
     """Saves the dictionary of Blastp results in a pickle file."""
 
-    with open(path + '.pkl', 'wb+') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+    with open(path + '.pkl', 'wb+') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
 def load_obj(path):

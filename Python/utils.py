@@ -4,19 +4,20 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
-"""This file contains utility functions used in several scripts."""
+"""This file contains utility functions used in several PlantGEMs' scripts."""
 
 import cobra
 import configparser
 import copy
 import csv
 import json
+import pickle
 import re
 
 
 def read_file(path):
     """Function to read and return a file line by line in a list."""
-    
+
     f = open(path, "r")
     res = f.readlines()
     f.close()
@@ -25,10 +26,10 @@ def read_file(path):
 
 def read_csv(path, delim):
     """Function to read and return a csv file in a list, choosing the delimiter."""
-    
+
     f = open(path, "r")
     res = []
-    for row in csv.reader(f, delimiter = delim):
+    for row in csv.reader(f, delimiter=delim):
         res.append(row)
     f.close()
     return res
@@ -36,7 +37,7 @@ def read_csv(path, delim):
 
 def read_json(path):
     """Function to read a JSON file."""
-    
+
     f = open(path, "r")
     res = f.read()
     data = json.loads(res)
@@ -52,7 +53,7 @@ def read_config(ini):
     RETURN :
         config (dict of str) -- the configuration in a python dictionary object.
     """
-    
+
     config = configparser.ConfigParser()
     config.read(ini)
     return config
@@ -60,21 +61,35 @@ def read_config(ini):
 
 def write_file(WD, filename, data):
     """Function to write a file from a list."""
-    
+
     f = open(WD + filename, "w")
     for i in data:
         f.write(i.rstrip() + "\n")
     f.close()
 
 
-def write_csv(WD, list_value, name, separator = ","):
+def write_csv(WD, list_value, name, separator=","):
     """Function to save a file as a CSV format, needs a list of lists, 
     first list as the column names."""
-    
-    with open(WD + name + '.csv', 'w', newline = '') as file:
-        writer = csv.writer(file, delimiter = separator)
+
+    with open(WD + name + '.csv', 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=separator)
         for f in list_value:
             writer.writerow(f)
+
+
+def save_obj(obj, path):
+    """Saves an object in a pickle file."""
+
+    with open(path + '.pkl', 'wb+') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(path):
+    """Loads a pickle object."""
+
+    with open(path + '.pkl', 'rb') as input:
+        return pickle.load(input)
 
 
 def get_reactions_PT(path):
@@ -85,7 +100,7 @@ def get_reactions_PT(path):
     RETURN:
         liste_reac (list of str) -- the list containing all the reactions in this model.
     """
-    
+
     liste_Reac = []
     PT_reac = open(path, "r")
     for line in PT_reac:
@@ -107,7 +122,7 @@ def clean_sbml(WD, name):
     RETURN:
         the name of the new file.
     """
-    
+
     file = read_file(WD + name)
     new_file = []
     meta = re.compile('( id="M_)')
@@ -123,7 +138,7 @@ def clean_sbml(WD, name):
     return "clean_" + name
 
 
-def cobra_compatibility(reac, side = True):
+def cobra_compatibility(reac, side=True):
     """Function to transform a reaction ID into a cobra readable ID and vice versa.
     
     ARGS:
@@ -133,13 +148,15 @@ def cobra_compatibility(reac, side = True):
     RETURN:
         reac (str) -- the transformed reaction.
     """
-    
+
     if side:
-        reac = reac.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace("__91__", "[").replace("__93__", "]")
+        reac = reac.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace(
+            "__91__", "[").replace("__93__", "]")
         if re.search('(^_\d)', reac):
             reac = reac[1:]
     else:
-        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace("[", "__91__").replace("]", "__93")
+        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace(
+            "[", "__91__").replace("]", "__93")
         if re.search('(\d)', reac[0]):
             reac = "_" + reac
     return reac
@@ -152,7 +169,7 @@ def metacyc_IDs(WD, path):
         WD (str) -- the directory to save the correspondence file.
         path (str) -- the path to the metacyc model in JSON format.
     """
-    
+
     data = read_json(path)
     res = []
     print(len(data["reactions"]))
@@ -181,7 +198,7 @@ def metacyc_IDs(WD, path):
     write_csv(WD, res, "MetacycCorresIDs", "\t")
 
 
-def corres_dico(path, sep = "\t"):
+def corres_dico(path, sep="\t"):
     """Function to create a ditionary of correspondence between 
     short and long IDs from a correspondence file (Metacyc IDs).
     
@@ -194,7 +211,7 @@ def corres_dico(path, sep = "\t"):
         dico_matching_rev -- dictionary with long IDs as key and the
         corresponding short ID as value (NB : one long ID as only one short ID correspondence).
     """
-    
+
     matching = read_file(path)
     dico_matching = {}
     dico_matching_rev = {}
@@ -209,7 +226,7 @@ def corres_dico(path, sep = "\t"):
     return dico_matching, dico_matching_rev
 
 
-def trans_short_ID(list_IDs, corres, short = True, keep = False):
+def trans_short_ID(list_IDs, corres, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
     
@@ -222,7 +239,7 @@ def trans_short_ID(list_IDs, corres, short = True, keep = False):
     RETURN:
         new_list (list of str) -- the list with the converted IDs.
     """
-    
+
     dico_matching, dico_matching_rev = corres_dico(corres)
     new_list = []
     if short:
@@ -268,8 +285,8 @@ def protein_to_gene(WD, model, protein_corres, name):
         correspondance between a protein and its gene.
         name (str) -- the new name for the new corrected model.
     """
-    
-    dico_corres, dico_corres_rev = corres_dico(protein_corres) 
+
+    dico_corres, dico_corres_rev = corres_dico(protein_corres)
     protein_model = cobra.io.load_json_model(WD + model)
     gene_model = cobra.Model(protein_model.id)
     for reaction in protein_model.reactions:
