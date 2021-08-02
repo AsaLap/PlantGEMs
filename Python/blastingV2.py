@@ -144,6 +144,15 @@ class Blasting:
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 
+    def build(self):
+        history_dir = os.path.dirname(self.subject_directory) + "/history/" + self.name + "/"
+        self.blast_run()
+        utils.save_obj(self, history_dir + "blasted")
+        self.select_genes()
+        utils.save_obj(self, history_dir + "gene_selected")
+        self.drafting()
+        utils.save_obj(self, history_dir + "drafted")
+
 
 if __name__ == '__main__':
     # test = Blasting("Test", "/home/asa/INRAE/Tests/aracyc.sbml", "/home/asa/INRAE/Tests/query.fasta",
