@@ -8,18 +8,6 @@ import utils
 
 
 class Blasting:
-    name = None
-    model = None
-    draft = None
-    model_fasta_path = None
-    model_fasta = None
-    model_directory = None
-    subject_fasta_path = None
-    subject_fasta = None
-    subject_directory = None
-    blast_result = {}
-    gene_dictionary = {}
-
     identity = 50
     difference = 30
     e_val = 1e-100
@@ -48,8 +36,14 @@ class Blasting:
         self.subject_fasta_path = _subject_fasta_path
         self.subject_fasta = open(self.subject_fasta_path).read()
         self.subject_directory = os.path.split(self.subject_fasta_path)[0]
+        self.blast_result = {}
+        self.gene_dictionary = {}
 
-    # def model_fasta_cut(self):
+        # def model_fasta_cut(self):
+        """ Function put aside because the blastp command can only be lauched on files and not strings in a program so 
+        every gene is written on a file in the 'blast_run' method.
+        Otherwise this function was to store all the genes' strings into a class attribute named 'model_genes'"""
+
     #     for seq in self.model_fasta.split(">"):
     #         try:
     #             gene_name = re.search('\w+(\.\w+)*(\-\w+)*', seq).group(0)
@@ -70,7 +64,7 @@ class Blasting:
             query_file = open(self.model_fasta_path)
             for seq in self.model_fasta.split(">"):
                 try:
-                    gene_name = re.search('\w+(\.\w+)*(\-\w+)*', seq).group(0)
+                    gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                     f = open(tmp_dir + gene_name + ".fa", "w")
                     f.write(">" + seq)
                     f.close()
@@ -155,13 +149,29 @@ class Blasting:
 
 
 if __name__ == '__main__':
-    print("test")
+    # Tests for portable PC
     # test = Blasting("Test", "/home/asa/INRAE/Tests/aracyc.sbml", "/home/asa/INRAE/Tests/query.fasta",
     #                 "/home/asa/INRAE/Tests/subject.fasta")
     # test.blast_run()
     # utils.save_obj(test, "/home/asa/INRAE/Tests/test")
     # test = utils.load_obj("/home/asa/INRAE/Tests/grapeTestGeneSelection")
+
+    # Tests for home computer
+    # test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
+    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
+    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
+    # test.blast_run()
+    # utils.save_obj(test, "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
+    # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
+    #
+    # Common orders
     # test.select_genes()
     # test.drafting()
     # print(len(test.draft.reactions))
     # print(len(test.draft.genes))
+
+    # test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
+    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
+    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
+    # utils.save_obj(test, "/home/asa/INRAE/StageMaster_2020/Work/Tests/testpickle")
+    # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/testpickle")

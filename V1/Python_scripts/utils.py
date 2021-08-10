@@ -13,6 +13,7 @@ import csv
 import json
 import pickle
 import re
+from blastingV2 import Blasting
 
 
 def read_file(path):
@@ -88,6 +89,7 @@ def save_obj(obj, path):
 def load_obj(path):
     """Loads a pickle object."""
 
+    from blastingV2 import Blasting
     with open(path + '.pkl', 'rb') as input:
         return pickle.load(input)
 
