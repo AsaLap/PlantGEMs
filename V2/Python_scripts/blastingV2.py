@@ -8,19 +8,6 @@ import utils
 
 
 class Blasting:
-    identity = 50
-    difference = 30
-    e_val = 1e-100
-    coverage = 20
-    bit_score = 300
-    """
-    identity (int) -- the treshold value of identity to select the subject genes.
-    difference (int) -- the percentage of length difference tolerated between subject and query.
-    e_val (int) -- the minimum E-Value chosen.
-    coverage (int) -- the minimum percentage of coverage of the match.
-    bit_score (int) -- the minimum Bit-Score chosen.
-    """
-
     def __init__(self, _name, _model, _model_fasta_path, _subject_fasta_path):
         """
         ARGS:
@@ -38,11 +25,73 @@ class Blasting:
         self.subject_directory = os.path.split(self.subject_fasta_path)[0]
         self.blast_result = {}
         self.gene_dictionary = {}
+        self.identity = 50
+        self.difference = 30
+        self.e_val = 1e-100
+        self.coverage = 20
+        self.bit_score = 300
+        """
+            identity (int) -- the treshold value of identity to select the subject genes.
+            difference (int) -- the percentage of length difference tolerated between subject and query.
+            e_val (int) -- the minimum E-Value chosen.
+            coverage (int) -- the minimum percentage of coverage of the match.
+            bit_score (int) -- the minimum Bit-Score chosen.
+        """
+
+    @property
+    def identity(self):
+        print("Identity value : ")
+        return self._identity
+
+    @identity.setter
+    def identity(self, value):
+        print("Setting identity value to %s" % (str(value)))
+        self._identity = value
+
+    @property
+    def difference(self):
+        print("Difference value : ")
+        return self._difference
+
+    @difference.setter
+    def difference(self, value):
+        print("Setting difference value to %s" % (str(value)))
+        self._difference = value
+
+    @property
+    def e_val(self):
+        print("E_val value : ")
+        return self._e_val
+
+    @e_val.setter
+    def e_val(self, value):
+        print("Setting e_val value to %s" % (str(value)))
+        self._e_val = value
+
+    @property
+    def coverage(self):
+        print("Coverage value : ")
+        return self._coverage
+
+    @coverage.setter
+    def coverage(self, value):
+        print("Setting coverage value to %s" % (str(value)))
+        self._coverage = value
+
+    @property
+    def bit_score(self):
+        print("Bit score value : ")
+        return self._coverage
+
+    @bit_score.setter
+    def bit_score(self, value):
+        print("Setting bit score value to %s" % (str(value)))
+        self._bit_score = value
 
         # def model_fasta_cut(self):
         """ Function put aside because the blastp command can only be lauched on files and not strings in a program so 
         every gene is written on a file in the 'blast_run' method.
-        Otherwise this function was to store all the genes' strings into a class attribute named 'model_genes'"""
+        Otherwise this function was to store all the genes' strings into an instance attribute named 'model_genes'"""
 
     #     for seq in self.model_fasta.split(">"):
     #         try:
@@ -52,7 +101,7 @@ class Blasting:
     #             print("Gene name not found in :", seq)
     #             pass
 
-    def blast_run(self):
+    def _blast_run(self):
         """Runs multiple blasts between the model and the subject."""
 
         if not self.gene_dictionary:
@@ -91,7 +140,7 @@ class Blasting:
             subprocess.run(["rm", "-rf", tmp_dir])
             print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
-    def select_genes(self):
+    def _select_genes(self):
         """Select the subject organism's genes regarding the different treshold parameters of the Blasting instance."""
 
         if not self.blast_result:
@@ -119,7 +168,7 @@ class Blasting:
                             if spl[8] <= self.e_val:
                                 self.gene_dictionary[key] = [spl[2]]
 
-    def drafting(self):
+    def _drafting(self):
         """Creates the new COBRA model for the subject organism."""
 
         self.draft = cobra.Model(self.name)
@@ -140,11 +189,11 @@ class Blasting:
 
     def build(self):
         history_dir = os.path.dirname(self.subject_directory) + "/history/" + self.name + "/"
-        self.blast_run()
+        self._blast_run()
         utils.save_obj(self, history_dir + "blasted")
-        self.select_genes()
+        self._select_genes()
         utils.save_obj(self, history_dir + "gene_selected")
-        self.drafting()
+        self._drafting()
         utils.save_obj(self, history_dir + "drafted")
 
 
@@ -157,12 +206,16 @@ if __name__ == '__main__':
     # test = utils.load_obj("/home/asa/INRAE/Tests/grapeTestGeneSelection")
 
     # Tests for home computer
-    # test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
-    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
-    #                 "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
+    test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
+                    "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
+                    "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
     # test.blast_run()
     # utils.save_obj(test, "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
-    # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
+    # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomatoBlasting")
+    # print(len(test.model.reactions))
+    # print(len(test.model.metabolites))
+    # print(len(test.model.genes))
+
     #
     # Common orders
     # test.select_genes()
