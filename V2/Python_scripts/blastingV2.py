@@ -25,11 +25,11 @@ class Blasting:
         self.subject_directory = os.path.split(self.subject_fasta_path)[0]
         self.blast_result = {}
         self.gene_dictionary = {}
-        self.identity = 50
-        self.difference = 30
-        self.e_val = 1e-100
-        self.coverage = 20
-        self.bit_score = 300
+        self.__identity = 50
+        self.__difference = 30
+        self.__e_val = 1e-100
+        self.__coverage = 20
+        self.__bit_score = 300
         """
             identity (int) -- the treshold value of identity to select the subject genes.
             difference (int) -- the percentage of length difference tolerated between subject and query.
@@ -37,56 +37,73 @@ class Blasting:
             coverage (int) -- the minimum percentage of coverage of the match.
             bit_score (int) -- the minimum Bit-Score chosen.
         """
+        # TODO : Bit-score and E-value are mathematically related, investigate the use of both.
+        # TODO : Make a rapid explanation of the utility of all those terms.
 
     @property
     def identity(self):
-        print("Identity value : ")
-        return self._identity
+        print("Getting identity value...")
+        return self.__identity
 
     @identity.setter
     def identity(self, value):
-        print("Setting identity value to %s" % (str(value)))
-        self._identity = value
+        if value in range(0, 101):
+            print("Setting identity value to %s" % (str(value)))
+            self.__identity = value
+        else:
+            print("Denied : value must be between 0 and 100 (both included)")
 
     @property
     def difference(self):
-        print("Difference value : ")
-        return self._difference
+        print("Getting difference value...")
+        return self.__difference
 
     @difference.setter
     def difference(self, value):
-        print("Setting difference value to %s" % (str(value)))
-        self._difference = value
+        if value in range(0, 101):
+            print("Setting difference value to %s" % (str(value)))
+            self.__difference = value
+        else:
+            print("Denied : value must be between 0 and 100 (both included)")
 
     @property
     def e_val(self):
-        print("E_val value : ")
-        return self._e_val
+        print("Getting E-value...")
+        return self.__e_val
 
     @e_val.setter
     def e_val(self, value):
-        print("Setting e_val value to %s" % (str(value)))
-        self._e_val = value
+        if value in range(0, 11):
+            print("Setting E-value to %s" % (str(value)))
+            self.__e_val = value
+        else:
+            print("Denied : value must be between 0 and 10 (both included)")
 
     @property
     def coverage(self):
-        print("Coverage value : ")
-        return self._coverage
+        print("Getting coverage value...")
+        return self.__coverage
 
     @coverage.setter
     def coverage(self, value):
-        print("Setting coverage value to %s" % (str(value)))
-        self._coverage = value
+        if value in range(0, 101):
+            print("Setting coverage value to %s" % (str(value)))
+            self.__coverage = value
+        else:
+            print("Denied : value must be between 0 and 100 (both included)")
 
     @property
     def bit_score(self):
-        print("Bit score value : ")
-        return self._coverage
+        print("Getting Bit-score value...")
+        return self.__coverage
 
     @bit_score.setter
     def bit_score(self, value):
-        print("Setting bit score value to %s" % (str(value)))
-        self._bit_score = value
+        if value in range(0, 10001):
+            print("Setting Bit-score value to %s" % (str(value)))
+            self.__bit_score = value
+        else:
+            print("Denied : value must be between 0 and 10000 (both included)")
 
         # def model_fasta_cut(self):
         """ Function put aside because the blastp command can only be lauched on files and not strings in a program so 
@@ -134,9 +151,8 @@ class Blasting:
                     tmp_dir + gene.id + ".fa",
                     "-outfmt",
                     "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
-                self.blast_result[gene.id] = subprocess.run(blast_request, capture_output=True).stdout.decode(
-                    'ascii').split(
-                    "\n")[:-1]
+                self.blast_result[gene.id] = subprocess.run(blast_request,
+                                                            capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             subprocess.run(["rm", "-rf", tmp_dir])
             print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
@@ -209,7 +225,18 @@ if __name__ == '__main__':
     test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
                     "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
                     "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
-    # test.blast_run()
+    test.e_val = 1
+    print(test.e_val)
+    test.identity = 10
+    print(test.identity)
+    test.coverage = 80
+    print(test.coverage)
+    test.bit_score = 700
+    print(test.bit_score)
+    test.difference = 2
+    print(test.difference)
+
+    # test.build()
     # utils.save_obj(test, "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
     # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomatoBlasting")
     # print(len(test.model.reactions))
