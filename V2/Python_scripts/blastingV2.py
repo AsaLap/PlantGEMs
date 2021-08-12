@@ -25,17 +25,18 @@ class Blasting:
         self.subject_directory = os.path.split(self.subject_fasta_path)[0]
         self.blast_result = {}
         self.gene_dictionary = {}
-        self.__identity = 50
-        self.__difference = 30
-        self.__e_val = 1e-100
-        self.__coverage = 20
-        self.__bit_score = 300
+        self.identity = 50
+        self.difference = 30
+        self.e_val = 1e-100
+        self.coverage = 20
+        self.bit_score = 300
+
         """
             identity (int) -- the treshold value of identity to select the subject genes.
             difference (int) -- the percentage of length difference tolerated between subject and query.
-            e_val (int) -- the minimum E-Value chosen.
-            coverage (int) -- the minimum percentage of coverage of the match.
-            bit_score (int) -- the minimum Bit-Score chosen.
+            e_val (int) -- 
+            coverage (int) -- 
+            bit_score (int) -- 
         """
         # TODO : Bit-score and E-value are mathematically related, investigate the use of both.
         # TODO : Make a rapid explanation of the utility of all those terms.
@@ -47,7 +48,7 @@ class Blasting:
 
     @identity.setter
     def identity(self, value):
-        if value in range(0, 101):
+        if 100 >= value >= 0:
             print("Setting identity value to %s" % (str(value)))
             self.__identity = value
         else:
@@ -60,7 +61,7 @@ class Blasting:
 
     @difference.setter
     def difference(self, value):
-        if value in range(0, 101):
+        if 100 >= value >= 0:
             print("Setting difference value to %s" % (str(value)))
             self.__difference = value
         else:
@@ -73,7 +74,7 @@ class Blasting:
 
     @e_val.setter
     def e_val(self, value):
-        if value in range(0, 11):
+        if 10 >= value >= 0:
             print("Setting E-value to %s" % (str(value)))
             self.__e_val = value
         else:
@@ -86,7 +87,7 @@ class Blasting:
 
     @coverage.setter
     def coverage(self, value):
-        if value in range(0, 101):
+        if 100 >= value >= 0:
             print("Setting coverage value to %s" % (str(value)))
             self.__coverage = value
         else:
@@ -95,15 +96,22 @@ class Blasting:
     @property
     def bit_score(self):
         print("Getting Bit-score value...")
-        return self.__coverage
+        return self.__bit_score
 
     @bit_score.setter
     def bit_score(self, value):
-        if value in range(0, 10001):
+        if 10000 >= value >= 0:
             print("Setting Bit-score value to %s" % (str(value)))
             self.__bit_score = value
         else:
             print("Denied : value must be between 0 and 10000 (both included)")
+
+    def set_default_values(self):
+        self.identity = 50
+        self.difference = 30
+        self.e_val = 1e-100
+        self.coverage = 20
+        self.bit_score = 300
 
         # def model_fasta_cut(self):
         """ Function put aside because the blastp command can only be lauched on files and not strings in a program so 
@@ -225,17 +233,6 @@ if __name__ == '__main__':
     test = Blasting("Test", "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.sbml",
                     "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/aracyc.fasta",
                     "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomato.fasta")
-    test.e_val = 1
-    print(test.e_val)
-    test.identity = 10
-    print(test.identity)
-    test.coverage = 80
-    print(test.coverage)
-    test.bit_score = 700
-    print(test.bit_score)
-    test.difference = 2
-    print(test.difference)
-
     # test.build()
     # utils.save_obj(test, "/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/test")
     # test = utils.load_obj("/home/asa/INRAE/StageMaster_2020/Work/Tests/Tomato_Aracyc/tomatoBlasting")
@@ -243,7 +240,6 @@ if __name__ == '__main__':
     # print(len(test.model.metabolites))
     # print(len(test.model.genes))
 
-    #
     # Common orders
     # test.select_genes()
     # test.drafting()
