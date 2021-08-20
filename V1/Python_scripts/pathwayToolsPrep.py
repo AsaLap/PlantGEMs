@@ -20,7 +20,7 @@ import utils
 
 
 def get_sequence_region(data, mRNA):
-    """Function which browse the .gff file and get the name of each gene, 
+    """Function that browses the .gff file and gets the name of each gene,
     the position in the genome and each corresponding region and protein(s).
     
     ARGS:
