@@ -1,4 +1,4 @@
-# PlantGEMs : Project that aims to automatically reconstruct several plant metabolic networks, using the Metacyc database.
+# PlantGEMs : Project that aims to automatically reconstruct several plant metabolic networks, using the Metacyc database and model GEMs.
 
 
 ## Files description :
