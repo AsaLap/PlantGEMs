@@ -80,10 +80,8 @@ def get_aracyc_model_reac(path, dico_matching, dico_matching_rev, WDlog, name):
             except KeyError:
                 no_match_list.append(reac + "\n")
                 print("No match for reaction :", reac.id, " | ", reac.name)
-    print("Nb of reactions from Aracyc model : %i\n\
-Number of those reactions found in Metacyc : %i\n\
-Total of reactions not found : %i"
-          % (len(model.reactions), len(reac_list), len(no_match_list)))
+    print("Nb of reactions from Aracyc model : %i\n\Number of those reactions found in Metacyc : %i\n\Total of "
+          "reactions not found : %i" % (len(model.reactions), len(reac_list), len(no_match_list)))
     no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
     utils.write_file(WDlog, name + "_error_reaction_aracyc.log", no_match_list)
     return set(reac_list)
