@@ -21,7 +21,7 @@ Python/utils.py : Utilitary file to avoid code repetition.
 
 ### -- R files --
 
-R/graph.R : Make different graphs for the purpose of a study on the Balst scores to use.
+R/graph.R : Make different graphs for the purpose of a study on the Blast scores to use.
 
 R/regression.R : Regression graph for the same purpose as above.
 
