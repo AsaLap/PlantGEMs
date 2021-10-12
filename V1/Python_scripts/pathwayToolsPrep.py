@@ -30,7 +30,7 @@ def get_sequence_region(data, mRNA):
         dicoRegions -- a dictionary containing all the gathered 
         informations (see pipelinePT() for the structure).
     """
-    
+
     dicoRegions = {}
     protein_found = False
     for line in data:
@@ -53,9 +53,9 @@ def get_sequence_region(data, mRNA):
             if region not in dicoRegions.keys():
                 dicoRegions[region] = {}
             if spl[6] == "+":
-                dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins" : {}}
+                dicoRegions[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
             else:
-                dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins" : {}}
+                dicoRegions[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
         ##Searching the protein's information
         if mRNA:
             if "RNA\t" in line:
@@ -66,12 +66,12 @@ def get_sequence_region(data, mRNA):
                     print("The mRNA has no attribute 'Name='...")
                     dicoRegions[region][gene]["Proteins"]["None"] = []
         else:
-        #In case the gff file needs to be looked at on the CDS 
-        #and not the mRNA to corresponds to the TSV file
+            # In case the gff file needs to be looked at on the CDS
+            # and not the mRNA to corresponds to the TSV file
             if "RNA\t" in line:
-                protein_found = False 
+                protein_found = False
             if not protein_found and "CDS\t" in line:
-                try: #Searching for CDS ID instead of mRNA.
+                try:  # Searching for CDS ID instead of mRNA.
                     protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
                     dicoRegions[region][gene]["Proteins"][protein] = []
                     protein_found = True
@@ -81,7 +81,7 @@ def get_sequence_region(data, mRNA):
         ##Searching the exon's information
         if "\tCDS\t" in line:
             spl = line.split("\t")
-            dicoRegions[region][gene]["Proteins"][protein].append([int(spl[3]),int(spl[4])])
+            dicoRegions[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
     return dicoRegions
 
 
@@ -111,23 +111,23 @@ def make_dat(WD, dicoRegions, TYPE):
         TYPE (str) -- indication if the sequence of the organism are assembled 
         as chromosomes or contigs (or else, see Pathway Tools guide).
     """
-    
-    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",\
-        "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
+
+    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually", \
+          "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
     CIRC = 'N'
     datFile = []
     if TYPE == "NONE":
         for i in dicoRegions.keys():
             datFile.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                           %(i, CIRC, WD + i + '.pf', WD + i + '.fsa'))
+                           % (i, CIRC, WD + i + '.pf', WD + i + '.fsa'))
     elif TYPE == ":CONTIG":
         for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                           %(i, TYPE, WD + i + '.pf', WD + i + '.fsa'))
+                           % (i, TYPE, WD + i + '.pf', WD + i + '.fsa'))
     else:
         for i in dicoRegions.keys():
             datFile.append('ID\t%s\nTYPE\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                           %(i, TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
+                           % (i, TYPE, CIRC, WD + i + '.pf', WD + i + '.fsa'))
     utils.write_file(WD, "genetic-elements" + ".dat", datFile)
 
 
@@ -140,7 +140,7 @@ def make_fsa(WD, fileFASTA, dicoRegions):
         dicoRegions -- the dictionary containing the data to create 
         those files (see pipelinePT() for the structure). 
     """
-    
+
     with open(fileFASTA, "r") as file:
         fasta = file.read()
     fasta = fasta.split(">")
@@ -163,7 +163,7 @@ def make_pf(WD, fileEggNOG, dicoRegions):
         dicoRegions -- the dictionary containing the data to create 
         the files (see pipelinePT() for the structure).
     """
-    
+
     tsv = utils.read_file(fileEggNOG)
     list_index = list(np.arange(0, len(tsv)))
     for region in dicoRegions.keys():
@@ -180,7 +180,7 @@ def make_pf(WD, fileEggNOG, dicoRegions):
                         subPf.append(parse_eggNog(gene,
                                                   dicoRegions[region][gene]["Start"],
                                                   dicoRegions[region][gene]["End"],
-                                                  dicoRegions[region][gene]["Proteins"][protein], 
+                                                  dicoRegions[region][gene]["Proteins"][protein],
                                                   tsv[i]))
         if subPf:
             f = open(WD + region + ".pf", "w")
@@ -197,7 +197,7 @@ def make_tsv(WD, taxon_name_list):
         WD (str) -- the path where to store this file.
         taxon_name_list (list) -- the list containing the name of the organism and its taxon id. 
     """
-    
+
     res = "species\ttaxon_id\n"
     for i in taxon_name_list:
         res += i[0] + "\t" + str(i[1]) + "\n"
@@ -217,7 +217,7 @@ def parse_eggNog(id, start, end, exon_pos, line):
         info (str) -- a string with all the information and with the correct 
         page settings for the .pf file.
     """
-    
+
     info = []
     spl = line.split("\t")
     info.append("ID\t" + id + "\n")
@@ -246,15 +246,15 @@ def parse_eggNog(id, start, end, exon_pos, line):
     return info
 
 
-def make_organism_params(WD, species, abbrev, rank, storage = "file", private = "NIL", tax = 2, codon = 1, mito_codon = 1):
-    #Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
-    dico_tax = {1 : "TAX-2", 2 : "TAX-2759", 3 : "TAX-2157",
-                4 : "2", 5 : "2759", 6 : "2157"}
+def make_organism_params(WD, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
+    # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
+    dico_tax = {1: "TAX-2", 2: "TAX-2759", 3: "TAX-2157",
+                4: "2", 5: "2759", 6: "2157"}
     info = []
-    #Making the random ID
+    # Making the random ID
     ID = random.choice(string.ascii_lowercase)
     string_choice = string.ascii_lowercase + "0123456789"
-    for loop in range(random.randint(1,10)):
+    for loop in range(random.randint(1, 10)):
         ID += random.choice(string_choice)
     info.append("ID\t" + ID + "\n")
     info.append("STORAGE\t" + storage + "\n")
@@ -262,12 +262,12 @@ def make_organism_params(WD, species, abbrev, rank, storage = "file", private = 
     info.append("ABBREV-NAME\t" + abbrev + "\n")
     info.append("PRIVATE?\t" + private + "\n")
     info.append("RANK\t" + str(rank) + "\n")
-    info.append("ORG-COUNTER\t\n") ##Test with or without
+    info.append("ORG-COUNTER\t\n")  ##Test with or without
     info.append("DOMAIN\t" + dico_tax[tax] + "\n")
     info.append("CODON-TABLE\t" + str(codon) + "\n")
     info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
     info.append("DBNAME\t" + abbrev + "DBcyc\n")
-    info.append("NCBI-TAXON-ID\t" + dico_tax[tax+3] + "\n")
+    info.append("NCBI-TAXON-ID\t" + dico_tax[tax + 3] + "\n")
     utils.write_file(WD, "organism-params.dat", info)
 
 
@@ -297,7 +297,7 @@ def pipeline_PWT(data):
         }
     }
     """
-    
+
     index = utils.read_file(data)
     WD = index.pop(0).rstrip()
     WDfiles = WD + "files/"
@@ -318,43 +318,42 @@ def pipeline_PWT(data):
             fileEggNOG = parameters["FILES"]["EGGNOG"]
             TYPE = parameters["INFO"]["TYPE"]
             taxon_ID = int(parameters["INFO"]["NCBI_TAXON_ID"])
-            mRNA = parameters.getboolean("INFO","mRNA")
+            mRNA = parameters.getboolean("INFO", "mRNA")
             name = parameters["INFO"]["DATABASE_NAME"]
-            
+
             ###Keeping some information for later
             taxon_name_list.append([name, taxon_ID])
-            
+
             ###Preparing the files
             subprocess.run(["mkdir", WDinput + name])
             WDorg = WDinput + name + "/"
             print("------\n" + name + "\n------")
             gffFile = utils.read_file(WDfiles + fileGFF)
-            dicoRegions = get_sequence_region(gffFile, mRNA) 
+            dicoRegions = get_sequence_region(gffFile, mRNA)
             make_protein_corres(WDlog, name, dicoRegions)
             make_dat(WDorg, dicoRegions, TYPE)
             make_fsa(WDorg, WDfiles + fileFASTA, dicoRegions)
             make_pf(WDorg, WDfiles + fileEggNOG, dicoRegions)
 
     ###Creating the tsv file for the taxon IDs
-    make_tsv(WDinput, taxon_name_list) #Quite unspecific, could be improved (type, codon table)
+    make_tsv(WDinput, taxon_name_list)  # Quite unspecific, could be improved (type, codon table)
     print("------\nCreation of the files finished\n------")
-    
+
     ##Counting the number of cpu to use
-    if cpu <= multiprocessing.cpu_count() - 2:
-        nb_cpu = cpu
-    else:
-        nb_cpu = multiprocessing.cpu_count() - 2
+    nb_cpu = multiprocessing.cpu_count()
+    if nb_cpu > 2:
+        nb_cpu -= 1
     print("Number of CPU used : ", nb_cpu)
-    
+
     ###Starting the mpwt script
-    mpwt.multiprocess_pwt(input_folder = WDinput, output_folder = WDoutput,
-                        patho_inference = True, patho_hole_filler = False,
-                        patho_operon_predictor = False, pathway_score = 1,
-                        dat_creation = True, dat_extraction = True,
-                        number_cpu = nb_cpu, size_reduction = False,
-                        patho_log = WDlog, ignore_error = False,
-                        taxon_file = True, verbose = True)
+    mpwt.multiprocess_pwt(input_folder=WDinput, output_folder=WDoutput,
+                          patho_inference=True, patho_hole_filler=False,
+                          patho_operon_predictor=False, pathway_score=1,
+                          dat_creation=True, dat_extraction=True,
+                          number_cpu=nb_cpu, size_reduction=False,
+                          patho_log=WDlog, ignore_error=False,
+                          taxon_file=True, verbose=True)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     pipeline_PWT("/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/index.txt")
