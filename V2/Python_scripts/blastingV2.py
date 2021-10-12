@@ -114,9 +114,9 @@ class Blasting:
         self.bit_score = 300
 
         # def model_fasta_cut(self):
-        """ Function put aside because the blastp command can only be lauched on files and not strings in a program so 
-        every gene is written on a file in the 'blast_run' method.
-        Otherwise this function was to store all the genes' strings into an instance attribute named 'model_genes'"""
+        """Function put aside because the blastp command can only be lauched on files and not strings in a program so 
+        every gene is written on a file in the 'blast_run' method. Otherwise this function's goal was to store all 
+        the genes' strings into an instance attribute named 'model_genes' """
 
     #     for seq in self.model_fasta.split(">"):
     #         try:

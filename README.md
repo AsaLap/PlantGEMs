@@ -21,7 +21,7 @@ Python/utils.py : Utilitary file to avoid code repetition.
 
 ### -- R files --
 
-R/graph.R : Make different graphs for the purpose of a study on the Balst scores to use.
+R/graph.R : Make different graphs for the purpose of a study on the Blast's scores to use.
 
 R/regression.R : Regression graph for the same purpose as above.
 
@@ -38,7 +38,7 @@ index.txt : Example of index file for the pathwayToolsPrep pipeline.
 
 ## HOW TO USE :
 
-For the moment, each script output is part of the next script's input (except 1 and 2 which are independent) and you'll need several biologic/bioinformatics files, which will be soon describe. For the moment, please look at the "pipeline" function in each script to see what is needed, along with the indication in the different .ini files.
+For the moment, each script's output is part of the next script's input (except 1 and 2 which are independent) and you'll need several biologic/bioinformatics files, which will be soon describe. For the moment, please look at the "pipeline" function in each script to see what is needed, along with the indication in the different .ini files.
 Each script has a pipeline-like function wich makes all the things work (normally...).
 
 Use in this order (except 1 and 2 that you can reverse) :
@@ -47,4 +47,4 @@ Use in this order (except 1 and 2 that you can reverse) :
 3. fusion.py
 4. gap_filling.py
 
-Further improvement are to come, such has a complete pipeline and a requirements.txt.
+Further improvement are to come, such has a OOP version (WIP) and a complete pipeline with Snakemake.
