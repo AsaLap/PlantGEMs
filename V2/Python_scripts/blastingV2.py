@@ -32,7 +32,7 @@ class Blasting:
         self.bit_score = 300
 
         """
-            identity (int) -- the treshold value of identity to select the subject genes.
+            identity (int) -- the threshold value of identity to select the subject genes.
             difference (int) -- the percentage of length difference tolerated between subject and query.
             e_val (int) -- 
             coverage (int) -- 
