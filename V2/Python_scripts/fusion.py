@@ -4,7 +4,7 @@
 # Université de Bordeaux - INRAE Bordeaux
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
-"""This file is used to merge two differents GEMs, one coming from my own model based 
+"""This file is used to merge two different GEMs, one coming from my own model based
 reconstruction and another one from a Pathway Tools reconstruction with the AuReMe's 
 mpwt package."""
 
@@ -15,163 +15,140 @@ import re
 import utils
 
 
-###For Pathway Tools models
-def get_pwtools_reac(path, dico_matching, dico_matching_rev, WDlog, name):
-    """Function to get the reaction's ID of Metacyc from a Pathway Tools reconstruction.
-    
-    ARGS:
-        path (str) -- the path to the reactions.dat file.
-        dico_matching -- the dictionary containing the correspondence between
-        the short-ID and the long-ID of Metacyc's reactions (see the structure 
-        in fusion()).
-        dico_matching_rev -- same as above but key and values are reversed (see the structure 
-        in fusion()).
-        WDlog (str) -- the working directory to store the log file containing 
-        all the reactions not found.
-        name (str) -- the name of the model.
-    RETURN:
-        set(reac_list) (set of str) -- the list containing all the reaction's long ID.
-    """
+class Fusion:
 
-    no_match_list = []
-    reac_list = []
-    model_reactions = utils.get_reactions_PT(path)
-    for reac in model_reactions:
-        try:
-            reac_list += dico_matching[reac]
-        except KeyError:
+    def __init__(self, _name, _metacyc_id_dict, _metacyc_reverse_id_dict, _wd_log, _wd_pgdb, _pwt_reactions_path,
+                 _blast_sbml_path):
+        self.name = _name
+        self.metacyc_id_dict = _metacyc_id_dict
+        self.metacyc_reverse_id_dict = _metacyc_reverse_id_dict
+        self.wd_log = _wd_log
+        self.wd_pgdb = _wd_pgdb
+        self.pwt_reactions = utils.get_reactions_PT(self.pwt_reactions_path)
+        self.blast_reactions = cobra.io.load_json_model(self.blast_sbml_path)
+        self.reactions_list = []
+        self.pwt_reactions_list = []
+        self.blast_reactions_list = []
+
+    def _get_pwt_reactions(self):
+        """Function to get the reaction's ID of Metacyc from a Pathway Tools reconstruction."""
+
+        no_match_list = []
+
+        for reaction in self.pwt_reactions:
             try:
-                dico_matching_rev[reac]
-                reac_list.append(reac)
+                self.pwt_reactions_list += self.metacyc_id_dict[reaction]
             except KeyError:
-                no_match_list.append(reac + "\n")
-    print("Number of reactions from PT model : %i\n\Number of those reactions found in Metacyc : %i\n\Total of "
-          "reactions not found : %i " % (len(model_reactions), len(set(reac_list)), len(no_match_list)))
-    no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-    utils.write_file(WDlog, name + "_error_reaction_pwt.log", no_match_list)
-    return set(reac_list)
+                if reaction in self.metacyc_reverse_id_dict.keys():
+                    self.pwt_reactions_list.append(reaction)
+                else:
+                    no_match_list.append(reaction + "\n")
+                    print("No match for reaction :", reaction.id, " | ", reaction.name)
+        print("Number of reactions from PT model : %i\nNumber of those reactions found in Metacyc : %i\nTotal of "
+              "reactions not found : %i "
+              % (len(self.pwt_reactions), len(set(self.pwt_reactions_list)), len(no_match_list)))
+        no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
+        utils.write_file(self.wd_log, self.name + "_error_reaction_pwt.log", no_match_list)
+        set(self.pwt_reactions_list)
 
+    def _get_aracyc_model_reactions(self):
+        """Function to get the reaction's ID of Metacyc from a reconstruction with Aracyc as model."""
 
-###For Aracyc models
-def get_aracyc_model_reac(path, dico_matching, dico_matching_rev, WDlog, name):
-    """Function to get the reaction's ID of Metacyc from an Aracyc model reconstruction.
-    
-    ARGS:
-        path (str) -- the path to the reactions.dat file.
-        dico_matching -- the dictionary containing the correspondence between
-        the short-ID and the long-ID of Metacyc's reactions (see the construction 
-        in utils.py).
-        dico_matching_rev -- same as above but key and values are reversed (see the 
-        construction in utils.py).
-    RETURN:
-        set(reac_list) (set of str) -- the list containing all the reaction's long ID.
-    """
-
-    no_match_list = []
-    reac_list = []
-    model = cobra.io.load_json_model(path)
-    for reac in model.reactions:
-        try:
-            reac_list += dico_matching[reac.name]
-        except KeyError:
+        no_match_list = []
+        for reaction in self.blast_reactions.reactions:
             try:
-                dico_matching_rev[reac.name]
-                reac_list.append(reac.name)
+                self.reactions_list += self.metacyc_id_dict[reaction.name]
             except KeyError:
-                no_match_list.append(reac + "\n")
-                print("No match for reaction :", reac.id, " | ", reac.name)
-    print("Nb of reactions from Aracyc model : %i\n\Number of those reactions found in Metacyc : %i\n\Total of "
-          "reactions not found : %i" % (len(model.reactions), len(reac_list), len(no_match_list)))
-    no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-    utils.write_file(WDlog, name + "_error_reaction_aracyc.log", no_match_list)
-    return set(reac_list)
+                if reaction.name in self.metacyc_reverse_id_dict.keys():
+                    self.reactions_list.append(reaction.name)
+                else:
+                    no_match_list.append(reaction + "\n")
+                    print("No match for reaction :", reaction.id, " | ", reaction.name)
+        print("Nb of reactions from Aracyc model : %i\n\Number of those reactions found in Metacyc : %i\n\Total of "
+              "reactions not found : %i"
+              % (len(self.blast_reactions.reactions), len(self.reactions_list), len(no_match_list)))
+        no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
+        utils.write_file(self.wd_log, self.name + "_error_reaction_blast_reconstruction.log", no_match_list)
+        set(self.reactions_list)
 
+    def _correct_gene_rule_reactions(self, verbose=True):
+        """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
+        to make it fit the organism for which the model is reconstructed."""
 
-def correct_gene_reac(reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev, verbose=True):
-    """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
-    to make it fit the organism for which the model is reconstructed.
-    
-    ARGS:
-        reac -- the reaction to correct.
-        reactionsFile -- the .dat file containing the associated enzymatic reaction(s).
-        enzrxnsFile -- the .dat file containing the associated protein name.
-        proteinsFile -- the .dat file containing the associated gene name.
-        dico_matching_rev -- the dictionary of the correspondence between short IDs 
-        and long IDs, in reverse (see construction in utils.py).
-        verbose (boolean) -- print or not enzyme matches.
-    RETURN:
-        reac -- the reaction with the correct gene reaction rule.
-    """
+        reactions_file = utils.read_file(self.wd_pgdb + "/reactions.dat")
+        enzrxns_file = utils.read_file(self.wd_pgdb + "/enzrxns.dat")
+        proteins_file = utils.read_file(self.wd_pgdb + "/proteins.dat")
 
-    # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID)
-    stop = False
-    enzrxns = []
-    for lineReac in reactionsFile:
-        if "UNIQUE-ID" in lineReac and "#" not in lineReac:
-            if stop:
-                break
-            try:
-                unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip()
-                if unique_id == reac.name or unique_id == dico_matching_rev[reac.name]:
-                    stop = True
-            except AttributeError:
-                print("No UNIQUE-ID match for reactions.dat : ", lineReac)
-        if stop and "ENZYMATIC-REACTION " in lineReac and "#" not in lineReac:
-            try:
-                enzrxns.append(
-                    re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', lineReac).group(0).rstrip())
-            except AttributeError:
-                print("No ENZYMATIC-REACTION match for reactions.dat : ", lineReac)
-    if verbose:
-        print("%s : %i enzymatic reaction(s) found associated to this reaction." % (reac.name, len(enzrxns)))
-
-    # Second step : getting the corresponding ENZYME for each ENZYME-REACTION
-    stop = False
-    geneList = []
-    if enzrxns:
-        for enzrxn in enzrxns:
-            for lineEnzrxn in enzrxnsFile:
-                if "UNIQUE-ID" in lineEnzrxn and "#" not in lineEnzrxn:
-                    if stop:
-                        stop = False
-                        break
-                    try:
-                        unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(
-                            0).rstrip()
-                        if unique_id_rxn == enzrxn:
-                            stop = True
-                    except AttributeError:
-                        print("No UNIQUE-ID match for enzrxns.Dat : ", lineEnzrxn)
-                if stop and "ENZYME " in lineEnzrxn and "#" not in lineEnzrxn:
-                    try:
-                        enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(0).rstrip()
-                    except AttributeError:
-                        print("No ENZYME match for enzrxns.dat : ", lineEnzrxn)
-            ###Third step into the second one : getting the corresponding GENE for each ENZYME
-            ###and put it into geneList (which contains all that we're looking for)
-            for lineProt in proteinsFile:
-                if "UNIQUE-ID " in lineProt and "#" not in lineProt:
-                    if stop:
-                        stop = False
-                        break
-                    try:
-                        unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(
-                            0).rstrip()
-                        if unique_id_prot == enzyme:
-                            stop = True
-                    except AttributeError:
-                        print("No UNIQUE-ID match for proteins.dat : ", lineProt)
-                if stop and "GENE " in lineProt and "#" not in lineProt:
-                    try:
-                        geneList.append(re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
-                    except AttributeError:
-                        print("No GENE match for proteins.dat : ", lineProt)
+        # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
+        stop = False
+        enzrxns = []
+        for reaction_line in reactions_file:
+            if "UNIQUE-ID" in reaction_line and "#" not in reaction_line: #TODO
+                if stop:
+                    break
+                try:
+                    unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', reaction_line).group(0).rstrip()
+                    if unique_id == reac.name or unique_id == metacyc_reverse_id_dict[reac.name]:
+                        stop = True
+                except AttributeError:
+                    print("No UNIQUE-ID match for reactions.dat : ", reaction_line)
+            if stop and "ENZYMATIC-REACTION " in reaction_line and "#" not in reaction_line:
+                try:
+                    enzrxns.append(
+                        re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*', reaction_line).group(0).rstrip())
+                except AttributeError:
+                    print("No ENZYMATIC-REACTION match for reactions.dat : ", reaction_line)
         if verbose:
-            print(unique_id, "\n", " or ".join(set(geneList)))
-    else:
-        pass
-    reac.gene_reaction_rule = " or ".join(set(geneList))
-    return reac
+            print("%s : %i enzymatic reaction(s) found associated to this reaction." % (reac.name, len(enzrxns)))
+
+        # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
+        stop = False
+        geneList = []
+        if enzrxns:
+            for enzrxn in enzrxns:
+                for lineEnzrxn in enzrxns_file:
+                    if "UNIQUE-ID" in lineEnzrxn and "#" not in lineEnzrxn:
+                        if stop:
+                            stop = False
+                            break
+                        try:
+                            unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(
+                                0).rstrip()
+                            if unique_id_rxn == enzrxn:
+                                stop = True
+                        except AttributeError:
+                            print("No UNIQUE-ID match for enzrxns.Dat : ", lineEnzrxn)
+                    if stop and "ENZYME " in lineEnzrxn and "#" not in lineEnzrxn:
+                        try:
+                            enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', lineEnzrxn).group(0).rstrip()
+                        except AttributeError:
+                            print("No ENZYME match for enzrxns.dat : ", lineEnzrxn)
+                # Third step into the second one : getting the corresponding GENE for each ENZYME and put it into
+                # geneList (which contains all that we're looking for).
+                for lineProt in proteins_file:
+                    if "UNIQUE-ID " in lineProt and "#" not in lineProt:
+                        if stop:
+                            stop = False
+                            break
+                        try:
+                            unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(
+                                0).rstrip()
+                            if unique_id_prot == enzyme:
+                                stop = True
+                        except AttributeError:
+                            print("No UNIQUE-ID match for proteins.dat : ", lineProt)
+                    if stop and "GENE " in lineProt and "#" not in lineProt:
+                        try:
+                            geneList.append(
+                                re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
+                        except AttributeError:
+                            print("No GENE match for proteins.dat : ", lineProt)
+            if verbose:
+                print(unique_id, "\n", " or ".join(set(geneList)))
+        else:
+            pass
+        reac.gene_reaction_rule = " or ".join(set(geneList))
+        return reac
 
 
 def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, WD_pgdb, verbose=False):
@@ -189,16 +166,17 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
         verbose (boolean) -- print or not enzyme matches.
     """
 
-    dico_matching, dico_matching_rev = utils.corres_dico(corres)
+    metacyc_id_dict, metacyc_reverse_id_dict = utils.corres_dico(corres)
     aracyc_model = cobra.io.load_json_model(aracyc_model_path)
-    pwtools_reac_set = get_pwtools_reac(WD_pgdb + "reactions.dat", dico_matching, dico_matching_rev, WDlog,
+    pwtools_reac_set = get_pwtools_reac(WD_pgdb + "reactions.dat", metacyc_id_dict, metacyc_reverse_id_dict, WDlog,
                                         aracyc_model.id)
-    aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, dico_matching, dico_matching_rev, WDlog, aracyc_model.id)
-    ###Here we take away the reactions of metacyc already present in the aracyc model otherwise 
-    ###it will be redundant as we keep all the aracyc model reactions.
+    aracyc_reac_set = get_aracyc_model_reac(aracyc_model_path, metacyc_id_dict, metacyc_reverse_id_dict, WDlog,
+                                            aracyc_model.id)
+    # Here we take away the reactions of metacyc already present in the aracyc model otherwise it will be redundant
+    # as we keep all the aracyc model reactions.
     metacyc_reac_set = pwtools_reac_set - set.intersection(pwtools_reac_set, aracyc_reac_set)
 
-    ###Then, addition of the metacyc reactions found in the Pathway Tools model to the aracyc model
+    # Then, addition of the metacyc reactions found in the Pathway Tools model to the aracyc model.
     new_model = copy.deepcopy(aracyc_model)
 
     reactionsFile = utils.read_file(WD_pgdb + "reactions.dat")
@@ -211,7 +189,8 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
             if reac[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
                 reac = "_" + reac
             added_reac = copy.deepcopy(metacyc.reactions.get_by_id(reac))
-            added_reac_cor = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile, dico_matching_rev,
+            added_reac_cor = correct_gene_reac(added_reac, reactionsFile, enzrxnsFile, proteinsFile,
+                                               metacyc_reverse_id_dict,
                                                verbose)
             new_model.add_reactions([added_reac_cor])
         except KeyError:
@@ -222,7 +201,7 @@ def pipeline_fusion(corres, aracyc_model_path, metacyc_path, save_path, WDlog, W
 
 
 if __name__ == "__main__":
-    ###Making of the IDs correspondence file which will be needed here
+    # Making of the file with the correspondence between short and long IDs, which will be needed here
     # utils.metacyc_IDs("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
     #                   "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.json")
 

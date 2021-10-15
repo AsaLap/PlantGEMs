@@ -1,3 +1,11 @@
+# coding: utf8
+# python 3.8.2
+# Antoine Laporte
+# Université de Bordeaux - INRAE Bordeaux
+# Reconstruction de réseaux métaboliques
+# Mars - Aout 2020
+"""This file is used for the metabolic reconstruction using sequence homology."""
+
 import cobra
 import copy
 import os
@@ -8,6 +16,7 @@ import utils
 
 
 class Blasting:
+
     def __init__(self, _name, _model, _model_fasta_path, _subject_fasta_path):
         """
         ARGS:

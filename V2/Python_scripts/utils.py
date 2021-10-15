@@ -206,9 +206,9 @@ def corres_dico(path, sep="\t"):
         path (str) -- the path to the file containing the correspondence information.
         sep (str) -- the separator of the correspondence file (default = tab).
     RETURN:
-        dico_matching -- dictionary with short IDs as key and list of long IDs 
+        metacyc_id_dict -- dictionary with short IDs as key and list of long IDs
         as values (NB : one short ID can have several long IDs correspondence).
-        dico_matching_rev -- dictionary with long IDs as key and the
+        metacyc_reverse_id_dict -- dictionary with long IDs as key and the
         corresponding short ID as value (NB : one long ID as only one short ID correspondence).
     """
 
