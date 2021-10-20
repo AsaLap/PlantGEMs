@@ -198,7 +198,7 @@ def metacyc_IDs(WD, path):
     write_csv(WD, res, "MetacycCorresIDs", "\t")
 
 
-def corres_dico(path, sep="\t"):
+def build_correspondence_dict(path, sep="\t"):
     """Function to create a ditionary of correspondence between 
     short and long IDs from a correspondence file (Metacyc IDs).
     
@@ -206,24 +206,24 @@ def corres_dico(path, sep="\t"):
         path (str) -- the path to the file containing the correspondence information.
         sep (str) -- the separator of the correspondence file (default = tab).
     RETURN:
-        metacyc_id_dict -- dictionary with short IDs as key and list of long IDs
+        metacyc_matching_id_dict -- dictionary with short IDs as key and list of long IDs
         as values (NB : one short ID can have several long IDs correspondence).
         metacyc_reverse_id_dict -- dictionary with long IDs as key and the
         corresponding short ID as value (NB : one long ID as only one short ID correspondence).
     """
 
     matching = read_file(path)
-    dico_matching = {}
-    dico_matching_rev = {}
+    metacyc_matching_id_dict = {}
+    metacyc_matching_id_dict_reversed = {}
     for line in matching:
         if line:
             couple = line.rstrip().split(sep)
-            if couple[0] in dico_matching.keys():
-                dico_matching[couple[0]].append(couple[1])
+            if couple[0] in metacyc_matching_id_dict.keys():
+                metacyc_matching_id_dict[couple[0]].append(couple[1])
             else:
-                dico_matching[couple[0]] = [couple[1]]
-            dico_matching_rev[couple[1]] = couple[0]
-    return dico_matching, dico_matching_rev
+                metacyc_matching_id_dict[couple[0]] = [couple[1]]
+            metacyc_matching_id_dict_reversed[couple[1]] = couple[0]
+    return metacyc_matching_id_dict, metacyc_matching_id_dict_reversed
 
 
 def trans_short_ID(list_IDs, corres, short=True, keep=False):
@@ -240,17 +240,17 @@ def trans_short_ID(list_IDs, corres, short=True, keep=False):
         new_list (list of str) -- the list with the converted IDs.
     """
 
-    dico_matching, dico_matching_rev = corres_dico(corres)
+    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(corres)
     new_list = []
     if short:
         for reac in list_IDs:
             reac = reac.rstrip()
             try:
-                for long_reac in dico_matching[reac]:
+                for long_reac in metacyc_matching_id_dict[reac]:
                     new_list.append(long_reac)
             except KeyError:
                 try:
-                    dico_matching_rev[reac]
+                    metacyc_matching_id_dict_reversed[reac]
                     new_list.append(reac)
                 except KeyError:
                     print("No match for reac : ", reac)
@@ -261,11 +261,11 @@ def trans_short_ID(list_IDs, corres, short=True, keep=False):
         for reac in list_IDs:
             reac = reac.rstrip()
             try:
-                dico_matching[reac]
+                metacyc_matching_id_dict[reac]
                 new_list.append(reac)
             except KeyError:
                 try:
-                    new_list.append(dico_matching_rev[reac])
+                    new_list.append(metacyc_matching_id_dict_reversed[reac])
                 except KeyError:
                     print("No match for reac : ", reac)
                     if keep:
@@ -286,7 +286,7 @@ def protein_to_gene(WD, model, protein_corres, name):
         name (str) -- the new name for the new corrected model.
     """
 
-    dico_corres, dico_corres_rev = corres_dico(protein_corres)
+    dico_corres, dico_corres_rev = build_correspondence_dict(protein_corres)
     protein_model = cobra.io.load_json_model(WD + model)
     gene_model = cobra.Model(protein_model.id)
     for reaction in protein_model.reactions:
