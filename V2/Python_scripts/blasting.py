@@ -220,6 +220,9 @@ class Blasting:
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 
+    def save(self, save_path):
+        utils.save(self, save_path + "/" + self.name)
+
     def build(self):
         history_dir = os.path.dirname(self.subject_directory) + "/history/" + self.name + "/"
         self._blast_run()
@@ -230,7 +233,14 @@ class Blasting:
         utils.save_obj(self, history_dir + "drafted")
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
+#     tomate_blast = Blasting("tomate",
+#                                      "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
+#                                      "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.fasta",
+#                                      "/home/asa/INRAE/These/Reconstructions/Tomate/tomato.fasta")
+#     print(tomate_blast.name)
+#     tomate_blast.build()
+#     tomate_blast.save("/home/asa/INRAE/These/Reconstructions/Tomate/Blast/")
     # Tests for portable PC
     # test = Blasting("Test", "/home/asa/INRAE/Tests/aracyc.sbml", "/home/asa/INRAE/Tests/query.fasta",
     #                 "/home/asa/INRAE/Tests/subject.fasta")
