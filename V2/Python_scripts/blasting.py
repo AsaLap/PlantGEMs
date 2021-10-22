@@ -197,9 +197,9 @@ class Blasting:
         """Creates the new COBRA model for the subject organism."""
 
         self.draft = cobra.Model(self.name)
-        for reac in self.model.reactions:
+        for reaction in self.model.reactions:
             to_add = []
-            to_search = reac.gene_reaction_rule.split(" or ")
+            to_search = reaction.gene_reaction_rule.split(" or ")
             for gene in to_search:
                 try:
                     to_add += self.gene_dictionary[gene]
@@ -208,7 +208,7 @@ class Blasting:
             # TODO : change the proteins's ID in to_add in corresponding genes
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
-                x = copy.deepcopy(reac)
+                x = copy.deepcopy(reaction)
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 

@@ -88,8 +88,8 @@ def save_obj(obj, path):
 def load_obj(path):
     """Loads a pickle object."""
 
-    with open(path + '.pkl', 'rb') as input:
-        return pickle.load(input)
+    with open(path, 'rb') as input_file:
+        return pickle.load(input_file)
 
 
 def get_pwt_reactions(path):
@@ -101,15 +101,15 @@ def get_pwt_reactions(path):
         liste_reactions (list of str) -- the list containing all the reactions in this model.
     """
 
-    liste_Reac = []
-    PT_reactions = open(path, "r")
-    for line in PT_reactions:
-        if "UNIQUE-ID" in line and not "#" in line:
+    list_reactions = []
+    pwt_reactions = open(path, "r")
+    for line in pwt_reactions:
+        if "UNIQUE-ID" in line and "#" not in line:
             try:
-                liste_Reac.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+                list_reactions.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
             except AttributeError:
                 print("No match for : ", line)
-    return liste_Reac
+    return list_reactions
 
 
 def clean_sbml(wd, name):
@@ -150,13 +150,13 @@ def cobra_compatibility(reaction, side=True):
     """
 
     if side:
-        reaction = reaction.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace(
-            "__91__", "[").replace("__93__", "]")
+        reaction = reaction.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-") \
+            .replace("__43__", "+").replace("__91__", "[").replace("__93__", "]")
         if re.search('(^_\d)', reaction):
             reaction = reaction[1:]
     else:
-        reaction = reaction.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace(
-            "[", "__91__").replace("]", "__93")
+        reaction = reaction.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__")\
+            .replace("+", "__43__").replace("[", "__91__").replace("]", "__93")
         if re.search('(\d)', reaction[0]):
             reaction = "_" + reaction
     return reaction
@@ -174,27 +174,26 @@ def metacyc_ids(wd, path):
     res = []
     print(len(data["reactions"]))
     for reaction in data["reactions"]:
-        long_ID = reaction["name"].split("/")[0]
-        ###Getting rid of the brackets in the name sometimes!
+        long_id = reaction["name"].split("/")[0]
+        # Getting rid of the brackets in the name sometimes!
         reaction_pattern = re.compile('([[].*[]])')
-        tmp_ID = reaction_pattern.sub("", long_ID)
-        short_ID = tmp_ID
-        ###Regexp to "clean" the metabolite's names
+        tmp_id = reaction_pattern.sub("", long_id)
+        short_id = tmp_id
+        # Regexp to "clean" the metabolite's names
         meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
         meta_list = []
-        # print(len(reaction["metabolites"].keys()))
         if len(reaction["metabolites"].keys()) != 0:
             for metabolite in reaction["metabolites"].keys():
-                ###The metabolite are "cleaned" here
+                # The metabolite are "cleaned" here
                 metabolite = meta_pattern.sub("", metabolite)
-                len_ID, len_meta = len(tmp_ID), len(metabolite)
-                diff = len_ID - len_meta
-                ###Small trick to get only the end of the ID removed and not the beginning
-                ###(metabolite's names can be in the reaction's name)
-                test_ID = tmp_ID[:diff - 1] + tmp_ID[diff - 1:].replace("-" + metabolite, "")
-                if len(test_ID) < len(short_ID):
-                    short_ID = test_ID
-            res.append([short_ID, reaction["name"]])
+                len_id, len_meta = len(tmp_id), len(metabolite)
+                diff = len_id - len_meta
+                # Small trick to get only the end of the ID removed and not the beginning
+                # (metabolite's names can be in the reaction's name)
+                test_id = tmp_id[:diff - 1] + tmp_id[diff - 1:].replace("-" + metabolite, "")
+                if len(test_id) < len(short_id):
+                    short_id = test_id
+            res.append([short_id, reaction["name"]])
     write_csv(wd, res, "MetacycCorresIDs", "\t")
 
 
@@ -226,21 +225,21 @@ def build_correspondence_dict(path, sep="\t"):
     return metacyc_matching_id_dict, metacyc_matching_id_dict_reversed
 
 
-def trans_short_ID(list_ids, corres, short=True, keep=False):
+def trans_short_id(list_ids, correspondence, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
     
     ARGS:
         list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
-        corres (str) -- the path to the correspondence file of Metacyc IDs.
+        correspondence (str) -- the path to the correspondence file of Metacyc IDs.
         short (boolean) -- True if you want to have short IDs becoming long,
         False if you want long IDs to become short.
-        still (boolean) -- True if you want to keep the reactions even if they are not found.
+        keep (boolean) -- True if you want to keep the reactions even if they are not found.
     RETURN:
         new_list (list of str) -- the list with the converted IDs.
     """
 
-    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(corres)
+    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(correspondence)
     new_list = []
     if short:
         for reaction in list_ids:
@@ -250,8 +249,8 @@ def trans_short_ID(list_ids, corres, short=True, keep=False):
                     new_list.append(long_reaction)
             except KeyError:
                 try:
-                    metacyc_matching_id_dict_reversed[reaction]
-                    new_list.append(reaction)
+                    if reaction in metacyc_matching_id_dict_reversed.keys():
+                        new_list.append(reaction)
                 except KeyError:
                     print("No match for reaction : ", reaction)
                     if keep:
@@ -261,8 +260,8 @@ def trans_short_ID(list_ids, corres, short=True, keep=False):
         for reaction in list_ids:
             reaction = reaction.rstrip()
             try:
-                metacyc_matching_id_dict[reaction]
-                new_list.append(reaction)
+                if reaction in metacyc_matching_id_dict.keys():
+                    new_list.append(reaction)
             except KeyError:
                 try:
                     new_list.append(metacyc_matching_id_dict_reversed[reaction])
@@ -274,19 +273,19 @@ def trans_short_ID(list_ids, corres, short=True, keep=False):
     return new_list
 
 
-def protein_to_gene(wd, model, protein_corres, name):
+def protein_to_gene(wd, model, protein_correspondence, name):
     """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
     It creates a new model that will be rid of all the proteins.
     
     ARGS:
         wd (str) -- the path where to find the model.
         model (str) -- the model file in json format.
-        protein_corres (str) -- the exact path of the csv file of the
-        correspondance between a protein and its gene.
+        protein_correspondence (str) -- the exact path of the csv file of the
+        correspondence between a protein and its gene.
         name (str) -- the new name for the new corrected model.
     """
 
-    dico_corres, dico_corres_rev = build_correspondence_dict(protein_corres)
+    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(protein_correspondence)
     protein_model = cobra.io.load_json_model(wd + model)
     gene_model = cobra.Model(protein_model.id)
     for reaction in protein_model.reactions:
@@ -294,11 +293,11 @@ def protein_to_gene(wd, model, protein_corres, name):
         list_proteins = reaction.gene_reaction_rule.split(" or ")
         for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
             try:
-                genes.append(dico_corres_rev[protein])
+                genes.append(metacyc_matching_id_dict_reversed[protein])
             except KeyError:
                 try:
-                    dico_corres[protein]
-                    genes.append(protein)
+                    if protein in metacyc_matching_id_dict.keys():
+                        genes.append(protein)
                 except KeyError:
                     print("No match for : ", protein)
         new_reaction = copy.deepcopy(reaction)
