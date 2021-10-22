@@ -59,20 +59,20 @@ def read_config(ini):
     return config
 
 
-def write_file(WD, filename, data):
+def write_file(wd, filename, data):
     """Function to write a file from a list."""
 
-    f = open(WD + filename, "w")
+    f = open(wd + filename, "w")
     for i in data:
         f.write(i.rstrip() + "\n")
     f.close()
 
 
-def write_csv(WD, list_value, name, separator=","):
+def write_csv(wd, list_value, name, separator=","):
     """Function to save a file as a CSV format, needs a list of lists, 
     first list as the column names."""
 
-    with open(WD + name + '.csv', 'w', newline='') as file:
+    with open(wd + name + '.csv', 'w', newline='') as file:
         writer = csv.writer(file, delimiter=separator)
         for f in list_value:
             writer.writerow(f)
@@ -92,18 +92,18 @@ def load_obj(path):
         return pickle.load(input)
 
 
-def get_reactions_PT(path):
+def get_pwt_reactions(path):
     """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
     
     ARGS:
         path (str) -- the path to the reactions.dat file.
     RETURN:
-        liste_reac (list of str) -- the list containing all the reactions in this model.
+        liste_reactions (list of str) -- the list containing all the reactions in this model.
     """
 
     liste_Reac = []
-    PT_reac = open(path, "r")
-    for line in PT_reac:
+    PT_reactions = open(path, "r")
+    for line in PT_reactions:
         if "UNIQUE-ID" in line and not "#" in line:
             try:
                 liste_Reac.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
@@ -112,79 +112,79 @@ def get_reactions_PT(path):
     return liste_Reac
 
 
-def clean_sbml(WD, name):
+def clean_sbml(wd, name):
     """Function to get rid of specific character COBRA puts into its 
     sbml models, and cannot read (you read it right...).
     
     ARGS:
-        WD (str) -- the working directory.
+        wd (str) -- the working directory.
         name (str) -- the name of the sbml model.
     RETURN:
         the name of the new file.
     """
 
-    file = read_file(WD + name)
+    file = read_file(wd + name)
     new_file = []
     meta = re.compile('( id="M_)')
     sp_ref = re.compile('(<speciesReference species="M_)')
-    reac = re.compile('(id="R_)')
+    reaction = re.compile('(id="R_)')
     for i in file:
         i = meta.sub(' id="', i)
         i = sp_ref.sub('<speciesReference species="', i)
         if "<reaction" in i:
-            i = reac.sub('id="', i)
+            i = reaction.sub('id="', i)
         new_file.append(i)
-    write_file(WD, "clean_" + name, new_file)
+    write_file(wd, "clean_" + name, new_file)
     return "clean_" + name
 
 
-def cobra_compatibility(reac, side=True):
+def cobra_compatibility(reaction, side=True):
     """Function to transform a reaction ID into a cobra readable ID and vice versa.
     
     ARGS:
-        reac (str) -- the reaction.
+        reaction (str) -- the reaction.
         side (boolean) -- True if you want to convert a COBRA ID into a readable ID, 
         False for the reverse.
     RETURN:
-        reac (str) -- the transformed reaction.
+        reaction (str) -- the transformed reaction.
     """
 
     if side:
-        reac = reac.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace(
+        reaction = reaction.replace("__46__", ".").replace("__47__", "/").replace("__45__", "-").replace("__43__", "+").replace(
             "__91__", "[").replace("__93__", "]")
-        if re.search('(^_\d)', reac):
-            reac = reac[1:]
+        if re.search('(^_\d)', reaction):
+            reaction = reaction[1:]
     else:
-        reac = reac.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace(
+        reaction = reaction.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__").replace("+", "__43__").replace(
             "[", "__91__").replace("]", "__93")
-        if re.search('(\d)', reac[0]):
-            reac = "_" + reac
-    return reac
+        if re.search('(\d)', reaction[0]):
+            reaction = "_" + reaction
+    return reaction
 
 
-def metacyc_IDs(WD, path):
+def metacyc_ids(wd, path):
     """Function to make the correspondence file between short and long ID of Metacyc.
     
     ARGS:
-        WD (str) -- the directory to save the correspondence file.
+        wd (str) -- the directory to save the correspondence file.
         path (str) -- the path to the metacyc model in JSON format.
     """
 
     data = read_json(path)
     res = []
     print(len(data["reactions"]))
-    for reac in data["reactions"]:
-        long_ID = reac["name"].split("/")[0]
+    for reaction in data["reactions"]:
+        long_ID = reaction["name"].split("/")[0]
         ###Getting rid of the brackets in the name sometimes!
-        reac_pattern = re.compile('([[].*[]])')
-        tmp_ID = reac_pattern.sub("", long_ID)
+        reaction_pattern = re.compile('([[].*[]])')
+        tmp_ID = reaction_pattern.sub("", long_ID)
         short_ID = tmp_ID
         ###Regexp to "clean" the metabolite's names
         meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
         meta_list = []
-        # print(len(reac["metabolites"].keys()))
-        if len(reac["metabolites"].keys()) != 0:
-            for metabolite in reac["metabolites"].keys():
+        # print(len(reaction["metabolites"].keys()))
+        if len(reaction["metabolites"].keys()) != 0:
+            for metabolite in reaction["metabolites"].keys():
                 ###The metabolite are "cleaned" here
                 metabolite = meta_pattern.sub("", metabolite)
                 len_ID, len_meta = len(tmp_ID), len(metabolite)
@@ -194,8 +194,8 @@ def metacyc_IDs(WD, path):
                 test_ID = tmp_ID[:diff - 1] + tmp_ID[diff - 1:].replace("-" + metabolite, "")
                 if len(test_ID) < len(short_ID):
                     short_ID = test_ID
-            res.append([short_ID, reac["name"]])
-    write_csv(WD, res, "MetacycCorresIDs", "\t")
+            res.append([short_ID, reaction["name"]])
+    write_csv(wd, res, "MetacycCorresIDs", "\t")
 
 
 def build_correspondence_dict(path, sep="\t"):
@@ -226,12 +226,12 @@ def build_correspondence_dict(path, sep="\t"):
     return metacyc_matching_id_dict, metacyc_matching_id_dict_reversed
 
 
-def trans_short_ID(list_IDs, corres, short=True, keep=False):
+def trans_short_ID(list_ids, corres, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
     
     ARGS:
-        list_IDs (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
+        list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
         corres (str) -- the path to the correspondence file of Metacyc IDs.
         short (boolean) -- True if you want to have short IDs becoming long,
         False if you want long IDs to become short.
@@ -243,43 +243,43 @@ def trans_short_ID(list_IDs, corres, short=True, keep=False):
     metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(corres)
     new_list = []
     if short:
-        for reac in list_IDs:
-            reac = reac.rstrip()
+        for reaction in list_ids:
+            reaction = reaction.rstrip()
             try:
-                for long_reac in metacyc_matching_id_dict[reac]:
-                    new_list.append(long_reac)
+                for long_reaction in metacyc_matching_id_dict[reaction]:
+                    new_list.append(long_reaction)
             except KeyError:
                 try:
-                    metacyc_matching_id_dict_reversed[reac]
-                    new_list.append(reac)
+                    metacyc_matching_id_dict_reversed[reaction]
+                    new_list.append(reaction)
                 except KeyError:
-                    print("No match for reac : ", reac)
+                    print("No match for reaction : ", reaction)
                     if keep:
-                        new_list.append(reac)
+                        new_list.append(reaction)
                         print("Keeping it anyway...")
     else:
-        for reac in list_IDs:
-            reac = reac.rstrip()
+        for reaction in list_ids:
+            reaction = reaction.rstrip()
             try:
-                metacyc_matching_id_dict[reac]
-                new_list.append(reac)
+                metacyc_matching_id_dict[reaction]
+                new_list.append(reaction)
             except KeyError:
                 try:
-                    new_list.append(metacyc_matching_id_dict_reversed[reac])
+                    new_list.append(metacyc_matching_id_dict_reversed[reaction])
                 except KeyError:
-                    print("No match for reac : ", reac)
+                    print("No match for reaction : ", reaction)
                     if keep:
-                        new_list.append(reac)
+                        new_list.append(reaction)
                         print("Keeping it anyway...")
     return new_list
 
 
-def protein_to_gene(WD, model, protein_corres, name):
+def protein_to_gene(wd, model, protein_corres, name):
     """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
     It creates a new model that will be rid of all the proteins.
     
     ARGS:
-        WD (str) -- the path where to find the model.
+        wd (str) -- the path where to find the model.
         model (str) -- the model file in json format.
         protein_corres (str) -- the exact path of the csv file of the
         correspondance between a protein and its gene.
@@ -287,7 +287,7 @@ def protein_to_gene(WD, model, protein_corres, name):
     """
 
     dico_corres, dico_corres_rev = build_correspondence_dict(protein_corres)
-    protein_model = cobra.io.load_json_model(WD + model)
+    protein_model = cobra.io.load_json_model(wd + model)
     gene_model = cobra.Model(protein_model.id)
     for reaction in protein_model.reactions:
         genes = []
@@ -304,4 +304,4 @@ def protein_to_gene(WD, model, protein_corres, name):
         new_reaction = copy.deepcopy(reaction)
         new_reaction.gene_reaction_rule = " or ".join(set(genes))
         gene_model.add_reactions([new_reaction])
-    cobra.io.save_json_model(gene_model, WD + name + protein_model.id + ".json")
+    cobra.io.save_json_model(gene_model, wd + name + protein_model.id + ".json")

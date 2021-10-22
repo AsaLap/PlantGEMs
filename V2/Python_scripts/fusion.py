@@ -24,7 +24,7 @@ class Fusion:
             utils.build_correspondence_dict(_metacyc_correspondence_file_path)
         self.wd_log = _wd_log
         self.wd_pgdb = _wd_pgdb
-        self.pwt_reactions = utils.get_reactions_PT(_pwt_reactions_path)
+        self.pwt_reactions = utils.get_pwt_reactions(_pwt_reactions_path)
         self.blast_model = cobra.io.load_json_model(_blast_sbml_path)
         self.metacyc_model = cobra.io.load_json_model(_metacyc_sbml_path)
         self.reactions_list = []
@@ -159,7 +159,7 @@ class Fusion:
         
         ARGS:
             corres (str) -- the path to the file containing the correspondence 
-            between short and long ID of Metacyc's reactions (see utils.metacyc_IDs()).
+            between short and long ID of Metacyc's reactions (see utils.metacyc_ids()).
             aracyc_model_path (str) -- the path to the aracyc based reconstructed model.
             metacyc_path (str) -- the path to the metacyc model. (=self.pwt_reactions/self.pwt_reactions_list)
             save_path (str) -- the path and name to the saving directory.
@@ -194,7 +194,7 @@ class Fusion:
 
 if __name__ == "__main__":
     # Making of the file with the correspondence between short and long IDs, which will be needed here
-    # utils.metacyc_IDs("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
+    # utils.metacyc_ids("/home/asa/INRAE/Work/FichiersRelancePipeline/Fusion/",
     #                   "/home/asa/INRAE/Logiciels/pathway-tools/metacyc.json")
 
     ##Tomato
