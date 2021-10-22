@@ -128,7 +128,10 @@ class Blasting:
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
             tmp_dir = self.model_directory + "/tmp_dir/"
-            subprocess.run(["rm -rf", tmp_dir])
+            try:
+                subprocess.run(["rm -rf", tmp_dir])
+            except FileNotFoundError:
+                pass
             subprocess.run(["mkdir", tmp_dir])
             query_file = open(self.model_fasta_path)
             for seq in self.model_fasta.split(">"):
@@ -156,7 +159,10 @@ class Blasting:
                     "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
-            subprocess.run(["rm", "-rf", tmp_dir])
+            try:
+                subprocess.run(["rm", "-rf", tmp_dir])
+            except FileNotFoundError:
+                print("Temporary folder not found, not erased...")
             print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
     def _select_genes(self):
@@ -206,19 +212,26 @@ class Blasting:
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 
-    def save(self, save_path):
-        utils.save(self, save_path + "/" + self.name)
+    def _history_save(self, step):
+        history_dir = self.subject_directory + "/blast_history/"
+        if not os.path.isdir(history_dir):
+            try:
+                subprocess.run(["mkdir", history_dir])
+            except PermissionError:
+                print("Permission to create this folder :\n" + history_dir + "\nnot granted !")
+        utils.save_obj(self, history_dir + self.name + "_" + step)
 
     # TODO : create a loading function
 
     def build(self):
-        history_dir = os.path.dirname(self.subject_directory) + "/history/" + self.name + "/"
+
         self._blast_run()
-        utils.save_obj(self, history_dir + "blasted")
+        self._history_save("blast")
         self._select_genes()
-        utils.save_obj(self, history_dir + "gene_selected")
+        self._history_save("gene_selected")
         self._drafting()
-        utils.save_obj(self, history_dir + "drafted")
+        self._history_save("drafted")
+        cobra.io.save_json_model(self.draft, self.subject_directory + "/" + self.name + "_blast.json")
 
 # if __name__ == '__main__':
 #     tomate_blast = Blasting("tomate",

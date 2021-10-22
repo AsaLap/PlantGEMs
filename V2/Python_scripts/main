@@ -11,8 +11,13 @@ from blasting import Blasting
 
 if __name__ == "__main__":
     tomate_blast = Blasting("tomate",
-                                  "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
-                                  "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.fasta",
-                                  "/home/asa/INRAE/These/Reconstructions/Tomate/tomato.fasta")
+                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
+                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.fasta",
+                            "/home/asa/INRAE/These/Reconstructions/Tomate/tomato.fasta")
     tomate_blast.build()
-    tomate_blast.save("/home/asa/INRAE/These/Reconstructions/Tomate/Blast/")
+
+    # crashtest_blast = Blasting("tomate",
+    #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
+    #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc_crashtest.fasta",
+    #                            "/home/asa/INRAE/These/Reconstructions/Crashtest/crashtest.fasta")
+    # crashtest_blast.build()
