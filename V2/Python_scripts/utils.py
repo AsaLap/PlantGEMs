@@ -12,8 +12,11 @@ import copy
 import csv
 import json
 import pickle
+import matplotlib.pyplot as plt
 import re
 
+from upsetplot import from_memberships
+from upsetplot import plot
 
 def read_file(path):
     """Function to read and return a file line by line in a list."""
@@ -59,12 +62,16 @@ def read_config(ini):
     return config
 
 
-def write_file(wd, filename, data):
+def write_file(wd, filename, data, strip=True):
     """Function to write a file from a list."""
 
     f = open(wd + filename, "w")
-    for i in data:
-        f.write(i.rstrip() + "\n")
+    if strip:
+        for i in data:
+            f.write(i.rstrip() + "\n")
+    else:
+        for i in data:
+            f.write(i)
     f.close()
 
 
@@ -155,7 +162,7 @@ def cobra_compatibility(reaction, side=True):
         if re.search('(^_\d)', reaction):
             reaction = reaction[1:]
     else:
-        reaction = reaction.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__")\
+        reaction = reaction.replace("/", "__47__").replace(".", "__46__").replace("-", "__45__") \
             .replace("+", "__43__").replace("[", "__91__").replace("]", "__93")
         if re.search('(\d)', reaction[0]):
             reaction = "_" + reaction
@@ -304,3 +311,90 @@ def protein_to_gene(wd, model, protein_correspondence, name):
         new_reaction.gene_reaction_rule = " or ".join(set(genes))
         gene_model.add_reactions([new_reaction])
     cobra.io.save_json_model(gene_model, wd + name + protein_model.id + ".json")
+
+
+def list_reactions(data):
+    res = []
+    for reaction in data.reactions:
+        res.append(reaction.id)
+    return res
+
+
+def make_upsetplot(WD, name, data, title):
+    """Function to make an UpSetPlot.
+    Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
+
+    ARGS:
+        WD (str) -- the working directory to save the result.
+        name (str) -- name of the file to save.
+        data -- the dictionary containing the organisms as keys
+        and the genes/reactions/others to treat for the UpSetPlot.
+        title (str) -- title of the graph.
+    """
+
+    clusters = get_clusters(list(data.keys()))
+    [clusters.insert(0, [key]) for key in data.keys()]
+    count = []
+    log = ""
+    for c in clusters:
+        others = list(data.keys())
+        listInter = []
+        for x in c:
+            others.remove(x)
+            listInter.append(set(data[x]))
+        cluster_data, sim_count = similiraty_count(data, listInter, others)
+        count.append(sim_count)
+        for i in c:
+            log += i + " "
+        log += " (" + str(sim_count) + ") :\n"
+        for i in cluster_data:
+            log += cobra_compatibility(str(i)) + "\n"
+        log += "\n------\n\n"
+    write_file(WD, name + ".log", log, False)
+    my_upsetplot = from_memberships(clusters, count)
+    plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
+    plt.suptitle(title)
+    plt.savefig(WD + name + ".pdf")
+    plt.show()
+
+
+def similiraty_count(data, args, others):
+    """Function which is part of the process to make the UpSetPlot,
+    counting and retourning the similarities between the clusters."""
+
+    cluster_set = set.intersection(*args)
+    for i in others:
+        cluster_set = cluster_set.difference(set(data[i]))
+    return cluster_set, len(cluster_set)
+
+
+def get_clusters(liste):
+    """Function to create every individual cluster depending on
+    the number of organisms given to the UpSetPlot function."""
+
+    res = []
+    final_res = []
+    for i in range(len(liste) - 1):
+        if i == 0:
+            for x in liste:
+                z = liste.index(x)
+                for i in range(len(liste) - z - 1):
+                    res.append([x, liste[z + i + 1]])
+            [final_res.append(i) for i in res]
+        else:
+            res = get_sub_clusters(liste, res)
+            [final_res.append(i) for i in res]
+    return final_res
+
+
+def get_sub_clusters(liste, res):
+    """Subfunction of the clusters (algorithmic architecture)."""
+
+    sub_res = []
+    for y in res:
+        z = liste.index(y[len(y) - 1])
+        for i in range(z + 1, len(liste)):
+            x = copy.deepcopy(y)
+            x.append(liste[i])
+            sub_res.append(x)
+    return sub_res
