@@ -5,3 +5,5 @@ future>=0.18.2
 mpwt~=0.6.3
 UpSetPlot~=0.6.0
 supervenn~=0.4.1
+pyasp~=1.4.4
+Meneco~=2.0.0
