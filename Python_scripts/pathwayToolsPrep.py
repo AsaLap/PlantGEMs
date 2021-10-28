@@ -8,14 +8,14 @@
 Pathway Tools software reconstruction and launching of reconstruction 
 using mpwt package from AuReMe."""
 
-import re
-import numpy as np
-import string
-import random
 import mpwt
-import subprocess
 import multiprocessing
-
+import numpy as np
+import random
+import re
+import string
+import subprocess
+import sys
 import utils
 
 
@@ -110,7 +110,7 @@ def make_dat(wd, regions_dict, chromosome_type):
         as chromosomes or contigs (or else, see Pathway Tools guide).
     """
 
-    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually", \
+    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",
           "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
     circular = 'N'
     dat_file_str_list = []
@@ -274,7 +274,7 @@ def pwt_pipeline(data):
     the files to Pathway Tools via mpwt.
     
     ARGS:
-        data (str) -- the path to a index.txt file containing the path 
+        data (str) -- the path to a txt file containing the path
         to each ini file for each organism to run.
     -- Parameters taken from an ini file:
         gff_filename (str) -- the name of the .gff file for the organism.
@@ -344,14 +344,10 @@ def pwt_pipeline(data):
     print("Number of CPU used : ", cpu)
 
     # Starting the mpwt script
-    mpwt.multiprocess_pwt(input_folder=wd_input, output_folder=wd_output,
-                          patho_inference=True, patho_hole_filler=False,
-                          patho_operon_predictor=False, pathway_score=1,
-                          dat_creation=True, dat_extraction=True,
-                          number_cpu=nb_cpu, size_reduction=False,
-                          patho_log=wd_log, ignore_error=False,
-                          taxon_file=True, verbose=True)
+    mpwt.multiprocess_pwt(input_folder=wd_input, output_folder=wd_output, patho_inference=True, patho_hole_filler=False,
+                          patho_operon_predictor=False, pathway_score=1, dat_extraction=True, number_cpu=nb_cpu,
+                          size_reduction=False, patho_log=wd_log, ignore_error=False, taxon_file=True, verbose=True)
 
 
 if __name__ == "__main__":
-    pwt_pipeline("/home/asa/INRAE/Work/FichiersRelancePipeline/mpwt/index.txt")
+    globals()[sys.argv[1]](*sys.argv[2:])

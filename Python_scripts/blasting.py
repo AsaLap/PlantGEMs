@@ -11,6 +11,7 @@ import copy
 import os
 import re
 import subprocess
+import sys
 import time
 import utils
 
@@ -205,7 +206,7 @@ class Blasting:
                     to_add += self.gene_dictionary[gene]
                 except KeyError:
                     pass
-            # TODO : change the proteins's ID in to_add in corresponding genes
+            # TODO : change the proteins' ID in to_add in corresponding genes
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
                 x = copy.deepcopy(reaction)
@@ -232,3 +233,17 @@ class Blasting:
         self._drafting()
         self._history_save("drafted")
         cobra.io.save_json_model(self.draft, self.subject_directory + "/" + self.name + "_blast.json")
+
+
+def cli_blasting(*args):
+    """Function to use this script in CLI."""
+    try:
+        cli_blast = Blasting(*args)
+        cli_blast.build()
+    except TypeError:
+        print("Usage : $ python blasting.py cli_blasting parameter1 parameter2 parameter3 parameter4\nParameters "
+              "required : name, model, model_fasta_path, subject_fasta_path")
+
+
+if __name__ == "__main__":
+    globals()[sys.argv[1]](*sys.argv[2:])
