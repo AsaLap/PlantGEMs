@@ -33,10 +33,9 @@ def get_sequence_region(data, m_rna):
     """
 
     regions_dict = {}
-    protein_found = False # Boolean to avoid testing a protein on each line that has already been found.
+    protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
     for line in data:
-        # Searching the gene's information
-        if "\tgene\t" in line:
+        if "\tgene\t" in line:  # Searching the gene's information
             protein_found = False
             spl = line.split("\t")
             region = spl[0]
@@ -57,8 +56,7 @@ def get_sequence_region(data, m_rna):
                 regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
             else:
                 regions_dict[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
-        # Searching the protein's information
-        if m_rna:
+        if m_rna:  # Searching the protein's information
             if "RNA\t" in line:
                 try:
                     protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
@@ -68,8 +66,8 @@ def get_sequence_region(data, m_rna):
                     print("The mRNA has no attribute 'Name='...")
                     regions_dict[region][gene]["Proteins"]["None"] = []
         else:
-            # In case the gff file needs to be looked at on the CDS and not the mRNA to corresponds to the TSV file
-            if not protein_found and "CDS\t" in line:
+            if not protein_found and "CDS\t" in line:  # In case the gff file needs to be looked at on the CDS and
+                # not the mRNA to corresponds to the TSV file
                 try:  # Searching for CDS's ID instead of m_rna.
                     protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
                     regions_dict[region][gene]["Proteins"][protein] = []
@@ -77,8 +75,7 @@ def get_sequence_region(data, m_rna):
                 except AttributeError:
                     print("The CDS has no attribute 'ID='...")
                     regions_dict[region][gene]["Proteins"]["None"] = []
-        # Searching the exon's information
-        if "\tCDS\t" in line:
+        if "\tCDS\t" in line:  # Searching the exon's information
             spl = line.split("\t")
             regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
     return regions_dict
