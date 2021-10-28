@@ -11,6 +11,7 @@ using mpwt package from AuReMe."""
 import mpwt
 import multiprocessing
 import numpy as np
+import os
 import random
 import re
 import string
@@ -23,10 +24,10 @@ def get_sequence_region(data, m_rna):
     """Function that browses the .gff file and gets the name of each gene,
     the position in the genome and each corresponding region and protein(s).
     
-    ARGS:
+    PARAMS:
         data (file) -- the gff file to browse (already put in memory by the function "read_file").
         m_rna (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
-    RETURN:
+    RETURNS:
         regions_dict -- a dictionary containing all the gathered
         information (see pipelinePT() for the structure).
     """
@@ -86,7 +87,7 @@ def get_sequence_region(data, m_rna):
 def make_protein_correspondence(wd, name, regions_dict):
     """Function to create a csv file with the correspondence between a protein and the associated gene.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path of the working directory to save the file.
         name (str) -- the name of the model being treated.
         regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
@@ -102,7 +103,7 @@ def make_protein_correspondence(wd, name, regions_dict):
 def make_dat(wd, regions_dict, chromosome_type):
     """Function to create the .dat file.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path to the working directory in which the file (.dat) will be saved.
         regions_dict -- the dictionary containing the data to create the .dat file
         (see pipelinePT() for the structure).
@@ -129,17 +130,17 @@ def make_dat(wd, regions_dict, chromosome_type):
     utils.write_file(wd, "genetic-elements" + ".dat", dat_file_str_list)
 
 
-def make_fsa(wd, fileFASTA, regions_dict):
+def make_fsa(wd, fasta_file, regions_dict):
     """Function to make the .fsa files.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path to the working directory to save the files.
-        fileFASTA (str) -- the path to the fasta file of the organism.
+        fasta_file (str) -- the path to the fasta file of the organism.
         regions_dict -- the dictionary containing the data to create
         those files (see pipelinePT() for the structure). 
     """
 
-    with open(fileFASTA, "r") as file:
+    with open(fasta_file, "r") as file:
         fasta = file.read()
     fasta = fasta.split(">")
     fasta = list(filter(None, fasta))
@@ -154,7 +155,7 @@ def make_fsa(wd, fileFASTA, regions_dict):
 def make_pf(wd, eggnog_file_path, regions_dict):
     """Function to make the .pf files.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path of the working directory to save the files.
         eggnog_file_path (str) -- the path to the .tsv file from EggNOG with most information
         for the .pf file.
@@ -191,7 +192,7 @@ def make_pf(wd, eggnog_file_path, regions_dict):
 def make_tsv(wd, taxon_name_list):
     """Function to make the taxon_id.tsv file.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path where to store this file.
         taxon_name_list (list) -- the list containing the name of the organism and its taxon id. 
     """
@@ -205,13 +206,13 @@ def make_tsv(wd, taxon_name_list):
 def eggnog_file_parser(gene_id, start, end, exon_pos, line):
     """Sub-function of make_pf() to write the info in the correct order for each protein.
     
-    ARGS:
+    PARAMS:
         gene_id (str) -- the gene name for the protein.
         start (int) -- the start position of the sequence.
         end (int) -- the end position of the sequence.
         exon_pos (list of int) -- list of position of the exons.
         line (str) -- the line corresponding to the protein in the .tsv file.
-    RETURN:
+    RETURNS:
         info (str) -- a string with all the information and with the correct 
         page settings for the .pf file.
     """
@@ -273,7 +274,7 @@ def pwt_pipeline(data):
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
-    ARGS:
+    PARAMS:
         data (str) -- the path to a txt file containing the path
         to each ini file for each organism to run.
     -- Parameters taken from an ini file:
@@ -298,11 +299,11 @@ def pwt_pipeline(data):
 
     index = utils.read_file(data)
     wd = index.pop(0).rstrip()
-    wd_files = wd + "files/"
-    wd_input = wd + "input/"
-    wd_output = wd + "output/"
-    wd_log = wd + "log/"
-    subprocess.run(["mkdir", wd_input, wd_output, wd_log])
+    files_directory = wd + "files/"
+    input_directory = wd + "input/"
+    output_directory = wd + "output/"
+    log_directory = wd + "log/"
+    subprocess.run(["mkdir", input_directory, output_directory, log_directory])
     # wd_pt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
     cpu = 0
@@ -323,18 +324,23 @@ def pwt_pipeline(data):
             taxon_name_list.append([species_name, taxon_id])
 
             # Preparing the files
-            subprocess.run(["mkdir", wd_input + species_name])
-            wd_organism = wd_input + species_name + "/"
+            species_directory = input_directory + species_name
+            if not os.path.isdir(species_directory):
+                try:
+                    subprocess.run(["mkdir", species_directory])
+                except PermissionError:
+                    print("Permission to create this folder :\n" + species_directory + "\nnot granted !")
+            organism_directory = input_directory + species_name + "/"
             print("------\n" + species_name + "\n------")
-            gff_file = utils.read_file(wd_files + gff_filename)
+            gff_file = utils.read_file(files_directory + gff_filename)
             regions_dict = get_sequence_region(gff_file, m_rna)
-            make_protein_correspondence(wd_log, species_name, regions_dict)
-            make_dat(wd_organism, regions_dict, genetic_type)
-            make_fsa(wd_organism, wd_files + fasta_filename, regions_dict)
-            make_pf(wd_organism, wd_files + eggnog_filename, regions_dict)
+            make_protein_correspondence(log_directory, species_name, regions_dict)
+            make_dat(organism_directory, regions_dict, genetic_type)
+            make_fsa(organism_directory, files_directory + fasta_filename, regions_dict)
+            make_pf(organism_directory, files_directory + eggnog_filename, regions_dict)
 
     # Creating the tsv file for the taxon IDs
-    make_tsv(wd_input, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
+    make_tsv(input_directory, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
     print("------\nCreation of the files finished\n------")
 
     # Counting the number of cpu to use
@@ -344,9 +350,10 @@ def pwt_pipeline(data):
     print("Number of CPU used : ", cpu)
 
     # Starting the mpwt script
-    mpwt.multiprocess_pwt(input_folder=wd_input, output_folder=wd_output, patho_inference=True, patho_hole_filler=False,
-                          patho_operon_predictor=False, pathway_score=1, dat_extraction=True, number_cpu=nb_cpu,
-                          size_reduction=False, patho_log=wd_log, ignore_error=False, taxon_file=True, verbose=True)
+    mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
+                          patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
+                          number_cpu=nb_cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
+                          taxon_file=True, verbose=True)
 
 
 if __name__ == "__main__":
