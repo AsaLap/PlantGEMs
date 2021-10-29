@@ -18,6 +18,7 @@ import re
 from upsetplot import from_memberships
 from upsetplot import plot
 
+
 def read_file(path):
     """Function to read and return a file line by line in a list."""
 
@@ -51,9 +52,9 @@ def read_json(path):
 def read_config(ini):
     """Runs the config file containing all the information to make a new model.
     
-    ARGS :
+    PARAMS :
         ini (str) -- the path to the .ini file.
-    RETURN :
+    RETURNS :
         config (dict of str) -- the configuration in a python dictionary object.
     """
 
@@ -102,9 +103,9 @@ def load_obj(path):
 def get_pwt_reactions(path):
     """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
     
-    ARGS:
+    PARAMS:
         path (str) -- the path to the reactions.dat file.
-    RETURN:
+    RETURNS:
         liste_reactions (list of str) -- the list containing all the reactions in this model.
     """
 
@@ -123,10 +124,10 @@ def clean_sbml(wd, name):
     """Function to get rid of specific character COBRA puts into its 
     sbml models, and cannot read (you read it right...).
     
-    ARGS:
+    PARAMS:
         wd (str) -- the working directory.
         name (str) -- the name of the sbml model.
-    RETURN:
+    RETURNS:
         the name of the new file.
     """
 
@@ -148,11 +149,11 @@ def clean_sbml(wd, name):
 def cobra_compatibility(reaction, side=True):
     """Function to transform a reaction ID into a cobra readable ID and vice versa.
     
-    ARGS:
+    PARAMS:
         reaction (str) -- the reaction.
         side (boolean) -- True if you want to convert a COBRA ID into a readable ID, 
         False for the reverse.
-    RETURN:
+    RETURNS:
         reaction (str) -- the transformed reaction.
     """
 
@@ -172,7 +173,7 @@ def cobra_compatibility(reaction, side=True):
 def metacyc_ids(wd, path):
     """Function to make the correspondence file between short and long ID of Metacyc.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the directory to save the correspondence file.
         path (str) -- the path to the metacyc model in JSON format.
     """
@@ -208,10 +209,10 @@ def build_correspondence_dict(path, sep="\t"):
     """Function to create a ditionary of correspondence between 
     short and long IDs from a correspondence file (Metacyc IDs).
     
-    ARGS:
+    PARAMS:
         path (str) -- the path to the file containing the correspondence information.
         sep (str) -- the separator of the correspondence file (default = tab).
-    RETURN:
+    RETURNS:
         metacyc_matching_id_dict -- dictionary with short IDs as key and list of long IDs
         as values (NB : one short ID can have several long IDs correspondence).
         metacyc_reverse_id_dict -- dictionary with long IDs as key and the
@@ -236,13 +237,13 @@ def trans_short_id(list_ids, correspondence, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
     
-    ARGS:
+    PARAMS:
         list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
         correspondence (str) -- the path to the correspondence file of Metacyc IDs.
         short (boolean) -- True if you want to have short IDs becoming long,
         False if you want long IDs to become short.
         keep (boolean) -- True if you want to keep the reactions even if they are not found.
-    RETURN:
+    RETURNS:
         new_list (list of str) -- the list with the converted IDs.
     """
 
@@ -284,7 +285,7 @@ def protein_to_gene(wd, model, protein_correspondence, name):
     """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
     It creates a new model that will be rid of all the proteins.
     
-    ARGS:
+    PARAMS:
         wd (str) -- the path where to find the model.
         model (str) -- the model file in json format.
         protein_correspondence (str) -- the exact path of the csv file of the
@@ -320,12 +321,12 @@ def list_reactions(data):
     return res
 
 
-def make_upsetplot(WD, name, data, title):
+def make_upsetplot(directory, name, data, title):
     """Function to make an UpSetPlot.
     Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
 
-    ARGS:
-        WD (str) -- the working directory to save the result.
+    PARAMS:
+        directory (str) -- the directory to save the result.
         name (str) -- name of the file to save.
         data -- the dictionary containing the organisms as keys
         and the genes/reactions/others to treat for the UpSetPlot.
@@ -350,11 +351,11 @@ def make_upsetplot(WD, name, data, title):
         for i in cluster_data:
             log += cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
-    write_file(WD, name + ".log", log, False)
+    write_file(directory, name + ".log", log, False)
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
     plt.suptitle(title)
-    plt.savefig(WD + name + ".pdf")
+    plt.savefig(directory + name + ".pdf")
     plt.show()
 
 
@@ -368,33 +369,33 @@ def similarity_count(data, args, others):
     return cluster_set, len(cluster_set)
 
 
-def get_clusters(liste):
+def get_clusters(cluster_list):
     """Function to create every individual cluster depending on
     the number of organisms given to the UpSetPlot function."""
 
     res = []
     final_res = []
-    for i in range(len(liste) - 1):
+    for i in range(len(cluster_list) - 1):
         if i == 0:
-            for x in liste:
-                z = liste.index(x)
-                for i in range(len(liste) - z - 1):
-                    res.append([x, liste[z + i + 1]])
+            for x in cluster_list:
+                z = cluster_list.index(x)
+                for i in range(len(cluster_list) - z - 1):
+                    res.append([x, cluster_list[z + i + 1]])
             [final_res.append(i) for i in res]
         else:
-            res = get_sub_clusters(liste, res)
+            res = get_sub_clusters(cluster_list, res)
             [final_res.append(i) for i in res]
     return final_res
 
 
-def get_sub_clusters(liste, res):
-    """Subfunction of the clusters (algorithmic architecture)."""
+def get_sub_clusters(cluster_list, res):
+    """Sub-function of the clusters (algorithmic architecture)."""
 
     sub_res = []
     for y in res:
-        z = liste.index(y[len(y) - 1])
-        for i in range(z + 1, len(liste)):
+        z = cluster_list.index(y[len(y) - 1])
+        for i in range(z + 1, len(cluster_list)):
             x = copy.deepcopy(y)
-            x.append(liste[i])
+            x.append(cluster_list[i])
             sub_res.append(x)
     return sub_res
