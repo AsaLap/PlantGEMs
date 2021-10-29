@@ -189,7 +189,6 @@ def metacyc_ids(wd, path):
         short_id = tmp_id
         # Regexp to "clean" the metabolite's names
         meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
-        meta_list = []
         if len(reaction["metabolites"].keys()) != 0:
             for metabolite in reaction["metabolites"].keys():
                 # The metabolite are "cleaned" here
@@ -339,11 +338,11 @@ def make_upsetplot(directory, name, data, title):
     log = ""
     for c in clusters:
         others = list(data.keys())
-        listInter = []
+        list_inter = []
         for x in c:
             others.remove(x)
-            listInter.append(set(data[x]))
-        cluster_data, sim_count = similarity_count(data, listInter, others)
+            list_inter.append(set(data[x]))
+        cluster_data, sim_count = similarity_count(data, list_inter, others)
         count.append(sim_count)
         for i in c:
             log += i + " "
@@ -379,12 +378,12 @@ def get_clusters(cluster_list):
         if i == 0:
             for x in cluster_list:
                 z = cluster_list.index(x)
-                for i in range(len(cluster_list) - z - 1):
-                    res.append([x, cluster_list[z + i + 1]])
-            [final_res.append(i) for i in res]
+                for j in range(len(cluster_list) - z - 1):
+                    res.append([x, cluster_list[z + j + 1]])
+            [final_res.append(k) for k in res]
         else:
             res = get_sub_clusters(cluster_list, res)
-            [final_res.append(i) for i in res]
+            [final_res.append(r) for r in res]
     return final_res
 
 
