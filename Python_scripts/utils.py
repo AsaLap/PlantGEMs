@@ -342,7 +342,7 @@ def make_upsetplot(WD, name, data, title):
         for x in c:
             others.remove(x)
             listInter.append(set(data[x]))
-        cluster_data, sim_count = similiraty_count(data, listInter, others)
+        cluster_data, sim_count = similarity_count(data, listInter, others)
         count.append(sim_count)
         for i in c:
             log += i + " "
@@ -358,7 +358,7 @@ def make_upsetplot(WD, name, data, title):
     plt.show()
 
 
-def similiraty_count(data, args, others):
+def similarity_count(data, args, others):
     """Function which is part of the process to make the UpSetPlot,
     counting and retourning the similarities between the clusters."""
 
