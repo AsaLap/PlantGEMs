@@ -15,7 +15,7 @@ import re
 import utils
 
 
-class Fusion:
+class Merging:
 
     def __init__(self, _name, _metacyc_correspondence_file_path, _wd_log, _wd_pgdb, _pwt_reactions_path,
                  _blast_sbml_path, _metacyc_sbml_path):
@@ -154,7 +154,7 @@ class Fusion:
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction
 
-    def pipeline_fusion(self, verbose=False):
+    def merge(self, verbose=False):
         """Function to merge two models, one from an Aracyc model, the other one from Pathway Tools.
         
         ARGS:
@@ -188,5 +188,5 @@ class Fusion:
             except KeyError:
                 list_fail.append(reaction)
         print("Nb of reactions not found in the metacyc model: ", len(list_fail))
-        cobra.io.save_json_model(new_model, self.wd_log + "/../" + self.name + "_fusion.json")
+        cobra.io.save_json_model(new_model, self.wd_log + "/../" + self.name + "_merged.json")
         print("Nb of reactions in the merged model : ", len(new_model.reactions))

@@ -225,7 +225,6 @@ class Blasting:
     # TODO : create a loading function
 
     def build(self):
-
         self._blast_run()
         self._history_save("blast")
         self._select_genes()
