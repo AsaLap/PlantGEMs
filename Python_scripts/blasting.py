@@ -18,21 +18,34 @@ import utils
 
 class Blasting:
 
-    def __init__(self, _name, _model, _model_fasta_path, _subject_fasta_path):
+    def __init__(self, _name, _main_directory, _model_file_path=None, _model_fasta_path=None, _subject_fasta_path=None):
         """
-        ARGS:
-            _model -- the path to the SBML file containing the model for the reconstruction.
+        ARGS :
+            _name -- name of the subject, must corresponds to the files' names.
+            _main_directory -- main directory with the files et subdirectories for the results.
+        (optional):
+            _model_file_path -- the path to the SBML file containing the model for the reconstruction.
             _model_fasta_path -- the path to the fasta file of the model.
             _subject_fasta_path -- the path to the fasta file of the subject.
         """
         self.name = _name
-        self.model = cobra.io.read_sbml_model(_model)
-        self.model_fasta_path = _model_fasta_path
-        self.model_directory = os.path.split(self.model_fasta_path)[0]
-        self.model_fasta = open(self.model_fasta_path).read()
-        self.subject_fasta_path = _subject_fasta_path
-        self.subject_fasta = open(self.subject_fasta_path).read()
-        self.subject_directory = os.path.split(self.subject_fasta_path)[0]
+        self.main_directory = _main_directory.rstrip("/ ") + "/"
+        if _model_file_path is not None:
+            self.model = cobra.io.read_sbml_model(_model_file_path)
+            self.model_fasta_path = _model_fasta_path
+        else:
+            self.model = self._find_model()
+        if _model_fasta_path is not None:
+            self.model_fasta = open(self.model_fasta_path).read()
+        else:
+            self.model_fasta = open(self._find_fasta(self.model.id)).read()
+        if _subject_fasta_path is not None:
+            self.subject_fasta_path = _subject_fasta_path
+            self.subject_fasta = open(self.subject_fasta_path).read()
+        else:
+            self.subject_fasta_path = self._find_fasta(self.name)
+            self.subject_fasta = open(self.subject_fasta_path).read()
+        self.subject_directory = self.main_directory + "/" + self.model.id + "/"
         self.blast_result = {}
         self.gene_dictionary = {}
         self.identity = 50
@@ -114,6 +127,39 @@ class Blasting:
         else:
             print("Denied : value must be between 0 and 10000 (both included)")
 
+    def _find_model(self):
+        model = [i for i in os.listdir(self.main_directory) if i.endswith("sbml")]
+        if len(model) >= 2:
+            print("More than one sbml file has been found, please select one by entering its corresponding number :")
+            for i in range(len(model)):
+                print(i + 1, " : ", model[i])
+            try:
+                res = int(input("Chosen file number : "))
+                return model[res - 1]
+            except IndexError:
+                print("Please choose a valid number...")
+                self._find_model()
+            except ValueError:
+                print("Please enter a number only...")
+                self._find_model()
+
+    def _find_fasta(self, target):  # TODO take multiple file format in account
+        fasta_path = self.main_directory + "/files/" + target + ".fasta"
+        if os.path.isdir(self.main_directory + "/files/" + target + ".fasta"):
+            return fasta_path
+        else:
+            print("No corresponding file found...")
+            try:
+                path = str(input("Path to " + target + " fasta file : "))
+                if os.path.isdir(path):
+                    return path
+                else:
+                    print("No file found with this path, make sure you entered it correctly...")
+                    self._find_fasta()
+            except ValueError:
+                print("Please enter a string only...")
+                self._find_fasta()
+
     def set_default_values(self):
         self.identity = 50
         self.difference = 30
@@ -128,7 +174,7 @@ class Blasting:
             print("\nLaunching the blast !")
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
-            tmp_dir = self.model_directory + "/tmp_dir/"
+            tmp_dir = self.main_directory + "/blast/tmp_dir/"
             try:
                 subprocess.run(["rm -rf", tmp_dir])
             except FileNotFoundError:
@@ -214,24 +260,25 @@ class Blasting:
                 self.draft.add_reactions([x])
 
     def _history_save(self, step):
-        history_dir = self.subject_directory + "/blast_history/"
-        if not os.path.isdir(history_dir):
+        history_directory = self.main_directory + "blast/blast_object_history/"
+        if not os.path.isdir(history_directory):
             try:
-                subprocess.run(["mkdir", history_dir])
+                subprocess.run(["mkdir", history_directory])
             except PermissionError:
-                print("Permission to create this folder :\n" + history_dir + "\nnot granted !")
-        utils.save_obj(self, history_dir + self.name + "_" + step)
+                print("Permission to create this folder :\n" + history_directory + "\nnot granted !")
+        utils.save_obj(self, history_directory + self.name + "_" + step)
 
     # TODO : create a loading function
+    # TODO : create a log function to gather all the errors encountered
 
     def build(self):
         self._blast_run()
-        self._history_save("blast")
+        self._history_save("blasted")
         self._select_genes()
-        self._history_save("gene_selected")
+        self._history_save("genes_selected")
         self._drafting()
         self._history_save("drafted")
-        cobra.io.save_json_model(self.draft, self.subject_directory + "/" + self.name + "_blast.json")
+        cobra.io.save_json_model(self.draft, self.subject_directory + self.name + "_blast.json")
 
 
 def pipeline(*args):
@@ -241,7 +288,8 @@ def pipeline(*args):
         cli_blast.build()
     except TypeError:
         print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\nParameters "
-              "required : name, model, model_fasta_path, subject_fasta_path")
+              "required : name, main_directory"
+              "optional : model_file_path, model_fasta_path, subject_fasta_path")
 
 
 if __name__ == "__main__":
