@@ -235,13 +235,13 @@ class Blasting:
         cobra.io.save_json_model(self.draft, self.subject_directory + "/" + self.name + "_blast.json")
 
 
-def cli_blasting(*args):
+def pipeline(*args):
     """Function to use this script in CLI."""
     try:
         cli_blast = Blasting(*args)
         cli_blast.build()
     except TypeError:
-        print("Usage : $ python blasting.py cli_blasting parameter1 parameter2 parameter3 parameter4\nParameters "
+        print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\nParameters "
               "required : name, model, model_fasta_path, subject_fasta_path")
 
 

@@ -81,7 +81,7 @@ def get_sequence_region(data, m_rna):
     return regions_dict
 
 
-def make_protein_correspondence(wd, name, regions_dict):
+def make_protein_correspondence_file(wd, name, regions_dict):
     """Function to create a csv file with the correspondence between a protein and the associated gene.
     
     PARAMS:
@@ -97,7 +97,7 @@ def make_protein_correspondence(wd, name, regions_dict):
     utils.write_csv(wd, corres, "protein_corres_" + name, "\t")
 
 
-def make_dat(wd, regions_dict, chromosome_type):
+def make_dat_files(wd, regions_dict, chromosome_type):
     """Function to create the .dat file.
     
     PARAMS:
@@ -127,7 +127,7 @@ def make_dat(wd, regions_dict, chromosome_type):
     utils.write_file(wd, "genetic-elements" + ".dat", dat_file_str_list)
 
 
-def make_fsa(wd, fasta_file, regions_dict):
+def make_fsa_files(wd, fasta_file, regions_dict):
     """Function to make the .fsa files.
     
     PARAMS:
@@ -149,7 +149,7 @@ def make_fsa(wd, fasta_file, regions_dict):
             utils.write_file(wd, region + ".fsa", i)
 
 
-def make_pf(wd, eggnog_file_path, regions_dict):
+def make_pf_files(wd, eggnog_file_path, regions_dict):
     """Function to make the .pf files.
     
     PARAMS:
@@ -157,7 +157,7 @@ def make_pf(wd, eggnog_file_path, regions_dict):
         eggnog_file_path (str) -- the path to the .tsv file from EggNOG with most information
         for the .pf file.
         regions_dict -- the dictionary containing the data to create
-        the files (see pwt_pipeline() for the structure).
+        the files (see pipeline() for the structure).
     """
 
     tsv = utils.read_file(eggnog_file_path)
@@ -186,7 +186,7 @@ def make_pf(wd, eggnog_file_path, regions_dict):
             f.close()
 
 
-def make_tsv(wd, taxon_name_list):
+def make_taxon_file(wd, taxon_name_list):
     """Function to make the taxon_id.tsv file.
     
     PARAMS:
@@ -201,7 +201,7 @@ def make_tsv(wd, taxon_name_list):
 
 
 def eggnog_file_parser(gene_id, start, end, exon_pos, line):
-    """Sub-function of make_pf() to write the info in the correct order for each protein.
+    """Sub-function of make_pf_files() to write the info in the correct order for each protein.
     
     PARAMS:
         gene_id (str) -- the gene name for the protein.
@@ -267,7 +267,7 @@ def make_organism_parameters(wd, species, abbrev, rank, storage="file", private=
     utils.write_file(wd, "organism-params.dat", info)
 
 
-def pwt_pipeline(data):
+def pipeline(data):
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
@@ -331,13 +331,13 @@ def pwt_pipeline(data):
             print("------\n" + species_name + "\n------")
             gff_file = utils.read_file(files_directory + gff_filename)
             regions_dict = get_sequence_region(gff_file, m_rna)
-            make_protein_correspondence(log_directory, species_name, regions_dict)
-            make_dat(organism_directory, regions_dict, genetic_type)
-            make_fsa(organism_directory, files_directory + fasta_filename, regions_dict)
-            make_pf(organism_directory, files_directory + eggnog_filename, regions_dict)
+            make_protein_correspondence_file(log_directory, species_name, regions_dict)
+            make_dat_files(organism_directory, regions_dict, genetic_type)
+            make_fsa_files(organism_directory, files_directory + fasta_filename, regions_dict)
+            make_pf_files(organism_directory, files_directory + eggnog_filename, regions_dict)
 
     # Creating the tsv file for the taxon IDs
-    make_tsv(input_directory, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
+    make_taxon_file(input_directory, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
     print("------\nCreation of the files finished\n------")
 
     # Counting the number of cpu to use
