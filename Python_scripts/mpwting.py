@@ -295,11 +295,11 @@ def pipeline(data):
     """
 
     index = utils.read_file(data)
-    wd = index.pop(0).rstrip()
-    files_directory = wd + "files/"
-    input_directory = wd + "input/"
-    output_directory = wd + "output/"
-    log_directory = wd + "log/"
+    main_directory = index.pop(0).rstrip("/ ") + "/"
+    files_directory = main_directory + "files/"
+    input_directory = main_directory + "input/"
+    output_directory = main_directory + "output/"
+    log_directory = main_directory + "log/"
     subprocess.run(["mkdir", input_directory, output_directory, log_directory])
     # wd_pt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
