@@ -1,4 +1,4 @@
-# PlantGEMs : Project that aims to automatically reconstruct several plant metabolic networks, using the Metacyc database.
+# PlantGEMs : Project that aims to automatically reconstruct several plant metabolic networks, using the Metacyc database and an already curated model.
 
 ![Alt text](./Flowchart_PlantGEMs.drawio.svg)
 
@@ -6,46 +6,37 @@
 
 ### -- Python files --
 
-Python/blasting.py : Creation of plant draft from a template model.
+Python_scripts/blasting.py : Creation of plant draft from a template model using Blast.
 
-Python/blastingTK.py : GUI of blasting.py (aborted).
+Python_scripts/merging.py : Merge two draft metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
 
-Python/fusion.py : Merge two metabolic networks, one from a Metacyc reconstruction with Pathway Tools (cf. pathwayToolsPrep.py) and the other one from an homemade script which is reconstructed based on an already curated model (cf. blasting.py).
+<!-- Python_scripts/gap_filling.py : Performs a gap filling of the model with Meneco. (Work In Progress). -->
+<!--  -->
+Python_scripts/graph.py : Utilitary file to create different graphs and statistical analysis.
 
-Python/gap_filling.py : Performs a gap filling of the model with Meneco. (Work In Progress).
+Python_scripts/mpwting.py : Preparation of files to run Pathway Tools automatically and create a draft based on Metacyc with the mpwt library (see https://github.com/AuReMe/mpwt).
 
-Python/graph.py : Utilitary file to create different graphs and statistical analysis.
+Python_scripts/main.py : Main file to launch all the workflow with a simple command (WIP).
 
-Python/pathwayToolsPrep.py : Preparation of files to run Pathway Tools automatically and create a draft based on Metacyc.
-
-Python/utils.py : Utilitary file to avoid code repetition.
-
-### -- R files --
-
-R/graph.R : Make different graphs for the purpose of a study on the Blast's scores to use.
-
-R/regression.R : Regression graph for the same purpose as above.
-
-R/tresholdSearch.R : Research of a treshold value for the score chosen above.
+Python_scripts/utils.py : Utilitary file to avoid code repetition.
 
 ### -- Info files --
 
-example_Blasting.ini : Example of an ini file for the blasting pipeline.
+example_Blasting.ini : Example of an ini file for the blasting pipeline (soon obsolete).
 
-example_PT.ini : Example of an ini file for the pathwayToolsPrep pipeline.
+example_PT.ini : Example of an ini file for the pathwayToolsPrep pipeline (soon obsolete).
 
-index.txt : Example of index file for the pathwayToolsPrep pipeline.
+index.txt : Example of index file for the mpwting pipeline (soon obsolete).
 
 
 ## HOW TO USE :
 
-For the moment, each script's output is part of the next script's input (except 1 and 2 which are independent) and you'll need several biologic/bioinformatics files, which will be soon describe. For the moment, please look at the "pipeline" function in each script to see what is needed, along with the indication in the different .ini files.
-Each script has a pipeline-like function wich makes all the things work (normally...).
+For the moment, each script's output is part of the next script's input (except 1 and 2 which are independent) and you'll need several biologic/bioinformatics files. For the moment, please look at the "pipeline" function at the end of each script to see what is needed, along with the indication in the different .ini files and the worflow's scheme above.
 
 Use in this order (except 1 and 2 that you can reverse) :
 1. blasting.py
-2. pathwayToolsPrep.py
-3. fusion.py
-4. gap_filling.py
+2. mpwting.py
+3. merging.py
+4. menecoing.py (next to come, not on GitHub yet, WIP)
 
-Further improvement are to come, such has a OOP version (WIP) and a complete pipeline with Snakemake.
+Further improvement are to come, such has a complete pipeline (see "main.py") and a gap filling option.
