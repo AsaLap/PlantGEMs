@@ -18,11 +18,8 @@ if __name__ == "__main__":
     # tomate_blast.build()
 
     # Raisin
-    vitis_blast = Blasting("vitis",
-                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
-                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.fasta",
-                            "/home/asa/INRAE/These/Reconstructions/Raisin/vitviv2.pep.fasta")
-    vitis_blast.build()
+    vitis_blast = Blasting("raisin", "/home/asa/INRAE/Test/")
+    # vitis_blast.build()
     # crashtest_blast = Blasting("tomate",
     #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
     #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc_crashtest.fasta",
