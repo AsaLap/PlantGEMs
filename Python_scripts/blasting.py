@@ -30,11 +30,12 @@ class Blasting:
         """
         self.name = _name
         self.main_directory = _main_directory.rstrip("/ ") + "/"
+        self._check_directories()
         if _model_file_path is not None:
             self.model = cobra.io.read_sbml_model(_model_file_path)
             self.model_fasta_path = _model_fasta_path
         else:
-            self.model = self._find_model()
+            self.model = cobra.io.read_sbml_model(self._find_model())
         if _model_fasta_path is not None:
             self.model_fasta = open(self.model_fasta_path).read()
         else:
@@ -127,38 +128,61 @@ class Blasting:
         else:
             print("Denied : value must be between 0 and 10000 (both included)")
 
+    def _check_directories(self):
+        if not os.path.isdir(self.main_directory + "blast/"):
+            print("Creation of necessary directory blast/")
+            subprocess.run(["mkdir", self.main_directory + "blast/"])
+
     def _find_model(self):
-        model = [i for i in os.listdir(self.main_directory) if i.endswith("sbml")]
-        if len(model) >= 2:
-            print("More than one sbml file has been found, please select one by entering its corresponding number :")
+        # TODO : log of the file used
+        files_directory = self.main_directory + "files/"
+        model = [i for i in os.listdir(files_directory) if i.endswith("sbml")]
+        if len(model) == 0:
+            print("No SBML file found in the files directory...")
+            try:
+                model = str(input("SBML path : "))
+                if os.path.isfile(model):
+                    return model
+                else:
+                    print("No SBML file found here... Restarting.")
+                    self._find_model()
+            except ValueError:
+                print("Please enter strings only... Restarting.")
+                self._find_model()
+        elif len(model) >= 2:
+            print("More than one SBML file has been found, please select one by entering its corresponding number :")
             for i in range(len(model)):
                 print(i + 1, " : ", model[i])
             try:
                 res = int(input("Chosen file number : "))
-                return model[res - 1]
+                return files_directory + model[res - 1]
             except IndexError:
-                print("Please choose a valid number...")
+                print("Please choose a valid number... Restarting.")
                 self._find_model()
             except ValueError:
-                print("Please enter a number only...")
+                print("Please enter a number only... Restarting.")
                 self._find_model()
+        else:
+            return self.main_directory + "files/" + model[0]
 
-    def _find_fasta(self, target):  # TODO take multiple file format in account
+    def _find_fasta(self, target):
+        # TODO : take multiple file format in account
+        # TODO : log of the file used
         fasta_path = self.main_directory + "/files/" + target + ".fasta"
-        if os.path.isdir(self.main_directory + "/files/" + target + ".fasta"):
+        if os.path.isfile(self.main_directory + "/files/" + target + ".fasta"):
             return fasta_path
         else:
             print("No corresponding file found...")
             try:
-                path = str(input("Path to " + target + " fasta file : "))
-                if os.path.isdir(path):
-                    return path
+                fasta_file_path = str(input("Path to " + target + " fasta file : "))
+                if os.path.isfile(fasta_file_path):
+                    return fasta_file_path
                 else:
-                    print("No file found with this path, make sure you entered it correctly...")
-                    self._find_fasta()
+                    print("No file found with this path, make sure you entered it correctly... Restarting.")
+                    self._find_fasta(target)
             except ValueError:
-                print("Please enter a string only...")
-                self._find_fasta()
+                print("Please enter a string only... Restarting.")
+                self._find_fasta(target)
 
     def set_default_values(self):
         self.identity = 50
