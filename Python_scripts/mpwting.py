@@ -20,6 +20,22 @@ import sys
 import utils
 
 
+def make_protein_correspondence_file(wd, name, regions_dict):
+    """Function to create a csv file with the correspondence between a protein and the associated gene.
+
+    PARAMS:
+        wd (str) -- the path of the working directory to save the file.
+        name (str) -- the name of the model being treated.
+        regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
+    """
+    corres = []
+    for region in regions_dict.keys():
+        for gene in regions_dict[region].keys():
+            for protein in regions_dict[region][gene]["Proteins"].keys():
+                corres.append([gene.upper(), protein.upper()])
+    utils.write_csv(wd, corres, "protein_corres_" + name, "\t")
+
+
 def get_sequence_region(data, m_rna):
     """Function that browses the .gff file and gets the name of each gene,
     the position in the genome and each corresponding region and protein(s).
@@ -79,22 +95,6 @@ def get_sequence_region(data, m_rna):
             spl = line.split("\t")
             regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
     return regions_dict
-
-
-def make_protein_correspondence_file(wd, name, regions_dict):
-    """Function to create a csv file with the correspondence between a protein and the associated gene.
-    
-    PARAMS:
-        wd (str) -- the path of the working directory to save the file.
-        name (str) -- the name of the model being treated.
-        regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
-    """
-    corres = []
-    for region in regions_dict.keys():
-        for gene in regions_dict[region].keys():
-            for protein in regions_dict[region][gene]["Proteins"].keys():
-                corres.append([gene.upper(), protein.upper()])
-    utils.write_csv(wd, corres, "protein_corres_" + name, "\t")
 
 
 def make_dat_files(wd, regions_dict, chromosome_type):
@@ -186,23 +186,9 @@ def make_pf_files(wd, eggnog_file_path, regions_dict):
             f.close()
 
 
-def make_taxon_file(wd, taxon_name_list):
-    """Function to make the taxon_id.tsv file.
-    
-    PARAMS:
-        wd (str) -- the path where to store this file.
-        taxon_name_list (list) -- the list containing the name of the organism and its taxon id. 
-    """
-
-    res = "species\ttaxon_id\n"
-    for i in taxon_name_list:
-        res += i[0] + "\t" + str(i[1]) + "\n"
-    utils.write_file(wd, "taxon_id.tsv", res)
-
-
 def eggnog_file_parser(gene_id, start, end, exon_pos, line):
     """Sub-function of make_pf_files() to write the info in the correct order for each protein.
-    
+
     PARAMS:
         gene_id (str) -- the gene name for the protein.
         start (int) -- the start position of the sequence.
@@ -210,7 +196,7 @@ def eggnog_file_parser(gene_id, start, end, exon_pos, line):
         exon_pos (list of int) -- list of position of the exons.
         line (str) -- the line corresponding to the protein in the .tsv file.
     RETURNS:
-        info (str) -- a string with all the information and with the correct 
+        info (str) -- a string with all the information and with the correct
         page settings for the .pf file.
     """
 
@@ -242,29 +228,43 @@ def eggnog_file_parser(gene_id, start, end, exon_pos, line):
     return info
 
 
-def make_organism_parameters(wd, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
-    # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
-    taxonomy_dict = {1: "TAX-2", 2: "TAX-2759", 3: "TAX-2157",
-                     4: "2", 5: "2759", 6: "2157"}
-    info = []
-    # Making the random ID
-    random_id = random.choice(string.ascii_lowercase)
-    string_choice = string.ascii_lowercase + "0123456789"
-    for loop in range(random.randint(1, 10)):
-        random_id += random.choice(string_choice)
-    info.append("ID\t" + random_id + "\n")
-    info.append("STORAGE\t" + storage + "\n")
-    info.append("NAME\t" + species + "\n")
-    info.append("ABBREV-NAME\t" + abbrev + "\n")
-    info.append("PRIVATE?\t" + private + "\n")
-    info.append("RANK\t" + str(rank) + "\n")
-    info.append("ORG-COUNTER\t\n")  # TODO : Test with or without it
-    info.append("DOMAIN\t" + taxonomy_dict[tax] + "\n")
-    info.append("CODON-TABLE\t" + str(codon) + "\n")
-    info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
-    info.append("DBNAME\t" + abbrev + "DBcyc\n")
-    info.append("NCBI-TAXON-ID\t" + taxonomy_dict[tax + 3] + "\n")
-    utils.write_file(wd, "organism-params.dat", info)
+def make_taxon_file(wd, taxon_name_list):
+    """Function to make the taxon_id.tsv file.
+
+    PARAMS:
+        wd (str) -- the path where to store this file.
+        taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
+    """
+
+    res = "species\ttaxon_id\n"
+    for i in taxon_name_list:
+        res += i[0] + "\t" + str(i[1]) + "\n"
+    utils.write_file(wd, "taxon_id.tsv", res)
+
+
+# def make_organism_parameters(wd, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
+#     # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
+#     taxonomy_dict = {1: "TAX-2", 2: "TAX-2759", 3: "TAX-2157",
+#                      4: "2", 5: "2759", 6: "2157"}
+#     info = []
+#     # Making the random ID
+#     random_id = random.choice(string.ascii_lowercase)
+#     string_choice = string.ascii_lowercase + "0123456789"
+#     for loop in range(random.randint(1, 10)):
+#         random_id += random.choice(string_choice)
+#     info.append("ID\t" + random_id + "\n")
+#     info.append("STORAGE\t" + storage + "\n")
+#     info.append("NAME\t" + species + "\n")
+#     info.append("ABBREV-NAME\t" + abbrev + "\n")
+#     info.append("PRIVATE?\t" + private + "\n")
+#     info.append("RANK\t" + str(rank) + "\n")
+#     info.append("ORG-COUNTER\t\n")  # TODO : Test with or without it
+#     info.append("DOMAIN\t" + taxonomy_dict[tax] + "\n")
+#     info.append("CODON-TABLE\t" + str(codon) + "\n")
+#     info.append("MITO-CODON-TABLE\t" + str(mito_codon) + "\n")
+#     info.append("DBNAME\t" + abbrev + "DBcyc\n")
+#     info.append("NCBI-TAXON-ID\t" + taxonomy_dict[tax + 3] + "\n")
+#     utils.write_file(wd, "organism-params.dat", info)
 
 
 def pipeline(data):
@@ -300,7 +300,7 @@ def pipeline(data):
     input_directory = main_directory + "input/"
     output_directory = main_directory + "output/"
     log_directory = main_directory + "log/"
-    subprocess.run(["mkdir", input_directory, output_directory, log_directory])
+    subprocess.run(["mkdir", input_directory, output_directory, log_directory])  # TODO : Change that
     # wd_pt = mpwt.find_ptools_path() + "/pgdbs/user/"
     taxon_name_list = []
     cpu = 0
@@ -322,11 +322,7 @@ def pipeline(data):
 
             # Preparing the files
             species_directory = input_directory + species_name
-            if not os.path.isdir(species_directory):
-                try:
-                    subprocess.run(["mkdir", species_directory])
-                except PermissionError:
-                    print("Permission to create this folder :\n" + species_directory + "\nnot granted !")
+            utils.create_directory(species_directory)
             organism_directory = input_directory + species_name + "/"
             print("------\n" + species_name + "\n------")
             gff_file = utils.read_file(files_directory + gff_filename)
