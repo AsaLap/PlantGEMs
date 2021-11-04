@@ -10,13 +10,37 @@ import cobra
 import configparser
 import copy
 import csv
-import json
-import pickle
 import matplotlib.pyplot as plt
+import json
+import os
+import pickle
+import subprocess
 import re
 
 from upsetplot import from_memberships
 from upsetplot import plot
+
+
+def create_directory(directory):
+    if not os.path.isdir(directory):
+        print("Creation of directory '" + directory.strip(" /").split("/")[-1] + "'")
+        try:
+            subprocess.run(["mkdir", directory])
+        except PermissionError:
+            print("Permission to create this folder :\n" + directory + "\nnot granted !")
+        except FileNotFoundError:
+            print("Path not found : ", directory)
+    else:
+        print("Directory already exists : ", directory)
+
+
+def remove_directory(directory):
+    try:
+        subprocess.run(["rm -rf", directory])
+    except FileNotFoundError:
+        pass
+    except PermissionError:
+        print("Permission to erase this folder :\n" + directory + "\nnot granted !")
 
 
 def read_file(path):
@@ -314,6 +338,14 @@ def protein_to_gene(wd, model, protein_correspondence, name):
 
 
 def list_reactions(data):
+    """Function to gather all the reactions' id of a cobra model in a list.
+
+    PARAMS:
+        data -- a cobra model.
+    RETURNS:
+        res -- a list containing all the model's reactions' id.
+    """
+
     res = []
     for reaction in data.reactions:
         res.append(reaction.id)
@@ -360,7 +392,7 @@ def make_upsetplot(directory, name, data, title):
 
 def similarity_count(data, args, others):
     """Function which is part of the process to make the UpSetPlot,
-    counting and retourning the similarities between the clusters."""
+    counting and returning the similarities between the clusters."""
 
     cluster_set = set.intersection(*args)
     for i in others:

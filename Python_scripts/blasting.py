@@ -30,7 +30,7 @@ class Blasting:
         """
         self.name = _name
         self.main_directory = _main_directory.rstrip("/ ") + "/"
-        self._check_directories()
+        utils.create_directory(self.main_directory + "blast/")
         if _model_file_path is not None:
             self.model = cobra.io.read_sbml_model(_model_file_path)
             self.model_fasta_path = _model_fasta_path
@@ -128,11 +128,6 @@ class Blasting:
         else:
             print("Denied : value must be between 0 and 10000 (both included)")
 
-    def _check_directories(self):
-        if not os.path.isdir(self.main_directory + "blast/"):
-            print("Creation of necessary directory blast/")
-            subprocess.run(["mkdir", self.main_directory + "blast/"])
-
     def _find_model(self):
         # TODO : log of the file used
         files_directory = self.main_directory + "files/"
@@ -199,11 +194,8 @@ class Blasting:
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
             tmp_dir = self.main_directory + "/blast/tmp_dir/"
-            try:
-                subprocess.run(["rm -rf", tmp_dir])
-            except FileNotFoundError:
-                pass
-            subprocess.run(["mkdir", tmp_dir])
+            utils.remove_directory(tmp_dir)
+            utils.create_directory(tmp_dir)
             query_file = open(self.model_fasta_path)
             for seq in self.model_fasta.split(">"):
                 try:
@@ -230,10 +222,7 @@ class Blasting:
                     "10 delim=, qseqid qlen sseqid slen length nident pident score evalue bitscore"]
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
-            try:
-                subprocess.run(["rm", "-rf", tmp_dir])
-            except FileNotFoundError:
-                print("Temporary folder not found, not erased...")
+            utils.remove_directory(tmp_dir)
             print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
     def _select_genes(self):
@@ -285,11 +274,7 @@ class Blasting:
 
     def _history_save(self, step):
         history_directory = self.main_directory + "blast/blast_object_history/"
-        if not os.path.isdir(history_directory):
-            try:
-                subprocess.run(["mkdir", history_directory])
-            except PermissionError:
-                print("Permission to create this folder :\n" + history_directory + "\nnot granted !")
+        utils.create_directory(history_directory)
         utils.save_obj(self, history_directory + self.name + "_" + step)
 
     # TODO : create a loading function
@@ -307,6 +292,7 @@ class Blasting:
 
 def pipeline(*args):
     """Function to use this script in CLI."""
+
     try:
         cli_blast = Blasting(*args)
         cli_blast.build()
