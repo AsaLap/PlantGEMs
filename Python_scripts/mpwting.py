@@ -207,6 +207,12 @@ class Mpwting(module.Module):
         info.append("//\n")
         return info
 
+    def pipeline(self):
+        self._make_protein_correspondence_file()
+        self._make_dat_files()
+        self._make_fsa_files()
+        self._make_pf_files()
+
 
 def make_taxon_file(wd, taxon_name_list):
     """Function to make the taxon_id.tsv file.
@@ -274,41 +280,35 @@ def pipeline(data):  # TODO : make this function fit with the new architecture
 
     index = utils.read_file(data)
     main_directory = index.pop(0).rstrip("/ ") + "/"
-    files_directory = main_directory + "files/"
     input_directory = main_directory + "input/"
     output_directory = main_directory + "output/"
     log_directory = main_directory + "log/"
-    subprocess.run(["mkdir", input_directory, output_directory, log_directory])  # TODO : Change that
-    # wd_pt = mpwt.find_ptools_path() + "/pgdbs/user/"
+    utils.make_directory(input_directory)
+    utils.make_directory(output_directory)
+    utils.make_directory(log_directory)
+
     taxon_name_list = []
     cpu = 0
     for ini in index:
         if ini:
             cpu += 1
-            # Reading of the parameters of the organism
             parameters = utils.read_config(ini.rstrip())
-            gff_filename = parameters["FILES"]["GFF"]
-            fasta_filename = parameters["FILES"]["FASTA"]
-            eggnog_filename = parameters["FILES"]["EGGNOG"]
-            genetic_type = parameters["INFO"]["chromosome_type"]
+            # gff_filename = parameters["FILES"]["GFF"]
+            # fasta_filename = parameters["FILES"]["FASTA"]
+            # eggnog_filename = parameters["FILES"]["EGGNOG"]
+            chromosome_type = parameters["INFO"]["chromosome_type"]
             taxon_id = int(parameters["INFO"]["NCBI_TAXON_ID"])
             m_rna = parameters.getboolean("INFO", "mRNA")
             species_name = parameters["INFO"]["DATABASE_NAME"]
+            species_directory = input_directory + species_name + "/"
+            utils.make_directory(species_directory)
 
             # Keeping some information for later
             taxon_name_list.append([species_name, taxon_id])
 
-            # Preparing the files
-            species_directory = input_directory + species_name
-            utils.create_directory(species_directory)
-            organism_directory = input_directory + species_name + "/"
-            print("------\n" + species_name + "\n------")
-            gff_file = utils.read_file(files_directory + gff_filename)
-            regions_dict = get_sequence_region(gff_file, m_rna)
-            make_protein_correspondence_file(log_directory, species_name, regions_dict)
-            make_dat_files(organism_directory, regions_dict, genetic_type)
-            make_fsa_files(organism_directory, files_directory + fasta_filename, regions_dict)
-            make_pf_files(organism_directory, files_directory + eggnog_filename, regions_dict)
+            # Creating the organism's instance and the corresponding pipeline to prepare for MPWT
+            organism = Mpwting(species_name, main_directory, m_rna, chromosome_type)
+            organism.pipeline()
 
     # Creating the tsv file for the taxon IDs
     make_taxon_file(input_directory, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
