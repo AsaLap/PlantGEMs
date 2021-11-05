@@ -21,7 +21,7 @@ from upsetplot import from_memberships
 from upsetplot import plot
 
 
-def create_directory(directory):
+def make_directory(directory):
     if not os.path.isdir(directory):
         print("Creation of directory '" + directory.strip(" /").split("/")[-1] + "'")
         try:

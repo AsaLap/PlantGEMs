@@ -30,7 +30,7 @@ class Blasting(module.Module):
             _subject_fasta_path -- the path to the fasta file of the subject.
         """
         super().__init__(_name, _main_directory)
-        utils.create_directory(self.main_directory + "blast/")
+        utils.make_directory(self.main_directory + "blast/")
         if _model_file_path is not None:
             self.model = cobra.io.read_sbml_model(_model_file_path)
             self.model_fasta_path = _model_fasta_path
@@ -144,7 +144,7 @@ class Blasting(module.Module):
             total_time = lap_time = time.time()
             tmp_dir = self.main_directory + "/blast/tmp_dir/"
             utils.remove_directory(tmp_dir)
-            utils.create_directory(tmp_dir)
+            utils.make_directory(tmp_dir)
             query_file = open(self.model_fasta_path)
             for seq in self.model_fasta.split(">"):
                 try:
@@ -223,7 +223,7 @@ class Blasting(module.Module):
 
     def _history_save(self, step):
         history_directory = self.main_directory + "blast/blast_object_history/"
-        utils.create_directory(history_directory)
+        utils.make_directory(history_directory)
         utils.save_obj(self, history_directory + self.name + "_" + step)
 
     # TODO : create a loading function
