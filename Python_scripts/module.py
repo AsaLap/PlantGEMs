@@ -5,7 +5,7 @@
 # Reconstruction de réseaux métaboliques
 # Novembre 2021
 
-"""This file is the superclass for all the modules, inherited by each of them to centralize repetitive functions."""
+"""This file is the parent class for all the modules, inherited by each of them to centralize repetitive methods."""
 
 
 import os
@@ -17,24 +17,44 @@ class Module:
         self.name = _name
         self.main_directory = _main_directory.rstrip("/ ") + "/"
 
-    def _find_fasta(self, target):
+    def _find_file(self, target, extension):
+        """Search a file corresponding to the target in the 'files' directory. If no match is found,
+        asks the user to input the exact path to the file he wants to use.
+
+        PARAMS:
+            target (str) -- the name of the file to search if correctly named.
+            extension (str) -- the file's extension.
+
+        RETURNS:
+            file_path (str) -- the exact path to the file.
+        """
         # TODO : take multiple file format in account
         # TODO : log of the file used
-        fasta_path = self.main_directory + "/files/" + target + ".fasta"
-        if os.path.isfile(self.main_directory + "/files/" + target + ".fasta"):
-            return fasta_path
+
+        file_path = self.main_directory + "/files/" + target + extension
+        if os.path.isfile(file_path):
+            return file_path
         else:
             print("No corresponding file found...")
             try:
-                fasta_file_path = str(input("Path to " + target + " fasta file : "))
-                if os.path.isfile(fasta_file_path):
-                    return fasta_file_path
+                file_path = str(input("Path to " + target + extension + "'s file : "))
+                if os.path.isfile(file_path):
+                    return file_path
                 else:
                     print("No file found with this path, make sure you entered it correctly... Restarting.")
-                    self._find_fasta(target)
+                    self._find_file(target, extension)
             except ValueError:
                 print("Please enter a string only... Restarting.")
-                self._find_fasta(target)
+                self._find_file(target, extension)
+
+    def _find_fasta(self, target):
+        return self._find_file(target, ".fasta")
+
+    def _find_gff(self, target):
+        return self._find_file(target, ".gff")
+
+    def _find_eggnog(self, target):
+        return self._find_file(target, ".tsv")
 
     def _find_model(self):
         # TODO : log of the file used

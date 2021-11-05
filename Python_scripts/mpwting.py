@@ -8,231 +8,210 @@
 Pathway Tools software reconstruction and launching of reconstruction 
 using mpwt package from AuReMe."""
 
+import module
 import mpwt
 import multiprocessing
 import numpy as np
-import os
-import random
 import re
-import string
 import subprocess
 import sys
 import utils
 
 
-def make_protein_correspondence_file(wd, name, regions_dict):
-    """Function to create a csv file with the correspondence between a protein and the associated gene.
+class Mpwting(module.Module):
 
-    PARAMS:
-        wd (str) -- the path of the working directory to save the file.
-        name (str) -- the name of the model being treated.
-        regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
-    """
-    corres = []
-    for region in regions_dict.keys():
-        for gene in regions_dict[region].keys():
-            for protein in regions_dict[region][gene]["Proteins"].keys():
-                corres.append([gene.upper(), protein.upper()])
-    utils.write_csv(wd, corres, "protein_corres_" + name, "\t")
+    def __init__(self, _name, _main_directory, _m_rna, _chromosome_type):
+        super().__init__(_name, _main_directory)
+        self.m_rna = _m_rna
+        self.chromosome_type = _chromosome_type
+        self.regions_dict = self._get_sequence_region()
+        self.fasta_file_path = self._find_fasta(self.name)
+        self.gff_file_path = self._find_gff(self.name)
+        self.eggnog_file_path = self._find_eggnog(self.name)
 
+    def _get_sequence_region(self):
+        """Function that browses the .gff file and gets the name of each gene,
+        the position in the genome and each corresponding region and protein(s).
 
-def get_sequence_region(data, m_rna):
-    """Function that browses the .gff file and gets the name of each gene,
-    the position in the genome and each corresponding region and protein(s).
-    
-    PARAMS:
-        data (file) -- the gff file to browse (already put in memory by the function "read_file").
-        m_rna (bool) -- decides if the function must search the mRNA (True) line or CDS (False).
-    RETURNS:
-        regions_dict -- a dictionary containing all the gathered
-        information (see pipelinePT() for the structure).
-    """
+        PARAMS:
+            m_rna (bool) -- tells the function if it must search the mRNA (True) line or CDS (False).
+        RETURNS:
+            regions_dict -- a dictionary containing all the gathered
+            information (see pipelinePT() for the structure).
+        """
 
-    regions_dict = {}
-    protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
-    for line in data:
-        if "\tgene\t" in line:  # Searching the gene's information
-            protein_found = False
-            spl = line.split("\t")
-            region = spl[0]
-            try:
-                gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-            except AttributeError:
+        regions_dict = {}
+        gff_file = utils.read_file(self.gff_file_path)
+        protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
+        for line in gff_file:
+            if "\tgene\t" in line:  # Searching the gene's information
+                protein_found = False
+                spl = line.split("\t")
+                region = spl[0]
                 try:
-                    gene = re.search('(?<=ID=)(gene:)*\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    if "gene:" in gene:
-                        gene = gene[5:]
+                    gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
                 except AttributeError:
-                    print("The gene name hasn't been found...")
-                    gene = ""
-                    pass
-            if region not in regions_dict.keys():
-                regions_dict[region] = {}
-            if spl[6] == "+":
-                regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
+                    try:
+                        gene = re.search('(?<=ID=)(gene:)*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                        if "gene:" in gene:
+                            gene = gene[5:]
+                    except AttributeError:
+                        print("The gene name hasn't been found...")
+                        gene = ""
+                        pass
+                if region not in regions_dict.keys():
+                    regions_dict[region] = {}
+                if spl[6] == "+":
+                    regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
+                else:
+                    regions_dict[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
+            if self.m_rna:  # Searching the protein's information
+                if "RNA\t" in line:
+                    try:
+                        protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                        regions_dict[region][gene]["Proteins"][protein] = []
+                        protein_found = True
+                    except AttributeError:
+                        print("The mRNA has no attribute 'Name='...")
+                        regions_dict[region][gene]["Proteins"]["None"] = []
             else:
-                regions_dict[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
-        if m_rna:  # Searching the protein's information
-            if "RNA\t" in line:
-                try:
-                    protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    regions_dict[region][gene]["Proteins"][protein] = []
-                    protein_found = True
-                except AttributeError:
-                    print("The mRNA has no attribute 'Name='...")
-                    regions_dict[region][gene]["Proteins"]["None"] = []
+                if not protein_found and "CDS\t" in line:  # In case the gff file needs to be looked at on the CDS and
+                    # not the mRNA to corresponds to the TSV file
+                    try:  # Searching for CDS's ID instead of m_rna.
+                        protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
+                        regions_dict[region][gene]["Proteins"][protein] = []
+                        protein_found = True
+                    except AttributeError:
+                        print("The CDS has no attribute 'ID='...")
+                        regions_dict[region][gene]["Proteins"]["None"] = []
+            if "\tCDS\t" in line:  # Searching the exon's information
+                spl = line.split("\t")
+                regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
+        return regions_dict
+
+    def _make_protein_correspondence_file(self):
+        """Function to create a csv file with the correspondence between a protein and the associated gene.
+
+        PARAMS:
+            wd (str) -- the path of the working directory to save the file.
+            name (str) -- the name of the model being treated.
+            regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
+        """
+        correspondence = []
+        for region in self.regions_dict.keys():
+            for gene in self.regions_dict[region].keys():
+                for protein in self.regions_dict[region][gene]["Proteins"].keys():
+                    correspondence.append([gene.upper(), protein.upper()])
+        utils.write_csv(self.main_directory, correspondence, "protein_corres_" + self.name, "\t")
+
+    def _make_dat_files(self):
+
+        print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",
+              "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
+        circular = 'N'
+        dat_file_str_list = []
+        if self.chromosome_type == "NONE":
+            for i in self.regions_dict.keys():
+                dat_file_str_list.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
+                                         % (i, circular, self.main_directory + i + '.pf',
+                                            self.main_directory + i + '.fsa'))
+        elif self.chromosome_type == ":CONTIG":
+            for i in self.regions_dict.keys():
+                dat_file_str_list.append('ID\t%s\nchromosome_type\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
+                                         % (i, self.chromosome_type, self.main_directory + i + '.pf',
+                                            self.main_directory + i + '.fsa'))
         else:
-            if not protein_found and "CDS\t" in line:  # In case the gff file needs to be looked at on the CDS and
-                # not the mRNA to corresponds to the TSV file
-                try:  # Searching for CDS's ID instead of m_rna.
-                    protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
-                    regions_dict[region][gene]["Proteins"][protein] = []
-                    protein_found = True
-                except AttributeError:
-                    print("The CDS has no attribute 'ID='...")
-                    regions_dict[region][gene]["Proteins"]["None"] = []
-        if "\tCDS\t" in line:  # Searching the exon's information
-            spl = line.split("\t")
-            regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
-    return regions_dict
+            for i in self.regions_dict.keys():
+                dat_file_str_list.append(
+                    'ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n' % (
+                        i, self.chromosome_type, circular, self.main_directory + i + '.pf',
+                        self.main_directory + i + '.fsa'))
+        utils.write_file(self.main_directory, "genetic-elements" + ".dat", dat_file_str_list)
 
+    def _make_fsa_files(self):
+        with open(self.fasta_file_path, "r") as file:
+            fasta = file.read()
+        fasta = fasta.split(">")
+        fasta = list(filter(None, fasta))
+        regions_list = list(self.regions_dict.keys())
+        for i in fasta:
+            region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
+            if region in regions_list:
+                regions_list.remove(region)
+                utils.write_file(self.main_directory, region + ".fsa", i)
 
-def make_dat_files(wd, regions_dict, chromosome_type):
-    """Function to create the .dat file.
-    
-    PARAMS:
-        wd (str) -- the path to the working directory in which the file (.dat) will be saved.
-        regions_dict -- the dictionary containing the data to create the .dat file
-        (see pipelinePT() for the structure).
-        chromosome_type (str) -- indication if the sequence of the organism are assembled
-        as chromosomes or contigs (or else, see Pathway Tools guide).
-    """
+    def _make_pf_files(self):
+        tsv = utils.read_file(self.eggnog_file_path)
+        list_index = list(np.arange(0, len(tsv)))
+        for region in self.regions_dict.keys():
+            sub_pf = []
+            for gene in self.regions_dict[region].keys():
+                for protein in self.regions_dict[region][gene]["Proteins"].keys():
+                    found = False
+                    for i in list_index:
+                        if found:
+                            break
+                        if protein in tsv[i]:
+                            list_index.remove(i)
+                            found = True
+                            sub_pf.append(self._eggnog_file_parser(region, gene, protein, tsv[i]))
+            if sub_pf:
+                f = open(self.main_directory + region + ".pf", "w")
+                for i in sub_pf:
+                    for j in i:
+                        f.write(j)
+                f.close()
 
-    print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",
-          "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
-    circular = 'N'
-    dat_file_str_list = []
-    if chromosome_type == "NONE":
-        for i in regions_dict.keys():
-            dat_file_str_list.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                     % (i, circular, wd + i + '.pf', wd + i + '.fsa'))
-    elif chromosome_type == ":CONTIG":
-        for i in regions_dict.keys():
-            dat_file_str_list.append('ID\t%s\nchromosome_type\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                     % (i, chromosome_type, wd + i + '.pf', wd + i + '.fsa'))
-    else:
-        for i in regions_dict.keys():
-            dat_file_str_list.append('ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                     % (i, chromosome_type, circular, wd + i + '.pf', wd + i + '.fsa'))
-    utils.write_file(wd, "genetic-elements" + ".dat", dat_file_str_list)
+    def _eggnog_file_parser(self, region, gene, protein, line):
+        """Sub-function of make_pf_files() to write the info in the correct order for each protein.
 
+        PARAMS:
+            region (str) -- actual genomic scope.
+            gene (str) -- one gene id in the scope.
+            protein (str) -- one of the proteins coded by the gene above.
+            start (int) -- the start position of the sequence.
+            line (str) -- the line corresponding to the protein in the .tsv file.
+        RETURNS:
+            info (str) -- a string with all the information and with the correct
+            file architecture settings for the .pf file.
+        """
 
-def make_fsa_files(wd, fasta_file, regions_dict):
-    """Function to make the .fsa files.
-    
-    PARAMS:
-        wd (str) -- the path to the working directory to save the files.
-        fasta_file (str) -- the path to the fasta file of the organism.
-        regions_dict -- the dictionary containing the data to create
-        those files (see pipelinePT() for the structure). 
-    """
+        start = self.regions_dict[region][gene]["Start"]
+        end = self.regions_dict[region][gene]["End"]
+        exon_pos = self.regions_dict[region][gene]["Proteins"][protein]
 
-    with open(fasta_file, "r") as file:
-        fasta = file.read()
-    fasta = fasta.split(">")
-    fasta = list(filter(None, fasta))
-    regions_list = list(regions_dict.keys())
-    for i in fasta:
-        region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
-        if region in regions_list:
-            regions_list.remove(region)
-            utils.write_file(wd, region + ".fsa", i)
-
-
-def make_pf_files(wd, eggnog_file_path, regions_dict):
-    """Function to make the .pf files.
-    
-    PARAMS:
-        wd (str) -- the path of the working directory to save the files.
-        eggnog_file_path (str) -- the path to the .tsv file from EggNOG with most information
-        for the .pf file.
-        regions_dict -- the dictionary containing the data to create
-        the files (see pipeline() for the structure).
-    """
-
-    tsv = utils.read_file(eggnog_file_path)
-    list_index = list(np.arange(0, len(tsv)))
-    for region in regions_dict.keys():
-        sub_pf = []
-        for gene in regions_dict[region].keys():
-            for protein in regions_dict[region][gene]["Proteins"].keys():
-                found = False
-                for i in list_index:
-                    if found:
-                        break
-                    if protein in tsv[i]:
-                        list_index.remove(i)
-                        found = True
-                        sub_pf.append(eggnog_file_parser(gene,
-                                                         regions_dict[region][gene]["Start"],
-                                                         regions_dict[region][gene]["End"],
-                                                         regions_dict[region][gene]["Proteins"][protein],
-                                                         tsv[i]))
-        if sub_pf:
-            f = open(wd + region + ".pf", "w")
-            for i in sub_pf:
-                for j in i:
-                    f.write(j)
-            f.close()
-
-
-def eggnog_file_parser(gene_id, start, end, exon_pos, line):
-    """Sub-function of make_pf_files() to write the info in the correct order for each protein.
-
-    PARAMS:
-        gene_id (str) -- the gene name for the protein.
-        start (int) -- the start position of the sequence.
-        end (int) -- the end position of the sequence.
-        exon_pos (list of int) -- list of position of the exons.
-        line (str) -- the line corresponding to the protein in the .tsv file.
-    RETURNS:
-        info (str) -- a string with all the information and with the correct
-        page settings for the .pf file.
-    """
-
-    info = []
-    spl = line.split("\t")
-    info.append("ID\t" + gene_id + "\n")
-    if spl[5]:
-        info.append("NAME\t" + spl[5] + "\n")
-    else:
-        info.append("NAME\tORF\n")
-    info.append("STARTBASE\t" + start + "\n")
-    info.append("ENDBASE\t" + end + "\n")
-    spl[21] = spl[21].replace("\n", "")
-    if spl[21]:
-        info.append("FUNCTION\t" + spl[21] + "\n")
-    else:
-        info.append("FUNCTION\tORF\n")
-    info.append("PRODUCT-chromosome_type\tP\n")
-    if spl[7]:
-        for res in spl[7].split(","):
-            info.append("EC\t" + res + "\n")
-    for exon in exon_pos:
-        info.append("CODING-SEGMENT\t" + str(exon[0]) + "-" + str(exon[1]) + "\n")
-    if spl[6]:
-        go = spl[6].split(",")
-        for i in go:
-            info.append("DBLINK\t" + i + "\n")
-    info.append("//\n")
-    return info
+        info = []
+        spl = line.split("\t")
+        info.append("ID\t" + gene + "\n")
+        if spl[5]:
+            info.append("NAME\t" + spl[5] + "\n")
+        else:
+            info.append("NAME\tORF\n")
+        info.append("STARTBASE\t" + start + "\n")
+        info.append("ENDBASE\t" + end + "\n")
+        spl[21] = spl[21].replace("\n", "")
+        if spl[21]:
+            info.append("FUNCTION\t" + spl[21] + "\n")
+        else:
+            info.append("FUNCTION\tORF\n")
+        info.append("PRODUCT-chromosome_type\tP\n")
+        if spl[7]:
+            for res in spl[7].split(","):
+                info.append("EC\t" + res + "\n")
+        for exon in exon_pos:
+            info.append("CODING-SEGMENT\t" + str(exon[0]) + "-" + str(exon[1]) + "\n")
+        if spl[6]:
+            go = spl[6].split(",")
+            for i in go:
+                info.append("DBLINK\t" + i + "\n")
+        info.append("//\n")
+        return info
 
 
 def make_taxon_file(wd, taxon_name_list):
     """Function to make the taxon_id.tsv file.
 
     PARAMS:
-        wd (str) -- the path where to store this file.
         taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
     """
 
@@ -240,7 +219,6 @@ def make_taxon_file(wd, taxon_name_list):
     for i in taxon_name_list:
         res += i[0] + "\t" + str(i[1]) + "\n"
     utils.write_file(wd, "taxon_id.tsv", res)
-
 
 # def make_organism_parameters(wd, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
 #     # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
@@ -267,7 +245,7 @@ def make_taxon_file(wd, taxon_name_list):
 #     utils.write_file(wd, "organism-params.dat", info)
 
 
-def pipeline(data):
+def pipeline(data):  # TODO : make this function fit with the new architecture
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
