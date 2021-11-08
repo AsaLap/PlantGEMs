@@ -79,9 +79,9 @@ class Merging:
         Returns the corrected gene reaction rule.
         """
 
-        reactions_file = utils.read_file(self.wd_pgdb + "/reactions.dat")
-        enzrxns_file = utils.read_file(self.wd_pgdb + "/enzrxns.dat")
-        proteins_file = utils.read_file(self.wd_pgdb + "/proteins.dat")
+        reactions_file = utils.read_file_listed(self.wd_pgdb + "/reactions.dat")
+        enzrxns_file = utils.read_file_listed(self.wd_pgdb + "/enzrxns.dat")
+        proteins_file = utils.read_file_listed(self.wd_pgdb + "/proteins.dat")
 
         # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
         stop = False

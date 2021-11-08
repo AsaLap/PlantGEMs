@@ -41,7 +41,7 @@ class Mpwting(module.Module):
         """
 
         regions_dict = {}
-        gff_file = utils.read_file(self.gff_file_path)
+        gff_file = utils.read_file_listed(self.gff_file_path)
         protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
         for line in gff_file:
             if "\tgene\t" in line:  # Searching the gene's information
@@ -141,7 +141,7 @@ class Mpwting(module.Module):
                 utils.write_file(self.main_directory, region + ".fsa", i)
 
     def _make_pf_files(self):
-        tsv = utils.read_file(self.eggnog_file_path)
+        tsv = utils.read_file_listed(self.eggnog_file_path)
         list_index = list(np.arange(0, len(tsv)))
         for region in self.regions_dict.keys():
             sub_pf = []
@@ -278,7 +278,7 @@ def pipeline(data):  # TODO : make this function fit with the new architecture
     }
     """
 
-    index = utils.read_file(data)
+    index = utils.read_file_listed(data)
     main_directory = index.pop(0).rstrip("/ ") + "/"
     input_directory = main_directory + "input/"
     output_directory = main_directory + "output/"

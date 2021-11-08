@@ -43,11 +43,20 @@ def remove_directory(directory):
         print("Permission to erase this folder :\n" + directory + "\nnot granted !")
 
 
-def read_file(path):
+def read_file_listed(path):
     """Function to read and return a file line by line in a list."""
 
     f = open(path, "r")
     res = f.readlines()
+    f.close()
+    return res
+
+
+def read_file_stringed(path):
+    """Function to read and return a file line by line in a list."""
+
+    f = open(path, "r")
+    res = f.read()
     f.close()
     return res
 
@@ -155,7 +164,7 @@ def clean_sbml(wd, name):
         the name of the new file.
     """
 
-    file = read_file(wd + name)
+    file = read_file_listed(wd + name)
     new_file = []
     meta = re.compile('( id="M_)')
     sp_ref = re.compile('(<speciesReference species="M_)')
@@ -242,7 +251,7 @@ def build_correspondence_dict(path, sep="\t"):
         corresponding short ID as value (NB : one long ID as only one short ID correspondence).
     """
 
-    matching = read_file(path)
+    matching = read_file_listed(path)
     metacyc_matching_id_dict = {}
     metacyc_matching_id_dict_reversed = {}
     for line in matching:

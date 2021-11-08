@@ -33,19 +33,19 @@ class Blasting(module.Module):
         utils.make_directory(self.main_directory + "blast/")
         if _model_file_path is not None:
             self.model = cobra.io.read_sbml_model(_model_file_path)
-            self.model_fasta_path = _model_fasta_path
         else:
             self.model = cobra.io.read_sbml_model(self._find_model())
         if _model_fasta_path is not None:
-            self.model_fasta = open(self.model_fasta_path).read()
+            self.model_fasta_path = _model_fasta_path
+            self.model_fasta = utils.read_file_stringed(self.model_fasta_path)
         else:
-            self.model_fasta = open(self._find_fasta(self.model.id)).read()
+            self.model_fasta = utils.read_file_stringed(self._find_fasta(self.model.id))
         if _subject_fasta_path is not None:
             self.subject_fasta_path = _subject_fasta_path
-            self.subject_fasta = open(self.subject_fasta_path).read()
+            self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
         else:
             self.subject_fasta_path = self._find_fasta(self.name)
-            self.subject_fasta = open(self.subject_fasta_path).read()
+            self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
         self.subject_directory = self.main_directory + "/" + self.model.id + "/"
         self.blast_result = {}
         self.gene_dictionary = {}
@@ -145,17 +145,13 @@ class Blasting(module.Module):
             tmp_dir = self.main_directory + "/blast/tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
-            query_file = open(self.model_fasta_path)
             for seq in self.model_fasta.split(">"):
                 try:
                     gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
-                    f = open(tmp_dir + gene_name + ".fa", "w")
-                    f.write(">" + seq)
-                    f.close()
+                    utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                 except AttributeError:
                     print("Gene name not found in :", seq)
                     pass
-            query_file.close()
             for gene in self.model.genes:
                 if i % 10 == 0:
                     print("Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
