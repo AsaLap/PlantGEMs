@@ -20,14 +20,15 @@ import utils
 
 class Mpwting(module.Module):
 
-    def __init__(self, _name, _main_directory, _m_rna, _chromosome_type):
+    def __init__(self, _name, _main_directory, _chromosome_type, _m_rna):
         super().__init__(_name, _main_directory)
         self.m_rna = _m_rna
         self.chromosome_type = _chromosome_type
-        self.regions_dict = self._get_sequence_region()
+        self.species_directory = self.main_directory + "mpwt/input/" + self.name + "/"
         self.fasta_file_path = self._find_fasta(self.name)
         self.gff_file_path = self._find_gff(self.name)
         self.eggnog_file_path = self._find_eggnog(self.name)
+        self.regions_dict = self._get_sequence_region()
 
     def _get_sequence_region(self):
         """Function that browses the .gff file and gets the name of each gene,
@@ -38,6 +39,9 @@ class Mpwting(module.Module):
         RETURNS:
             regions_dict -- a dictionary containing all the gathered
             information (see pipelinePT() for the structure).
+
+        -- Structure of regions_dict:
+        {Region name (str):{Gene name (str):{"Start": int, "End": int, "Proteins":{Protein name (str):[[begin, end]]}}}
         """
 
         regions_dict = {}
@@ -90,19 +94,14 @@ class Mpwting(module.Module):
         return regions_dict
 
     def _make_protein_correspondence_file(self):
-        """Function to create a csv file with the correspondence between a protein and the associated gene.
+        """Function to create a csv file with the correspondence between a protein and the associated gene."""
 
-        PARAMS:
-            wd (str) -- the path of the working directory to save the file.
-            name (str) -- the name of the model being treated.
-            regions_dict -- the dictionary that contains the information needed (see pipelinePT() for the structure).
-        """
         correspondence = []
         for region in self.regions_dict.keys():
             for gene in self.regions_dict[region].keys():
                 for protein in self.regions_dict[region][gene]["Proteins"].keys():
                     correspondence.append([gene.upper(), protein.upper()])
-        utils.write_csv(self.main_directory, correspondence, "protein_corres_" + self.name, "\t")
+        utils.write_csv(self.species_directory, correspondence, "protein_corres_" + self.name, "\t")
 
     def _make_dat_files(self):
 
@@ -126,7 +125,7 @@ class Mpwting(module.Module):
                     'ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n' % (
                         i, self.chromosome_type, circular, self.main_directory + i + '.pf',
                         self.main_directory + i + '.fsa'))
-        utils.write_file(self.main_directory + "genetic-elements" + ".dat", dat_file_str_list)
+        utils.write_file(self.species_directory + "genetic-elements" + ".dat", dat_file_str_list)
 
     def _make_fsa_files(self):
         with open(self.fasta_file_path, "r") as file:
@@ -138,7 +137,7 @@ class Mpwting(module.Module):
             region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
             if region in regions_list:
                 regions_list.remove(region)
-                utils.write_file(self.main_directory + region + ".fsa", i)
+                utils.write_file(self.species_directory + region + ".fsa", i)
 
     def _make_pf_files(self):
         tsv = utils.read_file_listed(self.eggnog_file_path)
@@ -156,7 +155,7 @@ class Mpwting(module.Module):
                             found = True
                             sub_pf.append(self._eggnog_file_parser(region, gene, protein, tsv[i]))
             if sub_pf:
-                f = open(self.main_directory + region + ".pf", "w")
+                f = open(self.species_directory + region + ".pf", "w")
                 for i in sub_pf:
                     for j in i:
                         f.write(j)
@@ -214,18 +213,6 @@ class Mpwting(module.Module):
         self._make_pf_files()
 
 
-def make_taxon_file(wd, taxon_name_list):
-    """Function to make the taxon_id.tsv file.
-
-    PARAMS:
-        taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
-    """
-
-    res = "species\ttaxon_id\n"
-    for i in taxon_name_list:
-        res += i[0] + "\t" + str(i[1]) + "\n"
-    utils.write_file(wd + "taxon_id.tsv", res)
-
 # def make_organism_parameters(wd, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
 #     # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
 #     taxonomy_dict = {1: "TAX-2", 2: "TAX-2759", 3: "TAX-2157",
@@ -251,81 +238,77 @@ def make_taxon_file(wd, taxon_name_list):
 #     utils.write_file(wd, "organism-params.dat", info)
 
 
-def pipeline(data):  # TODO : make this function fit with the new architecture
+def create_mpwt_objects(main_directory, input_directory):
+    """
+    Parameters taken from an ini file:
+        genetic_type (str) -- indication if the sequences of the organism are assembled as chromosomes or contigs
+        (or else, see Pathway Tools user guide).
+        m_rna (bool) -- decides if the function must search the mRNA line (True) or CDS line (False) to get the name
+        of the protein.
+        taxon_id (int) -- the NCBI taxon ID of the species."""
+
+    taxon_name_list = []
+
+    parameters = utils.read_config(main_directory + "mpwting.ini")
+    cpu = len(parameters.keys()) - 1
+    for i in parameters.keys():
+        if i != "DEFAULT":
+            species_name = parameters[i]["ORGANISM_NAME"]
+            chromosome_type = parameters[i]["CHROMOSOME_TYPE"]
+            m_rna = parameters.getboolean(i, "mRNA")
+            taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
+            species_directory = input_directory + species_name + "/"
+            utils.make_directory(species_directory)
+            taxon_name_list.append([species_name, taxon_id])
+            organism = Mpwting(species_name, main_directory, chromosome_type, m_rna)
+            organism.pipeline()
+    return taxon_name_list, cpu
+
+
+def make_taxon_file(directory, taxon_name_list):
+    """Function to make the taxon_id.tsv file.
+
+    PARAMS:
+        taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
+    """
+
+    res = "species\ttaxon_id\n"
+    for i in taxon_name_list:
+        res += i[0] + "\t" + str(i[1]) + "\n"
+    utils.write_file(directory + "taxon_id.tsv", res)
+
+
+def pipeline(main_directory):  # TODO : make this function fit with the new architecture
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
     PARAMS:
-        data (str) -- the path to a txt file containing the path
-        to each ini file for each organism to run.
-    -- Parameters taken from an ini file:
-        gff_filename (str) -- the name of the .gff file for the organism.
-        fasta_filename (str) -- the name of the .fasta file for the organism.
-        eggnog_filename (str) -- the name of the .tsv file from EggNOG for the organism.
-        genetic_type (str) -- indication if the sequences of the organism are assembled
-        as chromosomes or contigs (or else, see Pathway Tools user guide).
-        taxon_id (int) -- the NCBI taxon ID of the species.
-        m_rna (bool) -- decides if the function must search the mRNA line (True)
-        or CDS line (False) to get the name of the protein.
-        name (str) -- the name of the species database.
-    
-    -- Structure of regions_dict (created in this function):
-    {Region name (str):
-        {Gene name (str):
-            {"Start": int, "End": int, "Proteins":
-                {Protein name (str):[[begin, end] the protein(s)'s CDS positions (list of list of int]}
-        }
-    }
+        main_directory -- the directory where all the necessary files are stored, sometimes in subdirectories.
     """
-
-    index = utils.read_file_listed(data)
-    main_directory = index.pop(0).rstrip("/ ") + "/"
-    input_directory = main_directory + "input/"
-    output_directory = main_directory + "output/"
-    log_directory = main_directory + "log/"
+    mpwt_directory = main_directory + "mwpt/"
+    input_directory = mpwt_directory + "input/"
+    output_directory = mpwt_directory + "output/"
+    log_directory = mpwt_directory + "log/"
+    utils.make_directory(mpwt_directory)
     utils.make_directory(input_directory)
     utils.make_directory(output_directory)
     utils.make_directory(log_directory)
 
-    taxon_name_list = []
-    cpu = 0
-    for ini in index:
-        if ini:
-            cpu += 1
-            parameters = utils.read_config(ini.rstrip())
-            # gff_filename = parameters["FILES"]["GFF"]
-            # fasta_filename = parameters["FILES"]["FASTA"]
-            # eggnog_filename = parameters["FILES"]["EGGNOG"]
-            chromosome_type = parameters["INFO"]["chromosome_type"]
-            taxon_id = int(parameters["INFO"]["NCBI_TAXON_ID"])
-            m_rna = parameters.getboolean("INFO", "mRNA")
-            species_name = parameters["INFO"]["DATABASE_NAME"]
-            species_directory = input_directory + species_name + "/"
-            utils.make_directory(species_directory)
-
-            # Keeping some information for later
-            taxon_name_list.append([species_name, taxon_id])
-
-            # Creating the organism's instance and the corresponding pipeline to prepare for MPWT
-            organism = Mpwting(species_name, main_directory, m_rna, chromosome_type)
-            organism.pipeline()
-
-    # Creating the tsv file for the taxon IDs
-    make_taxon_file(input_directory, taxon_name_list)  # Quite unspecific, could be improved (genetic_type, codon table)
-    print("------\nCreation of the files finished\n------")
-
-    # Counting the number of cpu to use
-    nb_cpu = multiprocessing.cpu_count()
+    # Function to make the different objects/organism files
+    taxon_name_list, cpu = create_mpwt_objects(main_directory, input_directory)
+    # Last automatic parameters before launching mpwt's script.
+    make_taxon_file(input_directory, taxon_name_list)  # Creating the tsv file for the taxon IDs
+    nb_cpu = multiprocessing.cpu_count()  # Counting the number of cpu to use
     if nb_cpu <= cpu:
         cpu = nb_cpu - 1
-    print("Number of CPU used : ", cpu)
 
     # Starting the mpwt script
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
-                          number_cpu=nb_cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
+                          number_cpu=cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
                           taxon_file=True, verbose=True)
 
 
 if __name__ == "__main__":
-    globals()[sys.argv[1]](*sys.argv[2:])
+    # globals()[sys.argv[1]](*sys.argv[2:])
+    pipeline("/home/asa/INRAE/Thèse/Reconstructions/")
