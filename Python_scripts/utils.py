@@ -53,7 +53,7 @@ def read_file_listed(path):
 
 
 def read_file_stringed(path):
-    """Function to read and return a file line by line in a list."""
+    """Function to read and return a file in a string."""
 
     f = open(path, "r")
     res = f.read()
@@ -96,10 +96,10 @@ def read_config(ini):
     return config
 
 
-def write_file(wd, filename, data, strip=True):
+def write_file(wd, data, strip=True):
     """Function to write a file from a list."""
 
-    f = open(wd + filename, "w")
+    f = open(wd, "w")
     if strip:
         for i in data:
             f.write(i.rstrip() + "\n")
@@ -175,7 +175,7 @@ def clean_sbml(wd, name):
         if "<reaction" in i:
             i = reaction.sub('id="', i)
         new_file.append(i)
-    write_file(wd, "clean_" + name, new_file)
+    write_file(wd + "clean_" + name, new_file)
     return "clean_" + name
 
 
@@ -391,7 +391,7 @@ def make_upsetplot(directory, name, data, title):
         for i in cluster_data:
             log += cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
-    write_file(directory, name + ".log", log, False)
+    write_file(directory + name + ".log", log, False)
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
     plt.suptitle(title)

@@ -49,7 +49,7 @@ class Merging:
               "reactions not found : %i "
               % (len(self.pwt_reactions), len(set(self.pwt_reactions_list)), len(no_match_list)))
         no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-        utils.write_file(self.wd_log, self.name + "_error_reaction_pwt.log", no_match_list)
+        utils.write_file(self.wd_log + self.name + "_error_reaction_pwt.log", no_match_list)
 
     def _get_aracyc_model_reactions(self):
         """Function to get the reaction's ID of Metacyc from a reconstruction with Aracyc as model."""
@@ -68,7 +68,7 @@ class Merging:
               "reactions not found : %i"
               % (len(self.blast_model.reactions), len(self.reactions_list), len(no_match_list)))
         no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-        utils.write_file(self.wd_log, self.name + "_error_reaction_blast_reconstruction.log", no_match_list)
+        utils.write_file(self.wd_log + self.name + "_error_reaction_blast_reconstruction.log", no_match_list)
 
     def _correct_gene_rule_reactions(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools

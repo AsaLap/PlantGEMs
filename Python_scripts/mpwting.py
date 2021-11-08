@@ -126,7 +126,7 @@ class Mpwting(module.Module):
                     'ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n' % (
                         i, self.chromosome_type, circular, self.main_directory + i + '.pf',
                         self.main_directory + i + '.fsa'))
-        utils.write_file(self.main_directory, "genetic-elements" + ".dat", dat_file_str_list)
+        utils.write_file(self.main_directory + "genetic-elements" + ".dat", dat_file_str_list)
 
     def _make_fsa_files(self):
         with open(self.fasta_file_path, "r") as file:
@@ -138,7 +138,7 @@ class Mpwting(module.Module):
             region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
             if region in regions_list:
                 regions_list.remove(region)
-                utils.write_file(self.main_directory, region + ".fsa", i)
+                utils.write_file(self.main_directory + region + ".fsa", i)
 
     def _make_pf_files(self):
         tsv = utils.read_file_listed(self.eggnog_file_path)
@@ -224,7 +224,7 @@ def make_taxon_file(wd, taxon_name_list):
     res = "species\ttaxon_id\n"
     for i in taxon_name_list:
         res += i[0] + "\t" + str(i[1]) + "\n"
-    utils.write_file(wd, "taxon_id.tsv", res)
+    utils.write_file(wd + "taxon_id.tsv", res)
 
 # def make_organism_parameters(wd, species, abbrev, rank, storage="file", private="NIL", tax=2, codon=1, mito_codon=1):
 #     # Choose tax = 1(4) for Bacteria, 2(5) for Eukaryota and 3(6) for Archae (2 is default).
