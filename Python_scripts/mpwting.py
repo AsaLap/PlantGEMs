@@ -20,10 +20,10 @@ import utils
 
 class Mpwting(module.Module):
 
-    def __init__(self, _name, _main_directory, _chromosome_type, _m_rna):
+    def __init__(self, _name, _main_directory, _element_type, _m_rna):
         super().__init__(_name, _main_directory)
         self.m_rna = _m_rna
-        self.chromosome_type = _chromosome_type
+        self.element_type = _element_type
         self.species_directory = self.main_directory + "mpwt/input/" + self.name + "/"
         self.fasta_file_path = self._find_fasta(self.name)
         self.gff_file_path = self._find_gff(self.name)
@@ -109,21 +109,21 @@ class Mpwting(module.Module):
               "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
         circular = 'N'
         dat_file_str_list = []
-        if self.chromosome_type == "NONE":
+        if self.element_type == "NONE":
             for i in self.regions_dict.keys():
                 dat_file_str_list.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
                                          % (i, circular, self.main_directory + i + '.pf',
                                             self.main_directory + i + '.fsa'))
-        elif self.chromosome_type == ":CONTIG":
+        elif self.element_type == ":CONTIG":
             for i in self.regions_dict.keys():
                 dat_file_str_list.append('ID\t%s\nchromosome_type\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                         % (i, self.chromosome_type, self.main_directory + i + '.pf',
+                                         % (i, self.element_type, self.main_directory + i + '.pf',
                                             self.main_directory + i + '.fsa'))
         else:
             for i in self.regions_dict.keys():
                 dat_file_str_list.append(
                     'ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n' % (
-                        i, self.chromosome_type, circular, self.main_directory + i + '.pf',
+                        i, self.element_type, circular, self.main_directory + i + '.pf',
                         self.main_directory + i + '.fsa'))
         utils.write_file(self.species_directory + "genetic-elements" + ".dat", dat_file_str_list)
 
@@ -254,13 +254,13 @@ def create_mpwt_objects(main_directory, input_directory):
     for i in parameters.keys():
         if i != "DEFAULT":
             species_name = parameters[i]["ORGANISM_NAME"]
-            chromosome_type = parameters[i]["CHROMOSOME_TYPE"]
+            element_type = parameters[i]["ELEMENT_TYPE"]
             m_rna = parameters.getboolean(i, "mRNA")
             taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
             species_directory = input_directory + species_name + "/"
             utils.make_directory(species_directory)
             taxon_name_list.append([species_name, taxon_id])
-            organism = Mpwting(species_name, main_directory, chromosome_type, m_rna)
+            organism = Mpwting(species_name, main_directory, element_type, m_rna)
             organism.pipeline()
     return taxon_name_list, cpu
 
