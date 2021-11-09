@@ -285,7 +285,7 @@ def pipeline(main_directory):  # TODO : make this function fit with the new arch
     PARAMS:
         main_directory -- the directory where all the necessary files are stored, sometimes in subdirectories.
     """
-    mpwt_directory = main_directory + "mwpt/"
+    mpwt_directory = main_directory + "mpwt/"
     input_directory = mpwt_directory + "input/"
     output_directory = mpwt_directory + "output/"
     log_directory = mpwt_directory + "log/"
@@ -311,4 +311,4 @@ def pipeline(main_directory):  # TODO : make this function fit with the new arch
 
 if __name__ == "__main__":
     # globals()[sys.argv[1]](*sys.argv[2:])
-    pipeline("/home/asa/INRAE/Thèse/Reconstructions/")
+    pipeline("/home/asa/INRAE/These/Reconstructions/")
