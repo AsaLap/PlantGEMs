@@ -109,11 +109,15 @@ def write_file(wd, data, strip=True):
     f.close()
 
 
-def write_csv(wd, list_value, name, separator=","):
+def write_csv(wd, name, list_value, separator=","):
     """Function to save a file as a CSV format, needs a list of lists, 
     first list as the column names."""
 
-    with open(wd + name + '.csv', 'w', newline='') as file:
+    if separator == "\t":
+        extension = ".tsv"
+    else:
+        extension = ".csv"
+    with open(wd + name + extension, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=separator)
         for f in list_value:
             writer.writerow(f)
@@ -234,7 +238,7 @@ def metacyc_ids(wd, path):
                 if len(test_id) < len(short_id):
                     short_id = test_id
             res.append([short_id, reaction["name"]])
-    write_csv(wd, res, "MetacycCorresIDs", "\t")
+    write_csv(wd, "MetacycCorresIDs", res, "\t")
 
 
 def build_correspondence_dict(path, sep="\t"):

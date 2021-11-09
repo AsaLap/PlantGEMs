@@ -101,7 +101,7 @@ class Mpwting(module.Module):
             for gene in self.regions_dict[region].keys():
                 for protein in self.regions_dict[region][gene]["Proteins"].keys():
                     correspondence.append([gene.upper(), protein.upper()])
-        utils.write_csv(self.species_directory, correspondence, "protein_corres_" + self.name, "\t")
+        utils.write_csv(self.species_directory, "protein_corres_" + self.name, correspondence, "\t")
 
     def _make_dat_files(self):
 
@@ -272,10 +272,10 @@ def make_taxon_file(directory, taxon_name_list):
         taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
     """
 
-    res = "species\ttaxon_id\n"
+    res = [["species", "taxon_id"]]
     for i in taxon_name_list:
-        res += i[0] + "\t" + str(i[1]) + "\n"
-    utils.write_file(directory + "taxon_id.tsv", res)
+        res.append([i[0], str(i[1])])
+    utils.write_csv(directory, "taxon_id", res, separator="\t")
 
 
 def pipeline(main_directory):  # TODO : make this function fit with the new architecture
@@ -310,5 +310,4 @@ def pipeline(main_directory):  # TODO : make this function fit with the new arch
 
 
 if __name__ == "__main__":
-    # globals()[sys.argv[1]](*sys.argv[2:])
-    pipeline("/home/asa/INRAE/These/Reconstructions/")
+    globals()[sys.argv[1]](*sys.argv[2:])

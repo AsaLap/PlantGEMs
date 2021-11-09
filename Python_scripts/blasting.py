@@ -242,9 +242,10 @@ def pipeline(*args):
         cli_blast = Blasting(*args)
         cli_blast.build()
     except TypeError:
-        print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\nParameters "
-              "required : name, main_directory"
-              "optional : model_file_path, model_fasta_path, subject_fasta_path")
+        print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\n"
+              "Parameters : \n"
+              "required : name, main_directory\n"
+              "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
 
 
 if __name__ == "__main__":
