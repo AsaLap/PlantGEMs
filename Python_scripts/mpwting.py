@@ -278,7 +278,7 @@ def make_taxon_file(directory, taxon_name_list):
     utils.write_csv(directory, "taxon_id", res, separator="\t")
 
 
-def pipeline(main_directory):  # TODO : make this function fit with the new architecture
+def pipeline(main_directory):
     """The function to make all the pipeline working, from creation of 
     the files to Pathway Tools via mpwt.
     
