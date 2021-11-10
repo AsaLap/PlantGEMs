@@ -248,7 +248,7 @@ def create_mpwt_objects(main_directory, input_directory):
 
     taxon_name_list = []
 
-    parameters = utils.read_config(main_directory + "mpwting.ini")
+    parameters = utils.read_config(main_directory + "main.ini")
     cpu = len(parameters.keys()) - 1
     for i in parameters.keys():
         if i != "DEFAULT":
