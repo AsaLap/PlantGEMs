@@ -13,7 +13,6 @@ import mpwt
 import multiprocessing
 import numpy as np
 import re
-import subprocess
 import sys
 import utils
 
@@ -265,6 +264,36 @@ def create_mpwt_objects(main_directory, input_directory):
     return taxon_name_list, cpu
 
 
+def create_mpwt_objects_multiprocess(main_directory, input_directory):
+    taxon_name_list = []
+    parameters = utils.read_config(main_directory + "mpwting.ini")
+    cpu = len(parameters.keys()) - 1
+    list_data = []
+    for i in parameters.keys():
+        if i != "DEFAULT":
+            species_name = parameters[i]["ORGANISM_NAME"]
+            element_type = parameters[i]["ELEMENT_TYPE"]
+            m_rna = parameters.getboolean(i, "mRNA")
+            taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
+            species_directory = input_directory + species_name + "/"
+            utils.make_directory(species_directory)
+            taxon_name_list.append([species_name, taxon_id])
+            list_data.append({"species": species_name, "dir": main_directory, "element": element_type, "m_rna": m_rna})
+    p = multiprocessing.Pool(cpu)
+    p.map(multiprocess_mpwt_objects, list_data)
+    return taxon_name_list, cpu
+
+
+def decompaction(data):
+    return data["species"], data["dir"], data["element"], data["m_rna"]
+
+
+def multiprocess_mpwt_objects(data):
+    species_name, main_directory, element_type, m_rna = decompaction(data)
+    organism = Mpwting(species_name, main_directory, element_type, m_rna)
+    organism.build()
+
+
 def make_taxon_file(directory, taxon_name_list):
     """Function to make the taxon_id.tsv file.
 
@@ -295,7 +324,7 @@ def pipeline(main_directory):
     utils.make_directory(log_directory)
 
     # Function to make the different objects/organism files
-    taxon_name_list, cpu = create_mpwt_objects(main_directory, input_directory)
+    taxon_name_list, cpu = create_mpwt_objects_multiprocess(main_directory, input_directory)
     # Last automatic parameters before launching mpwt's script.
     make_taxon_file(input_directory, taxon_name_list)  # Creating the tsv file for the taxon IDs
     nb_cpu = multiprocessing.cpu_count()  # Counting the number of cpu to use
