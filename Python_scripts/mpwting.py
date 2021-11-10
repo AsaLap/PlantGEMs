@@ -206,7 +206,7 @@ class Mpwting(module.Module):
         info.append("//\n")
         return info
 
-    def pipeline(self):
+    def build(self):
         self._make_protein_correspondence_file()
         self._make_dat_files()
         self._make_fsa_files()
@@ -261,7 +261,7 @@ def create_mpwt_objects(main_directory, input_directory):
             utils.make_directory(species_directory)
             taxon_name_list.append([species_name, taxon_id])
             organism = Mpwting(species_name, main_directory, element_type, m_rna)
-            organism.pipeline()
+            organism.build()  # TODO Multiprocess that !
     return taxon_name_list, cpu
 
 
