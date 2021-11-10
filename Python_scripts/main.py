@@ -7,21 +7,25 @@
 
 """This file is the main, calling the others files to create an entirely new metabolic network."""
 
-from blasting import Blasting
+import blasting
+import mpwting
+import os
+import utils
+import sys
+
+
+def run(main_directory):
+    main_parameters = utils.read_config("main.ini" + main_directory)
+    species_names = []
+    for i in main_parameters.keys():
+        if i != "DEFAULT":
+            species_names.append(main_parameters[i]["ORGANISM_NAME"])
+    
+    if os.path.isdir(main_directory):
+        for name in species_names:  # Launching blast for every species
+            blasting.pipeline(name, main_directory)
+        mpwting.pipeline(main_directory)  # Then, launching MPWT
+
 
 if __name__ == "__main__":
-    # Tomate
-    # tomate_blast = Blasting("tomate",
-    #                         "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
-    #                         "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.fasta",
-    #                         "/home/asa/INRAE/These/Reconstructions/Tomate/tomato.fasta")
-    # tomate_blast.build()
-
-    # Raisin
-    vitis_blast = Blasting("raisin", "/home/asa/INRAE/Test/")
-    # vitis_blast.build()
-    # crashtest_blast = Blasting("tomate",
-    #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc.sbml",
-    #                            "/home/asa/INRAE/These/Reconstructions/Aracyc/aracyc_crashtest.fasta",
-    #                            "/home/asa/INRAE/These/Reconstructions/Crashtest/crashtest.fasta")
-    # crashtest_blast.build()
+    globals()[sys.argv[1]](*sys.argv[2:])
