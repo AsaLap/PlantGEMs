@@ -289,15 +289,8 @@ def create_mpwt_objects(main_directory, input_directory):
 def build_mpwt_objects(data):
     """Function to build the mpwting object received from a multiprocess call."""
 
-    species_name, main_directory, element_type, m_rna = decompaction(data)
-    organism = Mpwting(species_name, main_directory, element_type, m_rna)
+    organism = Mpwting(data["species"], data["dir"], data["element"], data["m_rna"])
     organism.build()
-
-
-def decompaction(data):
-    """Function needed to decompress and return several arguments from one list, called by multiprocessed function."""
-
-    return data["species"], data["dir"], data["element"], data["m_rna"]
 
 
 def make_taxon_file(directory, taxon_name_list):
