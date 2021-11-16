@@ -15,16 +15,8 @@ import sys
 
 
 def run(main_directory):
-    main_parameters = utils.read_config("main.ini" + main_directory)
-    species_names = []
-    for i in main_parameters.keys():
-        if i != "DEFAULT":
-            species_names.append(main_parameters[i]["ORGANISM_NAME"])
-    
-    if os.path.isdir(main_directory):
-        for name in species_names:  # Launching blast for every species
-            blasting.pipeline(name, main_directory)
-        mpwting.pipeline(main_directory)  # Then, launching MPWT
+    blasting.pipeline(main_directory)  # Launching the Blast
+    mpwting.pipeline(main_directory)  # Then, launching MPWT
 
 
 if __name__ == "__main__":

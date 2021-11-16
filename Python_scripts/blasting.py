@@ -8,6 +8,8 @@
 
 import cobra
 import copy
+import multiprocessing
+import os
 import re
 import subprocess
 import sys
@@ -46,7 +48,7 @@ class Blasting(module.Module):
         else:
             self.subject_fasta_path = self._find_fasta(self.name)
             self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
-        self.subject_directory = self.main_directory + "/" + self.model.id + "/"
+        self.subject_directory = self.main_directory + "/blast/" + self.model.id + "/"
         self.blast_result = {}
         self.gene_dictionary = {}
         self.identity = 50
@@ -142,7 +144,7 @@ class Blasting(module.Module):
             print("\nLaunching the blast !")
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
-            tmp_dir = self.main_directory + "/blast/tmp_dir/"
+            tmp_dir = self.subject_directory + "tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
             for seq in self.model_fasta.split(">"):
@@ -154,7 +156,7 @@ class Blasting(module.Module):
                     pass
             for gene in self.model.genes:
                 if i % 10 == 0:
-                    print("Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
+                    print(self.name + " : Protein %i out of %i\nTime : %f s\n" % (i, x, time.time() - lap_time))
                     lap_time = time.time()
                 i += 1
                 blast_request = [
@@ -222,10 +224,8 @@ class Blasting(module.Module):
         utils.make_directory(history_directory)
         utils.save_obj(self, history_directory + self.name + "_" + step)
 
-    # TODO : create a loading function
-    # TODO : create a log function to gather all the errors encountered
-
     def build(self):
+        utils.make_directory(self.subject_directory)
         self._blast_run()
         self._history_save("blasted")
         self._select_genes()
@@ -235,17 +235,31 @@ class Blasting(module.Module):
         cobra.io.save_json_model(self.draft, self.subject_directory + self.name + "_blast.json")
 
 
-def pipeline(*args):
-    """Function to use this script in CLI."""
+def build_blast_objects(data):
+    cli_blast = Blasting(data["species_name"], data["dir"])
+    cli_blast.build()
 
-    try:
-        cli_blast = Blasting(*args)
-        cli_blast.build()
-    except TypeError:
-        print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\n"
-              "Parameters : \n"
-              "required : name, main_directory\n"
-              "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
+
+def pipeline(main_directory):
+    """The function to make all the pipeline working."""
+
+    main_parameters = utils.read_config(main_directory + "main.ini")
+    if os.path.isdir(main_directory):
+        list_data = []
+        for i in main_parameters.keys():
+            if i != "DEFAULT":
+                list_data.append({"species_name": main_parameters[i]["ORGANISM_NAME"], "dir": main_directory})
+        cpu = len(list_data)
+        p = multiprocessing.Pool(cpu)
+        p.map(build_blast_objects, list_data)
+
+    #     cli_blast = Blasting(*args)
+    #     cli_blast.build()
+    # except TypeError:
+    #     print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\n"
+    #           "Parameters : \n"
+    #           "required : name, main_directory\n"
+    #           "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
 
 
 if __name__ == "__main__":
