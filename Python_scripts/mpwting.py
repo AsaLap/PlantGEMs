@@ -237,34 +237,36 @@ class Mpwting(module.Module):
 #     utils.write_file(wd, "organism-params.dat", info)
 
 
+# def create_mpwt_objects(main_directory, input_directory):
+#     """
+#     Parameters taken from an ini file:
+#         genetic_type (str) -- indication if the sequences of the organism are assembled as chromosomes or contigs
+#         (or else, see Pathway Tools user guide).
+#         m_rna (bool) -- decides if the function must search the mRNA line (True) or CDS line (False) to get the name
+#         of the protein.
+#         taxon_id (int) -- the NCBI taxon ID of the species."""
+#
+#     taxon_name_list = []
+#
+#     parameters = utils.read_config(main_directory + "main.ini")
+#     cpu = len(parameters.keys()) - 1
+#     for i in parameters.keys():
+#         if i != "DEFAULT":
+#             species_name = parameters[i]["ORGANISM_NAME"]
+#             element_type = parameters[i]["ELEMENT_TYPE"]
+#             m_rna = parameters.getboolean(i, "mRNA")
+#             taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
+#             species_directory = input_directory + species_name + "/"
+#             utils.make_directory(species_directory)
+#             taxon_name_list.append([species_name, taxon_id])
+#             organism = Mpwting(species_name, main_directory, element_type, m_rna)
+#             organism.build()
+#     return taxon_name_list, cpu
+
+
 def create_mpwt_objects(main_directory, input_directory):
-    """
-    Parameters taken from an ini file:
-        genetic_type (str) -- indication if the sequences of the organism are assembled as chromosomes or contigs
-        (or else, see Pathway Tools user guide).
-        m_rna (bool) -- decides if the function must search the mRNA line (True) or CDS line (False) to get the name
-        of the protein.
-        taxon_id (int) -- the NCBI taxon ID of the species."""
+    """Function to create mpwting objects using the multiprocess package to go faster."""
 
-    taxon_name_list = []
-
-    parameters = utils.read_config(main_directory + "main.ini")
-    cpu = len(parameters.keys()) - 1
-    for i in parameters.keys():
-        if i != "DEFAULT":
-            species_name = parameters[i]["ORGANISM_NAME"]
-            element_type = parameters[i]["ELEMENT_TYPE"]
-            m_rna = parameters.getboolean(i, "mRNA")
-            taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
-            species_directory = input_directory + species_name + "/"
-            utils.make_directory(species_directory)
-            taxon_name_list.append([species_name, taxon_id])
-            organism = Mpwting(species_name, main_directory, element_type, m_rna)
-            organism.build()  # TODO Multiprocess that !
-    return taxon_name_list, cpu
-
-
-def create_mpwt_objects_multiprocess(main_directory, input_directory):
     taxon_name_list = []
     parameters = utils.read_config(main_directory + "mpwting.ini")
     cpu = len(parameters.keys()) - 1
@@ -280,18 +282,22 @@ def create_mpwt_objects_multiprocess(main_directory, input_directory):
             taxon_name_list.append([species_name, taxon_id])
             list_data.append({"species": species_name, "dir": main_directory, "element": element_type, "m_rna": m_rna})
     p = multiprocessing.Pool(cpu)
-    p.map(multiprocess_mpwt_objects, list_data)
+    p.map(build_mpwt_objects, list_data)
     return taxon_name_list, cpu
 
 
-def decompaction(data):
-    return data["species"], data["dir"], data["element"], data["m_rna"]
+def build_mpwt_objects(data):
+    """Function to build the mpwting object received from a multiprocess call."""
 
-
-def multiprocess_mpwt_objects(data):
     species_name, main_directory, element_type, m_rna = decompaction(data)
     organism = Mpwting(species_name, main_directory, element_type, m_rna)
     organism.build()
+
+
+def decompaction(data):
+    """Function needed to decompress and return several arguments from one list, called by multiprocessed function."""
+
+    return data["species"], data["dir"], data["element"], data["m_rna"]
 
 
 def make_taxon_file(directory, taxon_name_list):
@@ -324,7 +330,7 @@ def pipeline(main_directory):
     utils.make_directory(log_directory)
 
     # Function to make the different objects/organism files
-    taxon_name_list, cpu = create_mpwt_objects_multiprocess(main_directory, input_directory)
+    taxon_name_list, cpu = create_mpwt_objects(main_directory, input_directory)
     # Last automatic parameters before launching mpwt's script.
     make_taxon_file(input_directory, taxon_name_list)  # Creating the tsv file for the taxon IDs
     nb_cpu = multiprocessing.cpu_count()  # Counting the number of cpu to use
