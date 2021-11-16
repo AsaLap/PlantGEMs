@@ -307,8 +307,7 @@ def make_taxon_file(directory, taxon_name_list):
 
 
 def pipeline(main_directory):
-    """The function to make all the pipeline working, from creation of 
-    the files to Pathway Tools via mpwt.
+    """The function to make all the pipeline working.
     
     PARAMS:
         main_directory -- the directory where all the necessary files are stored, sometimes in subdirectories.
