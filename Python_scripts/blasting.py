@@ -236,11 +236,13 @@ class Blasting(module.Module):
 
 
 def build_blast_objects(data):
+    """Small function required to launch with multiprocessing."""
+
     data.build()
 
 
-def pipeline(main_directory):
-    """The function to make all the pipeline working."""
+def sub_pipeline_first(main_directory):
+    """Split of major function 'pipeline', first part."""
 
     main_parameters = utils.read_config(main_directory + "main.ini")
     if os.path.isdir(main_directory):
@@ -248,9 +250,24 @@ def pipeline(main_directory):
         for i in main_parameters.keys():
             if i != "DEFAULT":
                 list_objects.append(Blasting(main_parameters[i]["ORGANISM_NAME"], main_directory))
-        cpu = len(list_objects)
-        p = multiprocessing.Pool(cpu)
-        p.map(build_blast_objects, list_objects)
+    else:
+        sys.exit("Main directory given does not exist : " + main_directory)
+    return list_objects
+
+
+def sub_pipeline_second(list_objects):
+    """Split of major function 'pipeline', second part."""
+
+    cpu = len(list_objects)
+    p = multiprocessing.Pool(cpu)
+    p.map(build_blast_objects, list_objects)
+
+
+def pipeline(main_directory):
+    """The function to launch the process when used alone."""
+
+    list_objects = sub_pipeline_first(main_directory)
+    sub_pipeline_second(list_objects)
 
 
 def pipeline_unique(*args):
