@@ -23,7 +23,9 @@ from upsetplot import plot
 
 def make_directory(directory):
     if not os.path.isdir(directory):
-        print("Creation of directory '" + directory.strip(" /").split("/")[-1] + "'")
+        new_dir = directory.strip(" /").split("/")[-1]
+        base_dir = directory.strip(" /")[:-len(directory.strip(" /").split("/")[-1])]
+        print("Creation of directory '" + new_dir + "' in '" + base_dir + "'")
         try:
             subprocess.run(["mkdir", directory])
         except PermissionError:
