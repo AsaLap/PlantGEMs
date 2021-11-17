@@ -12,6 +12,7 @@ import module
 import mpwt
 import multiprocessing
 import numpy as np
+import os
 import re
 import sys
 import utils
@@ -264,35 +265,6 @@ class Mpwting(module.Module):
 #     return taxon_name_list, cpu
 
 
-def create_mpwt_objects(main_directory, input_directory):
-    """Function to create mpwting objects using the multiprocess package to go faster."""
-
-    taxon_name_list = []
-    parameters = utils.read_config(main_directory + "main.ini")
-    cpu = len(parameters.keys()) - 1
-    list_data = []
-    for i in parameters.keys():
-        if i != "DEFAULT":
-            species_name = parameters[i]["ORGANISM_NAME"]
-            element_type = parameters[i]["ELEMENT_TYPE"]
-            m_rna = parameters.getboolean(i, "mRNA")
-            taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
-            species_directory = input_directory + species_name + "/"
-            utils.make_directory(species_directory)
-            taxon_name_list.append([species_name, taxon_id])
-            list_data.append({"species": species_name, "dir": main_directory, "element": element_type, "m_rna": m_rna})
-    p = multiprocessing.Pool(cpu)
-    p.map(build_mpwt_objects, list_data)
-    return taxon_name_list, cpu
-
-
-def build_mpwt_objects(data):
-    """Function to build the mpwting object received from a multiprocess call."""
-
-    organism = Mpwting(data["species"], data["dir"], data["element"], data["m_rna"])
-    organism.build()
-
-
 def make_taxon_file(directory, taxon_name_list):
     """Function to make the taxon_id.tsv file.
 
@@ -306,12 +278,18 @@ def make_taxon_file(directory, taxon_name_list):
     utils.write_csv(directory, "taxon_id", res, separator="\t")
 
 
-def pipeline(main_directory):
-    """The function to make all the pipeline working.
-    
-    PARAMS:
-        main_directory -- the directory where all the necessary files are stored, sometimes in subdirectories.
+def build_mpwt_objects(organism):
+    """Function to build the mpwting object received from a multiprocess call."""
+
+    organism.build()
+
+
+def sub_pipeline_first(main_directory):
     """
+    Split of major function 'pipeline', first part = gathering the parameters, files and candidates' names and
+    creating one Mpwting object for each.
+    """
+
     mpwt_directory = main_directory + "mpwt/"
     input_directory = mpwt_directory + "input/"
     output_directory = mpwt_directory + "output/"
@@ -320,20 +298,48 @@ def pipeline(main_directory):
     utils.make_directory(input_directory)
     utils.make_directory(output_directory)
     utils.make_directory(log_directory)
+    if os.path.isdir(main_directory):
+        list_objects = []
+        taxon_name_list = []
+        parameters = utils.read_config(main_directory + "main.ini")
+        cpu = len(parameters.keys()) - 1
+        for i in parameters.keys():
+            if i != "DEFAULT":
+                species_name = parameters[i]["ORGANISM_NAME"]
+                element_type = parameters[i]["ELEMENT_TYPE"]
+                m_rna = parameters.getboolean(i, "mRNA")
+                taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
+                species_directory = input_directory + species_name + "/"
+                utils.make_directory(species_directory)
+                taxon_name_list.append([species_name, taxon_id])
+                list_objects.append(Mpwting(species_name, main_directory, element_type, m_rna))
+                make_taxon_file(input_directory, taxon_name_list)
+    else:
+        sys.exit("Main directory given does not exist : " + main_directory)
+    return list_objects, cpu, input_directory, output_directory, log_directory
 
-    # Function to make the different objects/organism files
-    taxon_name_list, cpu = create_mpwt_objects(main_directory, input_directory)
-    # Last automatic parameters before launching mpwt's script.
-    make_taxon_file(input_directory, taxon_name_list)  # Creating the tsv file for the taxon IDs
-    nb_cpu = multiprocessing.cpu_count()  # Counting the number of cpu to use
+
+def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_directory):
+    """
+    Split of major function 'pipeline', second part = launching the process on each given object with multiprocessing
+    and launching the mpwt reconstruction.
+    """
+
+    p = multiprocessing.Pool(cpu)
+    p.map(build_mpwt_objects, list_objects)
+    nb_cpu = multiprocessing.cpu_count()
     if nb_cpu <= cpu:
         cpu = nb_cpu - 1
-
-    # Starting the mpwt script
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
                           number_cpu=cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
                           taxon_file=True, verbose=True)
+
+
+def pipeline(main_directory):
+    """The function to make all the pipeline working."""
+
+    sub_pipeline_last(sub_pipeline_first(main_directory))
 
 
 if __name__ == "__main__":
