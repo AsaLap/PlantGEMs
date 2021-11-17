@@ -235,10 +235,10 @@ class Blasting(module.Module):
         cobra.io.save_json_model(self.draft, self.subject_directory + self.name + "_blast.json")
 
 
-def build_blast_objects(data):
-    """Small function required to launch with multiprocessing."""
+def build_blast_objects(organism_object):
+    """Small function required for the multiprocessing reconstruction."""
 
-    data.build()
+    organism_object.build()
 
 
 def sub_pipeline_first(main_directory):
