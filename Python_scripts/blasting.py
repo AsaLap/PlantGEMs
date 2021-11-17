@@ -156,8 +156,10 @@ class Blasting(module.Module):
                     pass
             for gene in self.model.genes:
                 if i % 10 == 0:
-                    print(self.name + " : Protein %i out of %i\nTime : %f s\n" % (i, x, time.time() - lap_time))
+                    lock.acquire()
+                    print(self.name + " : Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
                     lap_time = time.time()
+                    lock.release()
                 i += 1
                 blast_request = [
                     "blastp",
@@ -236,22 +238,23 @@ class Blasting(module.Module):
 
 
 def build_blast_objects(data):
-    cli_blast = Blasting(data["species_name"], data["dir"])
-    cli_blast.build()
+    data.build()
 
 
 def pipeline(main_directory):
     """The function to make all the pipeline working."""
 
+    global lock  # Useful for when I print something on the terminal, for the processes not to be mixed up.
     main_parameters = utils.read_config(main_directory + "main.ini")
+    lock = multiprocessing.Lock()
     if os.path.isdir(main_directory):
-        list_data = []
+        list_objects = []
         for i in main_parameters.keys():
             if i != "DEFAULT":
-                list_data.append({"species_name": main_parameters[i]["ORGANISM_NAME"], "dir": main_directory})
-        cpu = len(list_data)
+                list_objects.append(Blasting(main_parameters[i]["ORGANISM_NAME"], main_directory))
+        cpu = len(list_objects)
         p = multiprocessing.Pool(cpu)
-        p.map(build_blast_objects, list_data)
+        p.map(build_blast_objects, list_objects)
 
     #     cli_blast = Blasting(*args)
     #     cli_blast.build()
