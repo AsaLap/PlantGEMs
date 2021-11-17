@@ -48,7 +48,7 @@ class Blasting(module.Module):
         else:
             self.subject_fasta_path = self._find_fasta(self.name)
             self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
-        self.subject_directory = self.main_directory + "/blast/" + self.model.id + "/"
+        self.subject_directory = self.main_directory + "blast/" + self.name + "/"
         self.blast_result = {}
         self.gene_dictionary = {}
         self.identity = 50
@@ -141,7 +141,7 @@ class Blasting(module.Module):
         """Runs multiple blasts between the model and the subject."""
 
         if not self.gene_dictionary:
-            print("\nLaunching the blast !")
+            print(self.name + " : Launching the blast !")
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
             tmp_dir = self.subject_directory + "tmp_dir/"
@@ -156,10 +156,8 @@ class Blasting(module.Module):
                     pass
             for gene in self.model.genes:
                 if i % 10 == 0:
-                    lock.acquire()
                     print(self.name + " : Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
                     lap_time = time.time()
-                    lock.release()
                 i += 1
                 blast_request = [
                     "blastp",
@@ -172,7 +170,7 @@ class Blasting(module.Module):
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             utils.remove_directory(tmp_dir)
-            print("Blast done !\nTotal time : %f s" % (time.time() - total_time))
+            print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
     def _select_genes(self):
         """Select the subject organism's genes regarding the different treshold parameters of the Blasting instance."""
@@ -244,9 +242,7 @@ def build_blast_objects(data):
 def pipeline(main_directory):
     """The function to make all the pipeline working."""
 
-    global lock  # Useful for when I print something on the terminal, for the processes not to be mixed up.
     main_parameters = utils.read_config(main_directory + "main.ini")
-    lock = multiprocessing.Lock()
     if os.path.isdir(main_directory):
         list_objects = []
         for i in main_parameters.keys():
@@ -256,13 +252,21 @@ def pipeline(main_directory):
         p = multiprocessing.Pool(cpu)
         p.map(build_blast_objects, list_objects)
 
-    #     cli_blast = Blasting(*args)
-    #     cli_blast.build()
-    # except TypeError:
-    #     print("Usage : $ python blasting.py pipeline parameter1 parameter2 parameter3 parameter4\n"
-    #           "Parameters : \n"
-    #           "required : name, main_directory\n"
-    #           "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
+
+def pipeline_unique(*args):
+    """
+    This function allows to launch a blasting process on a unique organism with every argument in command line
+    if wished so.
+    """
+
+    try:
+        unique_blast = Blasting(*args)
+        unique_blast.build()
+    except TypeError:
+        print("Usage : $ python blasting.py pipeline parameter1=value parameter2=value parameter3=value...\n"
+              "Parameters (in order) : \n"
+              "required : name, main_directory\n"
+              "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
 
 
 if __name__ == "__main__":
