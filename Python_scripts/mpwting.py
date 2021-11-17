@@ -268,7 +268,7 @@ def create_mpwt_objects(main_directory, input_directory):
     """Function to create mpwting objects using the multiprocess package to go faster."""
 
     taxon_name_list = []
-    parameters = utils.read_config(main_directory + "mpwting.ini")
+    parameters = utils.read_config(main_directory + "main.ini")
     cpu = len(parameters.keys()) - 1
     list_data = []
     for i in parameters.keys():
