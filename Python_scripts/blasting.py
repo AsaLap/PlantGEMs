@@ -244,7 +244,7 @@ def build_blast_objects(organism_object):
 def sub_pipeline_first(main_directory):
     """
     Split of major function 'pipeline', first part = gathering the files and candidates' names and creating one
-    Mpwting object for each.
+    Blasting object for each.
     """
 
     main_parameters = utils.read_config(main_directory + "main.ini")
@@ -258,7 +258,7 @@ def sub_pipeline_first(main_directory):
     return list_objects
 
 
-def sub_pipeline_second(list_objects):
+def sub_pipeline_last(list_objects):
     """
     Split of major function 'pipeline', second part = launching the process on each given object with multiprocessing.
     """
@@ -272,7 +272,7 @@ def pipeline(main_directory):
     """The function to launch the process when used alone."""
 
     list_objects = sub_pipeline_first(main_directory)
-    sub_pipeline_second(list_objects)
+    sub_pipeline_last(list_objects)
 
 
 def pipeline_unique(*args):
