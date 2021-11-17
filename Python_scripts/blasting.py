@@ -247,12 +247,12 @@ def sub_pipeline_first(main_directory):
     Blasting object for each.
     """
 
-    main_parameters = utils.read_config(main_directory + "main.ini")
+    parameters = utils.read_config(main_directory + "main.ini")
     if os.path.isdir(main_directory):
         list_objects = []
-        for i in main_parameters.keys():
+        for i in parameters.keys():
             if i != "DEFAULT":
-                list_objects.append(Blasting(main_parameters[i]["ORGANISM_NAME"], main_directory))
+                list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], main_directory))
     else:
         sys.exit("Main directory given does not exist : " + main_directory)
     return list_objects
