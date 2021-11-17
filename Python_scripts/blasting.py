@@ -242,7 +242,10 @@ def build_blast_objects(data):
 
 
 def sub_pipeline_first(main_directory):
-    """Split of major function 'pipeline', first part."""
+    """
+    Split of major function 'pipeline', first part = gathering the files and candidates' names and creating one
+    Mpwting object for each.
+    """
 
     main_parameters = utils.read_config(main_directory + "main.ini")
     if os.path.isdir(main_directory):
@@ -256,7 +259,9 @@ def sub_pipeline_first(main_directory):
 
 
 def sub_pipeline_second(list_objects):
-    """Split of major function 'pipeline', second part."""
+    """
+    Split of major function 'pipeline', second part = launching the process on each given object with multiprocessing.
+    """
 
     cpu = len(list_objects)
     p = multiprocessing.Pool(cpu)
