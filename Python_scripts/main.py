@@ -15,8 +15,16 @@ import sys
 
 
 def run(main_directory):
-    blasting.pipeline(main_directory)  # Launching the Blast
-    mpwting.pipeline(main_directory)  # Then, launching MPWT
+    print("Proceding to create all the needed files and checking input files, please stay around...")
+    # Launching the first part of Blast (files checking & generation)
+    list_objects_to_blast = blasting.sub_pipeline_first(main_directory)
+    # Launching the first part of MPWT (files checking & generation)
+    list_objects, cpu, input_directory, output_directory, log_directory = mpwting.sub_pipeline_first(main_directory)
+
+    # Then, launching the rest of the pipeline in multiprocess without the need of any input from the user
+    print("Everything's fine, now launching BLAST and MPWT processes, it may take some time...")
+    blasting.sub_pipeline_last(list_objects_to_blast)
+    mpwting.sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_directory)
 
 
 if __name__ == "__main__":
