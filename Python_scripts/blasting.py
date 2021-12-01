@@ -173,7 +173,7 @@ class Blasting(module.Module):
             print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))
 
     def _select_genes(self):
-        """Select the subject organism's genes regarding the different treshold parameters of the Blasting instance."""
+        """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
 
         if not self.blast_result:
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
