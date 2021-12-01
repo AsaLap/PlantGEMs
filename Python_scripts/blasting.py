@@ -178,7 +178,7 @@ class Blasting(module.Module):
         if not self.blast_result:
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
         else:
-            for key in self.blast_result.keys():
+            for key in self.blast_result.keys():  # key = region name
                 for res in self.blast_result[key]:
                     spl = res.split(",")
                     for i in range(len(spl)):
