@@ -192,13 +192,12 @@ class Blasting(module.Module):
                     if spl[6] >= self.identity \
                             and len_query[0] <= len_subject <= len_query[1] \
                             and spl[4] >= min_align \
-                            and spl[9] >= self.bit_score:
+                            and spl[9] >= self.bit_score \
+                            and spl[8] <= self.e_val:
                         try:
-                            if spl[8] <= self.e_val:
-                                self.gene_dictionary[key].append(spl[2])
+                            self.gene_dictionary[key].append(spl[2])
                         except KeyError:
-                            if spl[8] <= self.e_val:
-                                self.gene_dictionary[key] = [spl[2]]
+                            self.gene_dictionary[key] = [spl[2]]
 
     def _drafting(self):
         """Creates the new COBRA model for the subject organism."""
@@ -206,8 +205,7 @@ class Blasting(module.Module):
         self.draft = cobra.Model(self.name)
         for reaction in self.model.reactions:
             to_add = []
-            to_search = reaction.gene_reaction_rule.split(" or ")
-            for gene in to_search:
+            for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
                     to_add += self.gene_dictionary[gene]
                 except KeyError:
