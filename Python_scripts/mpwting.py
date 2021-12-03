@@ -25,7 +25,7 @@ class Mpwting(module.Module):
         self.m_rna = _m_rna
         self.element_type = _element_type
         self.species_directory = self.main_directory + "mpwt/input/" + self.name + "/"
-        self.fasta_file_path = self._find_fasta(self.name)
+        self.genomic_fasta_file_path = self._find_genomic_fasta(self.name)
         self.gff_file_path = self._find_gff(self.name)
         self.eggnog_file_path = self._find_eggnog(self.name)
         self.regions_dict = self._get_sequence_region()
@@ -128,12 +128,12 @@ class Mpwting(module.Module):
         utils.write_file(self.species_directory + "genetic-elements" + ".dat", dat_file_str_list)
 
     def _make_fsa_files(self):
-        with open(self.fasta_file_path, "r") as file:
-            fasta = file.read()
-        fasta = fasta.split(">")
-        fasta = list(filter(None, fasta))
+        with open(self.genomic_fasta_file_path, "r") as file:
+            genomic_fasta = file.read()
+        genomic_fasta = genomic_fasta.split(">")
+        genomic_fasta = list(filter(None, genomic_fasta))
         regions_list = list(self.regions_dict.keys())
-        for i in fasta:
+        for i in genomic_fasta:
             region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
             if region in regions_list:
                 regions_list.remove(region)

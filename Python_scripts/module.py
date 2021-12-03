@@ -47,8 +47,11 @@ class Module:
                 print("Please enter a string only... Restarting.")
                 self._find_file(target, extension)
 
-    def _find_fasta(self, target):
-        return self._find_file(target, ".fasta")
+    def _find_genomic_fasta(self, target):
+        return self._find_file(target, ".fna")
+
+    def _find_proteomic_fasta(self, target):
+        return self._find_file(target, ".faa")
 
     def _find_gff(self, target):
         return self._find_file(target, ".gff")

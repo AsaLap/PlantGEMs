@@ -38,16 +38,16 @@ class Blasting(module.Module):
         else:
             self.model = cobra.io.read_sbml_model(self._find_model())
         if _model_fasta_path is not None:
-            self.model_fasta_path = _model_fasta_path
-            self.model_fasta = utils.read_file_stringed(self.model_fasta_path)
+            self.model_proteomic_fasta_path = _model_fasta_path
+            self.model_proteomic_fasta = utils.read_file_stringed(self.model_proteomic_fasta_path)
         else:
-            self.model_fasta = utils.read_file_stringed(self._find_fasta(self.model.id))
+            self.model_proteomic_fasta = utils.read_file_stringed(self._find_proteomic_fasta(self.model.id))
         if _subject_fasta_path is not None:
-            self.subject_fasta_path = _subject_fasta_path
-            self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
+            self.subject_proteomic_fasta_path = _subject_fasta_path
+            self.subject_proteomic_fasta = utils.read_file_stringed(self.subject_proteomic_fasta_path)
         else:
-            self.subject_fasta_path = self._find_fasta(self.name)
-            self.subject_fasta = utils.read_file_stringed(self.subject_fasta_path)
+            self.subject_proteomic_fasta_path = self._find_proteomic_fasta(self.name)
+            self.subject_proteomic_fasta = utils.read_file_stringed(self.subject_proteomic_fasta_path)
         self.subject_directory = self.main_directory + "blast/" + self.name + "/"
         self.blast_result = {}
         self.gene_dictionary = {}
@@ -147,7 +147,7 @@ class Blasting(module.Module):
             tmp_dir = self.subject_directory + "tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
-            for seq in self.model_fasta.split(">"):
+            for seq in self.model_proteomic_fasta.split(">"):
                 try:
                     gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                     utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
@@ -162,7 +162,7 @@ class Blasting(module.Module):
                 blast_request = [
                     "blastp",
                     "-subject",
-                    self.subject_fasta_path,
+                    self.subject_proteomic_fasta_path,
                     "-query",
                     tmp_dir + gene.id + ".fa",
                     "-outfmt",
