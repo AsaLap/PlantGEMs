@@ -5,6 +5,7 @@
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
 """This file contains utility functions used in several PlantGEMs' scripts."""
+import sys
 
 import cobra
 import configparser
@@ -93,8 +94,12 @@ def read_config(ini):
         config (dict of str) -- the configuration in a python dictionary object.
     """
 
-    config = configparser.ConfigParser()
-    config.read(ini)
+    if os.path.isfile(ini):
+        config = configparser.ConfigParser()
+        config.read(ini)
+    else:
+        print("File not found : " + ini + "\nEnding the process.")
+        sys.exit()
     return config
 
 
