@@ -51,7 +51,7 @@ class Merging:
         no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
         utils.write_file(self.wd_log + self.name + "_error_reaction_pwt.log", no_match_list)
 
-    def _get_aracyc_model_reactions(self):
+    def _get_blast_model_reactions(self):
         """Function to get the reaction's ID of Metacyc from a reconstruction with Aracyc as model."""
 
         no_match_list = []
@@ -170,7 +170,7 @@ class Merging:
         """
 
         self._get_pwt_reactions()
-        self._get_aracyc_model_reactions()
+        self._get_blast_model_reactions()
         # Here we take away the reactions of the blast reconstruction because we will deep-copy them as they are
         # already correctly linked to the good genes and we just need to correct the gene reaction rule from the
         # pathway tools reconstruction.
