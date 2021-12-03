@@ -13,8 +13,9 @@ Both **blasting.py** and **mpwting.py** are currently working and can be launche
 ### **For blasting.py** :
 You will need :
 * The model's sbml file
-* The model's fasta (protein)
-* The subject's fasta
+* The model's proteome fasta (.faa)
+* The subject's proteome fasta (.faa)
+* The subject's genome fasta (.fna)
 
 Just like for mpwting (see below) you can store the files in a _files/_ directory and name them this way : _organism_name.extension_. 
 \
@@ -67,21 +68,20 @@ $ python mpwting.py pipeline "path/to/main/directory"
 
 ### -- Python files --
 
-<!-- menecoing.py : Performs a gap filling of the model with Meneco. (Work In Progress). -->
-
 - ``blasting.py`` -- Creation of plant draft from a template model using Blast.
 
-- ``graph.py`` -- Utility file to create different graphs and statistical analysis.
+- ``main.py`` -- Main file to launch all the workflow with a single command line.
 
-- ``main.py`` -- Main file to launch all the workflow with a simple command (WIP).
+- ``merging.py`` -- Merge two draft of metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
 
-- ``merging.py`` -- Merge two draft metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
-
-- ``module.py`` -- File for the parent class of all the modules, contains useful methods that can be inherited in all module's class.
+- ``module.py`` -- File for the parent class of all the modules, contains useful methods that can be inherited in all module's classes.
 
 - ``mpwting.py`` -- Preparation of files to run Pathway Tools automatically and create a draft based on Metacyc with the mpwt library (see https://github.com/AuReMe/mpwt).
 
 - ``utils.py`` -- Utility file to avoid code redundancy.
+
+[//]: # (- ``menecoing.py`` -- Performs a gap filling of the model with Meneco &#40;Work In Progress&#41;.)
+[//]: # (- ``graph.py`` -- Utility file to create different graphs and statistical analysis on the networks.)
 
 ### -- Info files --
 
@@ -91,6 +91,13 @@ $ python mpwting.py pipeline "path/to/main/directory"
 
 ## NEWS :
 
-Further improvements are to come, such as a complete pipeline and an automatic gathering of the mandatory parameters in the main.ini file.
-\
-_Merging_ reworking is coming and soon wired to the previous modules. Same thing for a Meneco-based gap-filling (https://github.com/bioasp/meneco).
+Some improvements are to come : 
+- A complete pipeline (blast draft & mpwt draft + merging + gap-filling + global analysis of the reconstructed networks).
+  - The blast values will be customizable as it suits you.
+  - _Merging.py_ reworking is on its way (next module to come).
+    - A merge of any sbml model will also be possible in the _merging.py_ module.
+  - The Meneco-based gap-filling (https://github.com/bioasp/meneco) will be subsequently.
+  
+Further ideas :
+- Multiple models reconstruction in the blast module.
+- Graphical interface for a common user utility and easy metabolic reconstruction.
