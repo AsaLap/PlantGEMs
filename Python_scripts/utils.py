@@ -324,37 +324,65 @@ def trans_short_id(list_ids, correspondence, short=True, keep=False):
     return new_list
 
 
-def protein_to_gene(wd, model, protein_correspondence, name):
-    """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
-    It creates a new model that will be rid of all the proteins.
-    
-    PARAMS:
-        wd (str) -- the path where to find the model.
-        model (str) -- the model file in json format.
-        protein_correspondence (str) -- the exact path of the csv file of the
-        correspondence between a protein and its gene.
-        name (str) -- the new name for the new corrected model.
+def get_sequence_region(gff_file_path):
+    """Function that browses the .gff file and gets the name of each gene,
+    the position in the genome and each corresponding region and protein(s).
+
+    RETURNS:
+        regions_dict -- a dictionary containing all the gathered information (see pipelinePT() for the structure).
+
+    -- Structure of regions_dict:
+    {Region name (str):{Gene name (str):{"Start": int, "End": int, "Proteins":{Protein name (str):[[begin, end]]}}}
     """
 
-    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(protein_correspondence)
-    protein_model = cobra.io.load_json_model(wd + model)
-    gene_model = cobra.Model(protein_model.id)
-    for reaction in protein_model.reactions:
-        genes = []
-        list_proteins = reaction.gene_reaction_rule.split(" or ")
-        for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
+    regions_dict = {}
+    gff_file = read_file_listed(gff_file_path)
+    protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
+    for line in gff_file:
+        if "\tgene\t" in line:  # Searching the gene's information
+            protein_found = False
+            spl = line.split("\t")
+            region = spl[0]
             try:
-                genes.append(metacyc_matching_id_dict_reversed[protein])
-            except KeyError:
+                gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+            except AttributeError:
                 try:
-                    if protein in metacyc_matching_id_dict.keys():
-                        genes.append(protein)
-                except KeyError:
-                    print("No match for : ", protein)
-        new_reaction = copy.deepcopy(reaction)
-        new_reaction.gene_reaction_rule = " or ".join(set(genes))
-        gene_model.add_reactions([new_reaction])
-    cobra.io.save_json_model(gene_model, wd + name + protein_model.id + ".json")
+                    gene = re.search('(?<=ID=)(gene:)*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    if "gene:" in gene:
+                        gene = gene[5:]
+                except AttributeError:
+                    print("The gene name hasn't been found...")
+                    gene = ""
+                    pass
+            if region not in regions_dict.keys():
+                regions_dict[region] = {}
+            if spl[6] == "+":
+                regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
+            else:
+                regions_dict[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
+        if m_rna:  # Searching the protein's information
+            if "RNA\t" in line:
+                try:
+                    protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                    regions_dict[region][gene]["Proteins"][protein] = []
+                    protein_found = True
+                except AttributeError:
+                    print("The mRNA has no attribute 'Name='...")
+                    regions_dict[region][gene]["Proteins"]["None"] = []
+        else:
+            if not protein_found and "CDS\t" in line:  # In case the gff file needs to be looked at on the CDS and
+                # not the mRNA to corresponds to the TSV file
+                try:  # Searching for CDS's ID instead of m_rna.
+                    protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
+                    regions_dict[region][gene]["Proteins"][protein] = []
+                    protein_found = True
+                except AttributeError:
+                    print("The CDS has no attribute 'ID='...")
+                    regions_dict[region][gene]["Proteins"]["None"] = []
+        if "\tCDS\t" in line:  # Searching the exon's information
+            spl = line.split("\t")
+            regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
+    return regions_dict
 
 
 def list_reactions(data):
