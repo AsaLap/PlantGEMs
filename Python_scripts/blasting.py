@@ -48,7 +48,10 @@ class Blasting(module.Module):
         else:
             self.subject_proteomic_fasta_path = self._find_proteomic_fasta(self.name)
             self.subject_proteomic_fasta = utils.read_file_stringed(self.subject_proteomic_fasta_path)
-        self.subject_directory = self.main_directory + "blast/" + self.name + "/"
+        self.directory = self.main_directory + "blast/" + self.name + "/"
+        self.gff_file_path = self._find_gff(self.name)
+        self.regions_dict = utils.get_sequence_region(self.gff_file_path)
+        self._make_protein_correspondence_file()
         self.blast_result = {}
         self.gene_dictionary = {}
         self.identity = 50
@@ -144,7 +147,7 @@ class Blasting(module.Module):
             print(self.name + " : Launching the blast !")
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
-            tmp_dir = self.subject_directory + "tmp_dir/"
+            tmp_dir = self.directory + "tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
             for seq in self.model_proteomic_fasta.split(">"):
@@ -223,14 +226,50 @@ class Blasting(module.Module):
         utils.save_obj(self, history_directory + self.name + "_" + step)
 
     def build(self):
-        utils.make_directory(self.subject_directory)
+        utils.make_directory(self.directory)
         self._blast_run()
         self._history_save("blasted")
         self._select_genes()
         self._history_save("genes_selected")
         self._drafting()
         self._history_save("drafted")
-        cobra.io.save_json_model(self.draft, self.subject_directory + self.name + "_blast.json")
+        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast.json")
+
+    def _make_protein_correspondence_file(self):
+        """Function to create a csv file with the correspondence between a protein and the associated gene."""
+
+        correspondence = []
+        for region in self.regions_dict.keys():
+            for gene in self.regions_dict[region].keys():
+                for protein in self.regions_dict[region][gene]["Proteins"].keys():
+                    correspondence.append([gene.upper(), protein.upper()])
+        utils.write_csv(self.main_directory + "/blast/" + self.name, "protein_gene_correspondence", correspondence,
+                        "\t")
+
+    def _protein_to_gene(self):  # TODO : Review this code and use it in the pipeline
+        """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
+        It creates a new model that will be rid of all the proteins."""
+
+        metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = utils.build_correspondence_dict(
+            self.directory + "protein_gene_correspondence")
+        protein_model = cobra.io.load_json_model(self.directory + self.model)
+        gene_model = cobra.Model(protein_model.id)
+        for reaction in protein_model.reactions:
+            genes = []
+            list_proteins = reaction.gene_reaction_rule.split(" or ")
+            for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
+                try:
+                    genes.append(metacyc_matching_id_dict_reversed[protein])
+                except KeyError:
+                    try:
+                        if protein in metacyc_matching_id_dict.keys():
+                            genes.append(protein)
+                    except KeyError:
+                        print("No match for : ", protein)
+            new_reaction = copy.deepcopy(reaction)
+            new_reaction.gene_reaction_rule = " or ".join(set(genes))
+            gene_model.add_reactions([new_reaction])
+        cobra.io.save_json_model(gene_model, self.directory + self.name + protein_model.id + ".json")
 
 
 def build_blast_objects(organism_object):
