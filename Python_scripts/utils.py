@@ -332,56 +332,48 @@ def get_sequence_region(gff_file_path):
         regions_dict -- a dictionary containing all the gathered information (see pipelinePT() for the structure).
 
     -- Structure of regions_dict:
-    {Region name (str):{Gene name (str):{"Start": int, "End": int, "Proteins":{Protein name (str):[[begin, end]]}}}
+    {Region name (str):
+        {Gene name (str):
+            {"Start": int, "End": int, "Proteins":
+                {Protein name (str): [CDS's pos (tuple)]}}}}
     """
 
     regions_dict = {}
     gff_file = read_file_listed(gff_file_path)
     protein_found = False  # Boolean to avoid testing a protein on each line that has already been found.
+    cds_break = False  # Boolean to avoid an error if the CDS's name hasn't been found.
+    region = None  # Assignment before use
+    gene = None  # Assignment before use
     for line in gff_file:
+        if "RNA\t" in line:
+            protein_found = False
+            cds_break = False
         if "\tgene\t" in line:  # Searching the gene's information
             protein_found = False
             spl = line.split("\t")
             region = spl[0]
             try:
-                gene = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
+                gene = re.search('(?<=ID=)[GgEeNn:-]*\w+(\.\w+)*(\-\w+)*', line).group(0)
             except AttributeError:
-                try:
-                    gene = re.search('(?<=ID=)(gene:)*\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    if "gene:" in gene:
-                        gene = gene[5:]
-                except AttributeError:
-                    print("The gene name hasn't been found...")
-                    gene = ""
-                    pass
+                print("The gene name hasn't been found...")  # TODO : Log this error
+                break
             if region not in regions_dict.keys():
                 regions_dict[region] = {}
-            if spl[6] == "+":
-                regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
-            else:
-                regions_dict[region][gene] = {"Start": spl[4], "End": spl[3], "Proteins": {}}
-        if m_rna:  # Searching the protein's information
-            if "RNA\t" in line:
-                try:
-                    protein = re.search('(?<=Name=)\w+(\.\w+)*(\-\w+)*', line).group(0)
-                    regions_dict[region][gene]["Proteins"][protein] = []
-                    protein_found = True
-                except AttributeError:
-                    print("The mRNA has no attribute 'Name='...")
-                    regions_dict[region][gene]["Proteins"]["None"] = []
-        else:
-            if not protein_found and "CDS\t" in line:  # In case the gff file needs to be looked at on the CDS and
-                # not the mRNA to corresponds to the TSV file
-                try:  # Searching for CDS's ID instead of m_rna.
-                    protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)[4:]
-                    regions_dict[region][gene]["Proteins"][protein] = []
-                    protein_found = True
-                except AttributeError:
-                    print("The CDS has no attribute 'ID='...")
-                    regions_dict[region][gene]["Proteins"]["None"] = []
-        if "\tCDS\t" in line:  # Searching the exon's information
+            regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
+        if region and gene and not protein_found and "\tCDS\t" in line:  # Searching the protein's information
+            try:
+                protein = re.search('(?<=ID=)[CcDdSs:-]*\w+(\.\w+)*', line).group(0)
+                regions_dict[region][gene]["Proteins"][protein] = []
+                protein_found = True
+                cds_break = False
+            except AttributeError:
+                print("The CDS has no attribute 'ID='...")  # TODO : Log this error
+                cds_break = True
+        if not cds_break and "\tCDS\t" in line:  # Searching the CDS' information
             spl = line.split("\t")
             regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
+    for region in regions_dict.keys():
+        print(region, " : ", regions_dict[region])
     return regions_dict
 
 
