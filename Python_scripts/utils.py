@@ -249,31 +249,29 @@ def metacyc_ids(wd, path):
 
 
 def build_correspondence_dict(path, sep="\t"):
-    """Function to create a ditionary of correspondence between 
-    short and long IDs from a correspondence file (Metacyc IDs).
+    """Function to create a dictionary of correspondence between
+    elements from a correspondence file (Metacyc short and long IDs for example).
     
     PARAMS:
-        path (str) -- the path to the file containing the correspondence information.
+        path (str) -- the path to the csv/tsv file containing the corresponding information (only two elements).
         sep (str) -- the separator of the correspondence file (default = tab).
     RETURNS:
-        metacyc_matching_id_dict -- dictionary with short IDs as key and list of long IDs
-        as values (NB : one short ID can have several long IDs correspondence).
-        metacyc_reverse_id_dict -- dictionary with long IDs as key and the
-        corresponding short ID as value (NB : one long ID as only one short ID correspondence).
+        matching_dict -- dictionary with an element as key that matches the value.
+        matching_dict_reversed -- same thing as matching_dict but in reversed (value is key and vice-versa).
     """
 
     matching = read_file_listed(path)
-    metacyc_matching_id_dict = {}
-    metacyc_matching_id_dict_reversed = {}
+    matching_dict = {}
+    matching_dict_reversed = {}
     for line in matching:
         if line:
             couple = line.rstrip().split(sep)
-            if couple[0] in metacyc_matching_id_dict.keys():
-                metacyc_matching_id_dict[couple[0]].append(couple[1])
+            if couple[0] in matching_dict.keys():
+                matching_dict[couple[0]].append(couple[1])
             else:
-                metacyc_matching_id_dict[couple[0]] = [couple[1]]
-            metacyc_matching_id_dict_reversed[couple[1]] = couple[0]
-    return metacyc_matching_id_dict, metacyc_matching_id_dict_reversed
+                matching_dict[couple[0]] = [couple[1]]
+            matching_dict_reversed[couple[1]] = couple[0]
+    return matching_dict, matching_dict_reversed
 
 
 def trans_short_id(list_ids, correspondence, short=True, keep=False):
