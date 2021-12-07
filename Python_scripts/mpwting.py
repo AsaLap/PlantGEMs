@@ -103,7 +103,7 @@ class Mpwting(module.Module):
 
         start = self.regions_dict[region][gene]["Start"]
         end = self.regions_dict[region][gene]["End"]
-        exon_pos = self.regions_dict[region][gene]["Proteins"][protein]
+        cds_pos = self.regions_dict[region][gene]["Proteins"][protein]
 
         info = []
         spl = line.split("\t")
@@ -123,8 +123,8 @@ class Mpwting(module.Module):
         if spl[7]:
             for res in spl[7].split(","):
                 info.append("EC\t" + res + "\n")
-        for exon in exon_pos:
-            info.append("CODING-SEGMENT\t" + str(exon[0]) + "-" + str(exon[1]) + "\n")
+        for cds in cds_pos:
+            info.append("CODING-SEGMENT\t" + str(cds[0]) + "-" + str(cds[1]) + "\n")
         if spl[6]:
             go = spl[6].split(",")
             for i in go:
