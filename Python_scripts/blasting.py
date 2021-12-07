@@ -233,7 +233,7 @@ class Blasting(module.Module):
         self._history_save("genes_selected")
         self._drafting()
         self._history_save("drafted")
-        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast.json")
+        self._protein_to_gene()
 
     def _make_protein_correspondence_file(self):
         """Function to create a csv file with the correspondence between a protein and the associated gene."""
@@ -248,28 +248,29 @@ class Blasting(module.Module):
 
     def _protein_to_gene(self):  # TODO : Review this code and use it in the pipeline
         """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
-        It creates a new model that will be rid of all the proteins."""
+        It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
-        metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = utils.build_correspondence_dict(
-            self.directory + "protein_gene_correspondence")
-        protein_model = cobra.io.load_json_model(self.directory + self.model)
-        gene_model = cobra.Model(protein_model.id)
-        for reaction in protein_model.reactions:
-            genes = []
-            list_proteins = reaction.gene_reaction_rule.split(" or ")
-            for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
-                try:
-                    genes.append(metacyc_matching_id_dict_reversed[protein])
-                except KeyError:
+        self._make_protein_correspondence_file()
+        correspondence_file_path = self.directory + "protein_gene_correspondence.tsv"
+        if os.path.isfile(correspondence_file_path):
+            gene_protein_dict, gene_protein_dict_reversed = utils.build_correspondence_dict(correspondence_file_path)
+            for reaction in self.draft.reactions:
+                genes = []
+                list_proteins = reaction.gene_reaction_rule.split(" or ")
+                for protein in list(filter(None, [trans.upper() for trans in list_proteins])):
                     try:
-                        if protein in metacyc_matching_id_dict.keys():
-                            genes.append(protein)
+                        genes.append(gene_protein_dict_reversed[protein])
                     except KeyError:
-                        print("No match for : ", protein)
-            new_reaction = copy.deepcopy(reaction)
-            new_reaction.gene_reaction_rule = " or ".join(set(genes))
-            gene_model.add_reactions([new_reaction])
-        cobra.io.save_json_model(gene_model, self.directory + self.name + protein_model.id + ".json")
+                        try:
+                            if protein in gene_protein_dict.keys():
+                                genes.append(protein)
+                        except KeyError:
+                            print("No match for : ", protein)
+                reaction.gene_reaction_rule = " or ".join(set(genes))
+            cobra.io.save_json_model(self.draft, self.directory + self.name + "_gene_blast" + ".json")
+        else:
+            print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
+            sys.exit()
 
 
 def build_blast_objects(organism_object):
