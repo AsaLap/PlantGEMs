@@ -342,6 +342,7 @@ def get_sequence_region(gff_file_path):
     cds_break = False  # Boolean to avoid an error if the CDS's name hasn't been found.
     region = None  # Assignment before use
     gene = None  # Assignment before use
+    protein = None  # Assignment before use
     for line in gff_file:
         if "RNA\t" in line:
             protein_found = False
@@ -352,6 +353,8 @@ def get_sequence_region(gff_file_path):
             region = spl[0]
             try:
                 gene = re.search('(?<=ID=)[GgEeNn:-]*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                garbage = re.search('[GgEeNn:-]*', gene).group(0)
+                gene = str.replace(gene, garbage, "")
             except AttributeError:
                 print("The gene name hasn't been found...")  # TODO : Log this error
                 break
@@ -361,6 +364,8 @@ def get_sequence_region(gff_file_path):
         if region and gene and not protein_found and "\tCDS\t" in line:  # Searching the protein's information
             try:
                 protein = re.search('(?<=ID=)[CcDdSs:-]*\w+(\.\w+)*', line).group(0)
+                garbage = re.search('[CcDdSs:-]*', protein).group(0)
+                protein = str.replace(protein, garbage, "")
                 regions_dict[region][gene]["Proteins"][protein] = []
                 protein_found = True
                 cds_break = False
@@ -370,8 +375,6 @@ def get_sequence_region(gff_file_path):
         if not cds_break and "\tCDS\t" in line:  # Searching the CDS' information
             spl = line.split("\t")
             regions_dict[region][gene]["Proteins"][protein].append([int(spl[3]), int(spl[4])])
-    for region in regions_dict.keys():
-        print(region, " : ", regions_dict[region])
     return regions_dict
 
 
