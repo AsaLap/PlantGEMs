@@ -21,15 +21,16 @@ import utils
 
 class Blasting(module.Module):
 
-    def __init__(self, _name, _main_directory, _model_file_path=None, _model_fasta_path=None, _subject_fasta_path=None):
+    def __init__(self, _name, _main_directory, _model_file_path=None, _model_proteomic_fasta_path=None,
+                 _subject_proteomic_fasta_path=None, _subject_gff_path=None):
         """
         ARGS :
             _name -- name of the subject, must corresponds to the files' names.
             _main_directory -- main directory with the files et subdirectories for the results.
         (optional):
             _model_file_path -- the path to the SBML file containing the model for the reconstruction.
-            _model_fasta_path -- the path to the fasta file of the model.
-            _subject_fasta_path -- the path to the fasta file of the subject.
+            _model_proteomic_fasta_path -- the path to the fasta file of the model.
+            _subject_proteomic_fasta_path -- the path to the fasta file of the subject.
         """
         super().__init__(_name, _main_directory)
         utils.make_directory(self.main_directory + "blast/")
@@ -37,19 +38,22 @@ class Blasting(module.Module):
             self.model = cobra.io.read_sbml_model(_model_file_path)
         else:
             self.model = cobra.io.read_sbml_model(self._find_model())
-        if _model_fasta_path is not None:
-            self.model_proteomic_fasta_path = _model_fasta_path
+        if _model_proteomic_fasta_path is not None:
+            self.model_proteomic_fasta_path = _model_proteomic_fasta_path
             self.model_proteomic_fasta = utils.read_file_stringed(self.model_proteomic_fasta_path)
         else:
             self.model_proteomic_fasta = utils.read_file_stringed(self._find_proteomic_fasta(self.model.id))
-        if _subject_fasta_path is not None:
-            self.subject_proteomic_fasta_path = _subject_fasta_path
+        if _subject_proteomic_fasta_path is not None:
+            self.subject_proteomic_fasta_path = _subject_proteomic_fasta_path
             self.subject_proteomic_fasta = utils.read_file_stringed(self.subject_proteomic_fasta_path)
         else:
             self.subject_proteomic_fasta_path = self._find_proteomic_fasta(self.name)
             self.subject_proteomic_fasta = utils.read_file_stringed(self.subject_proteomic_fasta_path)
+        if _subject_gff_path is not None:
+            self.subject_gff_path = _subject_gff_path
+        else:
+            self.gff_file_path = self._find_gff(self.name)
         self.directory = self.main_directory + "blast/" + self.name + "/"
-        self.gff_file_path = self._find_gff(self.name)
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
         self._make_protein_correspondence_file()
         self.blast_result = {}
@@ -326,7 +330,8 @@ def pipeline_unique(*args):
         print("Usage : $ python blasting.py pipeline parameter1=value parameter2=value parameter3=value...\n"
               "Parameters (in order) : \n"
               "required : name, main_directory\n"
-              "optional : model_file_path, model_fasta_path, subject_fasta_path\n")
+              "optional : model_file_path, model_proteomic_fasta_path,"
+              "subject_proteomic_fasta_path, subject_gff_path\n")
 
 
 if __name__ == "__main__":
