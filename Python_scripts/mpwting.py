@@ -63,7 +63,7 @@ class Mpwting(module.Module):
             region = re.search("\w+(\.\w+)*(\-\w+)*", i).group(0)
             if region in regions_list:
                 regions_list.remove(region)
-                utils.write_file(self.directory + region + ".fsa", i)
+                utils.write_file(self.directory + region + ".fsa", i, False)
 
     def _make_pf_files(self):
         tsv = utils.read_file_listed(self.eggnog_file_path)
@@ -164,18 +164,18 @@ def sub_pipeline_first(main_directory):
     creating one Mpwting object for each.
     """
 
-    mpwt_directory = main_directory + "mpwt/"
-    input_directory = mpwt_directory + "input/"
-    output_directory = mpwt_directory + "output/"
-    log_directory = mpwt_directory + "log/"
-    utils.make_directory(mpwt_directory)
-    utils.make_directory(input_directory)
-    utils.make_directory(output_directory)
-    utils.make_directory(log_directory)
     if os.path.isdir(main_directory):
+        parameters = utils.read_config(main_directory + "main.ini")
+        mpwt_directory = main_directory + "mpwt/"
+        input_directory = mpwt_directory + "input/"
+        output_directory = mpwt_directory + "output/"
+        log_directory = mpwt_directory + "log/"
+        utils.make_directory(mpwt_directory)
+        utils.make_directory(input_directory)
+        utils.make_directory(output_directory)
+        utils.make_directory(log_directory)
         list_objects = []
         taxon_name_list = []
-        parameters = utils.read_config(main_directory + "main.ini")
         cpu = len(parameters.keys()) - 1
         for i in parameters.keys():
             if i != "DEFAULT":
@@ -189,7 +189,7 @@ def sub_pipeline_first(main_directory):
                 make_taxon_file(input_directory, taxon_name_list)
     else:
         sys.exit("Main directory given does not exist : " + main_directory)
-    return list_objects, cpu, input_directory, output_directory, log_directory
+    return [list_objects, cpu, input_directory, output_directory, log_directory]
 
 
 def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_directory):
@@ -212,7 +212,7 @@ def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_
 def pipeline(main_directory):
     """The function to make all the pipeline working."""
 
-    sub_pipeline_last(sub_pipeline_first(main_directory))
+    sub_pipeline_last(*sub_pipeline_first(main_directory))
 
 
 if __name__ == "__main__":
