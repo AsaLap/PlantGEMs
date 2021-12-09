@@ -164,7 +164,7 @@ class Blasting(module.Module):
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
-                    print(self.name + " : Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
+                    print("\n" + self.name + " : Protein %i out of %i\nTime : %f s\n" % (i, x, time.time() - lap_time))
                     lap_time = time.time()
                 i += 1
                 blast_request = [
