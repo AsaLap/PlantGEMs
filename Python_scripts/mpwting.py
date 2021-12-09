@@ -114,11 +114,12 @@ class Mpwting(module.Module):
             info.append("NAME\tORF\n")
         info.append("STARTBASE\t" + start + "\n")
         info.append("ENDBASE\t" + end + "\n")
-        spl[21] = spl[21].replace("\n", "")
-        if spl[21]:
-            info.append("FUNCTION\t" + spl[21] + "\n")
-        else:
-            info.append("FUNCTION\tORF\n")
+        try:
+            spl[21] = spl[21].replace("\n", "")
+            if spl[21]:
+                info.append("FUNCTION\t" + spl[21] + "\n")
+        except IndexError:
+            info.append("FUNCTION\tNA\n")
         info.append("PRODUCT-chromosome_type\tP\n")
         if spl[7]:
             for res in spl[7].split(","):
