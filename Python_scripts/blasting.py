@@ -155,12 +155,13 @@ class Blasting(module.Module):
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
             for seq in self.model_proteomic_fasta.split(">"):
-                try:
-                    gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
-                    utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
-                except AttributeError:
-                    print("Gene name not found in :", seq)
-                    pass
+                if seq:
+                    try:
+                        gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
+                        utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
+                    except AttributeError:
+                        print("Gene name not found in :", seq)  # TODO : Log this
+                        pass
             for gene in self.model.genes:
                 if i % 10 == 0:
                     print(self.name + " : Protein %i out of %i\nTime : %f s" % (i, x, time.time() - lap_time))
