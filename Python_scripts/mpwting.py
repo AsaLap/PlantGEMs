@@ -180,12 +180,11 @@ def sub_pipeline_first(main_directory):
             if i != "DEFAULT":
                 species_name = parameters[i]["ORGANISM_NAME"]
                 element_type = parameters[i]["ELEMENT_TYPE"]
-                m_rna = parameters.getboolean(i, "mRNA")
                 taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
                 species_directory = input_directory + species_name + "/"
                 utils.make_directory(species_directory)
                 taxon_name_list.append([species_name, taxon_id])
-                list_objects.append(Mpwting(species_name, main_directory, element_type, m_rna))
+                list_objects.append(Mpwting(species_name, main_directory, element_type))
                 make_taxon_file(input_directory, taxon_name_list)
     else:
         sys.exit("Main directory given does not exist : " + main_directory)
