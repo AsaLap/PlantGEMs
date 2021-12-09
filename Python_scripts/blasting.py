@@ -55,7 +55,6 @@ class Blasting(module.Module):
             self.gff_file_path = self._find_gff(self.name)
         self.directory = self.main_directory + "blast/" + self.name + "/"
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
-        self._make_protein_correspondence_file()
         self.blast_result = {}
         self.gene_dictionary = {}
         self.identity = 50
@@ -72,70 +71,70 @@ class Blasting(module.Module):
             bit_score (int) -- the minimum Bit-Score chosen.
         """
 
-    @property
-    def identity(self):
-        print("Getting identity value...")
-        return self.__identity
-
-    @identity.setter
-    def identity(self, value):
-        if 100 >= value >= 0:
-            print("Setting identity value to %s" % (str(value)))
-            self.__identity = value
-        else:
-            print("Denied : value must be between 0 and 100 (both included)")
-
-    @property
-    def difference(self):
-        print("Getting difference value...")
-        return self.__difference
-
-    @difference.setter
-    def difference(self, value):
-        if 100 >= value >= 0:
-            print("Setting difference value to %s" % (str(value)))
-            self.__difference = value
-        else:
-            print("Denied : value must be between 0 and 100 (both included)")
-
-    @property
-    def e_val(self):
-        print("Getting E-value...")
-        return self.__e_val
-
-    @e_val.setter
-    def e_val(self, value):
-        if 10 >= value >= 0:
-            print("Setting E-value to %s" % (str(value)))
-            self.__e_val = value
-        else:
-            print("Denied : value must be between 0 and 10 (both included)")
-
-    @property
-    def coverage(self):
-        print("Getting coverage value...")
-        return self.__coverage
-
-    @coverage.setter
-    def coverage(self, value):
-        if 100 >= value >= 0:
-            print("Setting coverage value to %s" % (str(value)))
-            self.__coverage = value
-        else:
-            print("Denied : value must be between 0 and 100 (both included)")
-
-    @property
-    def bit_score(self):
-        print("Getting Bit-score value...")
-        return self.__bit_score
-
-    @bit_score.setter
-    def bit_score(self, value):
-        if 10000 >= value >= 0:
-            print("Setting Bit-score value to %s" % (str(value)))
-            self.__bit_score = value
-        else:
-            print("Denied : value must be between 0 and 10000 (both included)")
+    # @property
+    # def identity(self):
+    #     print("Getting identity value...")
+    #     return self.__identity
+    #
+    # @identity.setter
+    # def identity(self, value):
+    #     if 100 >= value >= 0:
+    #         print("Setting identity value to %s" % (str(value)))
+    #         self.__identity = value
+    #     else:
+    #         print("Denied : value must be between 0 and 100 (both included)")
+    #
+    # @property
+    # def difference(self):
+    #     print("Getting difference value...")
+    #     return self.__difference
+    #
+    # @difference.setter
+    # def difference(self, value):
+    #     if 100 >= value >= 0:
+    #         print("Setting difference value to %s" % (str(value)))
+    #         self.__difference = value
+    #     else:
+    #         print("Denied : value must be between 0 and 100 (both included)")
+    #
+    # @property
+    # def e_val(self):
+    #     print("Getting E-value...")
+    #     return self.__e_val
+    #
+    # @e_val.setter
+    # def e_val(self, value):
+    #     if 10 >= value >= 0:
+    #         print("Setting E-value to %s" % (str(value)))
+    #         self.__e_val = value
+    #     else:
+    #         print("Denied : value must be between 0 and 10 (both included)")
+    #
+    # @property
+    # def coverage(self):
+    #     print("Getting coverage value...")
+    #     return self.__coverage
+    #
+    # @coverage.setter
+    # def coverage(self, value):
+    #     if 100 >= value >= 0:
+    #         print("Setting coverage value to %s" % (str(value)))
+    #         self.__coverage = value
+    #     else:
+    #         print("Denied : value must be between 0 and 100 (both included)")
+    #
+    # @property
+    # def bit_score(self):
+    #     print("Getting Bit-score value...")
+    #     return self.__bit_score
+    #
+    # @bit_score.setter
+    # def bit_score(self, value):
+    #     if 10000 >= value >= 0:
+    #         print("Setting Bit-score value to %s" % (str(value)))
+    #         self.__bit_score = value
+    #     else:
+    #         print("Denied : value must be between 0 and 10000 (both included)")
 
     def set_default_values(self):
         self.identity = 50
@@ -229,16 +228,6 @@ class Blasting(module.Module):
         utils.make_directory(history_directory)
         utils.save_obj(self, history_directory + step)
 
-    def build(self):
-        utils.make_directory(self.directory)
-        self._blast_run()
-        self._history_save("blasted")
-        self._select_genes()
-        self._history_save("genes_selected")
-        self._drafting()
-        self._history_save("drafted")
-        self._protein_to_gene()
-
     def _make_protein_correspondence_file(self):
         """Function to create a csv file with the correspondence between a protein and the associated gene."""
 
@@ -273,6 +262,17 @@ class Blasting(module.Module):
         else:
             print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
             sys.exit()
+
+    def build(self):
+        utils.make_directory(self.directory)
+        self._make_protein_correspondence_file()
+        self._blast_run()
+        # self._history_save("blasted")
+        self._select_genes()
+        # self._history_save("genes_selected")
+        self._drafting()
+        # self._history_save("drafted")
+        self._protein_to_gene()
 
 
 def build_blast_objects(organism_object):
