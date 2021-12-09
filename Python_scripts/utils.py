@@ -352,8 +352,8 @@ def get_sequence_region(gff_file_path):
             spl = line.split("\t")
             region = spl[0]
             try:
-                gene = re.search('(?<=ID=)[GgEeNn:-]*\w+(\.\w+)*(\-\w+)*', line).group(0)
-                garbage = re.search('[GgEeNn:-]*', gene).group(0)
+                gene = re.search('(?<=ID=)[GgEeNn]*[:-]*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                garbage = re.search('([GgEeNn]*[:-])*', gene).group(0)
                 gene = str.replace(gene, garbage, "")
             except AttributeError:
                 print("The gene name hasn't been found...")  # TODO : Log this error
@@ -363,8 +363,8 @@ def get_sequence_region(gff_file_path):
             regions_dict[region][gene] = {"Start": spl[3], "End": spl[4], "Proteins": {}}
         if region and gene and not protein_found and "\tCDS\t" in line:  # Searching the protein's information
             try:
-                protein = re.search('(?<=ID=)[CcDdSs:-]*\w+(\.\w+)*', line).group(0)
-                garbage = re.search('[CcDdSs:-]*', protein).group(0)
+                protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)
+                garbage = re.search('([CcDdSs]*[:-])*', protein).group(0)
                 protein = str.replace(protein, garbage, "")
                 regions_dict[region][gene]["Proteins"][protein] = []
                 protein_found = True
