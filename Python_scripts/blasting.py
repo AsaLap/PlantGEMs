@@ -215,10 +215,9 @@ class Blasting(module.Module):
             to_add = []
             for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
-                    to_add += self.gene_dictionary[gene]
+                    to_add += self.gene_dictionary[gene]  # TODO : faire le changement de protein/gene ici
                 except KeyError:
                     pass
-            # TODO : change the proteins' ID in to_add in corresponding genes
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
                 x = copy.deepcopy(reaction)
@@ -226,9 +225,9 @@ class Blasting(module.Module):
                 self.draft.add_reactions([x])
 
     def _history_save(self, step):
-        history_directory = self.main_directory + "blast/blast_object_history/"
+        history_directory = self.directory + "/object_history/"
         utils.make_directory(history_directory)
-        utils.save_obj(self, history_directory + self.name + "_" + step)
+        utils.save_obj(self, history_directory + step)
 
     def build(self):
         utils.make_directory(self.directory)
@@ -248,14 +247,12 @@ class Blasting(module.Module):
             for gene in self.regions_dict[region].keys():
                 for protein in self.regions_dict[region][gene]["Proteins"].keys():
                     correspondence.append([gene.upper(), protein.upper()])
-        utils.write_csv(self.main_directory + "/blast/" + self.name, "protein_gene_correspondence", correspondence,
-                        "\t")
+        utils.write_csv(self.directory, "protein_gene_correspondence", correspondence, "\t")
 
     def _protein_to_gene(self):  # TODO : Review this code and use it in the pipeline
         """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
         It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
-        self._make_protein_correspondence_file()
         correspondence_file_path = self.directory + "protein_gene_correspondence.tsv"
         if os.path.isfile(correspondence_file_path):
             gene_protein_dict, gene_protein_dict_reversed = utils.build_correspondence_dict(correspondence_file_path)
