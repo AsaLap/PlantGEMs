@@ -108,26 +108,26 @@ class Mpwting(module.Module):
         info = []
         spl = line.split("\t")
         info.append("ID\t" + gene + "\n")
-        if spl[5]:
-            info.append("NAME\t" + spl[5] + "\n")
+        if spl[8]:
+            info.append("NAME\t" + spl[8] + "\n")
         else:
             info.append("NAME\tORF\n")
         info.append("STARTBASE\t" + start + "\n")
         info.append("ENDBASE\t" + end + "\n")
         try:
-            spl[21] = spl[21].replace("\n", "")
-            if spl[21]:
-                info.append("FUNCTION\t" + spl[21] + "\n")
+            spl[7] = spl[7].replace("\n", "")
+            if spl[7]:
+                info.append("FUNCTION\t" + spl[7] + "\n")
         except IndexError:
             info.append("FUNCTION\tNA\n")
         info.append("PRODUCT-chromosome_type\tP\n")
-        if spl[7]:
-            for res in spl[7].split(","):
+        if spl[10]:
+            for res in spl[10].split(","):
                 info.append("EC\t" + res + "\n")
         for cds in cds_pos:
             info.append("CODING-SEGMENT\t" + str(cds[0]) + "-" + str(cds[1]) + "\n")
-        if spl[6]:
-            go = spl[6].split(",")
+        if spl[9]:
+            go = spl[9].split(",")
             for i in go:
                 info.append("DBLINK\t" + i + "\n")
         info.append("//\n")
