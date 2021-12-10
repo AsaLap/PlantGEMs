@@ -108,10 +108,10 @@ class Mpwting(module.Module):
         info = []
         spl = line.split("\t")
         info.append("ID\t" + gene + "\n")
-        if spl[8]:
-            info.append("NAME\t" + spl[8] + "\n")
-        else:
+        if spl[8] == "-":
             info.append("NAME\tORF\n")
+        else:
+            info.append("NAME\t" + spl[8] + "\n")
         info.append("STARTBASE\t" + start + "\n")
         info.append("ENDBASE\t" + end + "\n")
         try:
@@ -120,8 +120,8 @@ class Mpwting(module.Module):
                 info.append("FUNCTION\t" + spl[7] + "\n")
         except IndexError:
             info.append("FUNCTION\tNA\n")
-        info.append("PRODUCT-chromosome_type\tP\n")
-        if spl[10]:
+        info.append("PRODUCT-TYPE\tP\n")
+        if spl[10] != "-":
             for res in spl[10].split(","):
                 info.append("EC\t" + res + "\n")
         for cds in cds_pos:
@@ -203,10 +203,11 @@ def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_
     nb_cpu = multiprocessing.cpu_count()
     if nb_cpu <= cpu:
         cpu = nb_cpu - 1
+    print("\n------\nNow launching MPWT on %s core(s)\n------" % cpu)
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
                           number_cpu=cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
-                          taxon_file=True, verbose=True)
+                          verbose=True)
 
 
 def pipeline(main_directory):
