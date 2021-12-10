@@ -46,14 +46,15 @@ $ python blasting.py pipeline "path/to/main/directory/"
 
 ### **For mpwting.py :**
 Create a "files/" directory in a directory of your choice (can be the same as for _blasting.py_ above) and put in there, for each organism you want to reconstruct the following files, all named like this : _organism_name.extension_ :
-  * all the .fasta (ex. : _tomato.fasta_, _kiwi.fasta_...)
-  * all the .gff (ex. : _tomato.gff_)
-  * all the .tsv from EggNOG-mapper annotation (you have to do that manually here : http://eggnog-mapper.embl.de/) (ex. : _tomato.tsv_)  
+* all the .fasta (ex. : _vitis.fna_, _vitis.faa_, _kiwi.fna_, _kiwi.faa_...)
+* all the .gff (ex. : _vitis.gff_)
+* all the .tsv from EggNOG-mapper annotation (you have to do that manually here : http://eggnog-mapper.embl.de/) (ex. : _vitis.tsv_) on the proteomic fasta (faa) file.
+
+**NB** : GFF parsing won't work if the CDS have different names than the protein they are linked to in the .faa file.
 
 The directory in which is stored the _files/_ directory is called the _main_directory_. It is the only argument needed by this module.
 \
 Then, make a _main.ini_ file corresponding to your needs and save it under the _main_directory_.
-_Further instructions on how to build this file and what the different fields mean are to come. (WIP)_
 
 __Example of use :__
 ```bash
@@ -96,6 +97,7 @@ Some improvements are to come :
   - The blast values will be customizable as it suits you.
   - _Merging.py_ reworking is on its way (next module to come).
     - A merge of any sbml model will also be possible in the _merging.py_ module.
+  - The compartmentalization of the reactions.
   - The Meneco-based gap-filling (https://github.com/bioasp/meneco) will be subsequently.
   
 Further ideas :
