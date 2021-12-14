@@ -5,9 +5,9 @@
 #Contents :
  - [Folders structure](#folders-structure-common-to-all-modules-and-main-) 
  - [How to use](#how-to-use)
-   - [main.py](#for-mainpy)
-   - [blasting.py](#for-blastingpy-)
-   - [mpwting.py](#for-mpwtingpy-only-)
+   - [main.py](#mainpy)
+   - [blasting.py](#blastingpy-)
+   - [mpwting.py](#mpwtingpy-only-)
  - [Files description](#files-description-)
  - [NEWS](#news-)
 
@@ -36,7 +36,7 @@ main_directory
 
 ##HOW TO USE
 
-### **For main.py** :
+### **main.py** :
 
 You will need all the files described in "Folders structure" above and the correct folder structure. If not, 
 PlantGEMs will ask you for every file one by one, which is definitely not convenient. 
@@ -49,7 +49,7 @@ $ python main.py run "path/to/main/directory/"
 ```
 
 
-### **For blasting.py only** :
+### **blasting.py only** :
 You will need : (see also _Folders structure_)
 * The model's sbml file (.sbml)
 * The model's proteome fasta (.faa)
@@ -92,7 +92,7 @@ single reconstruction instruction on a previously used folder with many species 
 
 
 
-### **For mpwting.py only :**
+### **mpwting.py only :**
 This module needs you to create a "files/" directory in a directory of your choice (can be the same as for _blasting.py_
 above for single use, **has** to be the same for a complete pipeline use with _main.py_) and put in there the following 
 files, for each organism you want to reconstruct :
