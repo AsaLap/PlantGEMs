@@ -126,7 +126,9 @@ class Mpwting(module.Module):
                 info.append("EC\t" + res + "\n")
         for cds in cds_pos:
             info.append("CODING-SEGMENT\t" + str(cds[0]) + "-" + str(cds[1]) + "\n")
-        if spl[9]:
+        if spl[9] == "-":
+            pass
+        else:
             go = spl[9].split(",")
             for i in go:
                 info.append("DBLINK\t" + i + "\n")
