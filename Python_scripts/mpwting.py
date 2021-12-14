@@ -30,9 +30,6 @@ class Mpwting(module.Module):
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
 
     def _make_dat_files(self):
-
-        print("\nWARNING ! :\n - If there are circular chromosomes in your data, you have to manually",
-              "correct the field 'CIRCULAR?' in the .dat file by changing 'N' (no) with 'Y' (yes).\n")
         circular = 'N'
         dat_file_str_list = []
         if self.element_type == "NONE":
