@@ -39,7 +39,7 @@ def make_directory(directory):
 
 def remove_directory(directory):
     try:
-        subprocess.run(["rm -rf", directory])
+        subprocess.run(["rm", "-rf", directory])
     except FileNotFoundError:
         pass
     except PermissionError:
