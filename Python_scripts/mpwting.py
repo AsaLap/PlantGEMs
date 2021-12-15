@@ -145,9 +145,9 @@ def make_taxon_file(directory, taxon_name_list):
         taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
     """
 
-    res = [["species", "taxon_id"]]
+    res = [["species", "taxon_id", "element_type"]]
     for i in taxon_name_list:
-        res.append([i[0], str(i[1])])
+        res.append([i[0], str(i[1]), str(i[2])])
     utils.write_csv(directory, "taxon_id", res, separator="\t")
 
 
@@ -183,7 +183,7 @@ def sub_pipeline_first(main_directory):
                 taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
                 species_directory = input_directory + species_name + "/"
                 utils.make_directory(species_directory)
-                taxon_name_list.append([species_name, taxon_id])
+                taxon_name_list.append([species_name, taxon_id, element_type])
                 list_objects.append(Mpwting(species_name, main_directory, element_type))
                 make_taxon_file(input_directory, taxon_name_list)
     else:
@@ -206,7 +206,7 @@ def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
                           number_cpu=cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
-                          verbose=True)
+                          taxon_file=input_directory + "taxon_id.tsv", verbose=True)
 
 
 def pipeline(main_directory):
