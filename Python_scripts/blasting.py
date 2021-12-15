@@ -239,7 +239,7 @@ class Blasting(module.Module):
         utils.write_csv(self.directory, "protein_gene_correspondence", correspondence, "\t")
 
     def _protein_to_gene(self):  # TODO : Review this code and use it in the pipeline
-        """Function to transform the proteins in gene_reaction_rule into its corresponding genes.
+        """Function to transform the proteins in gene_reaction_rule into their corresponding genes.
         It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
         correspondence_file_path = self.directory + "protein_gene_correspondence.tsv"
