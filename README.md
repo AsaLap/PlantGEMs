@@ -2,11 +2,11 @@
 
 ![Alt text](./Flowchart_PlantGEMs.drawio.svg)
 
-#Contents :
+# Contents :
  - [Folders structure](#folders-structure-common-to-all-modules-and-main-) 
  - [How to use](#how-to-use)
-   - [main.py](#mainpy)
-   - [blasting.py](#blastingpy-)
+   - [main.py](#mainpy-)
+   - [blasting.py](#blastingpy-only-)
    - [mpwting.py](#mpwtingpy-only-)
  - [Files description](#files-description-)
  - [NEWS](#news-)
@@ -15,7 +15,7 @@ Each script can be launched separately. However, the pipeline can be entirely la
 
 Every module can be used in CLI or in a Python script.
 
-##Folders structure (common to all modules and main) :
+## Folders structure (common to all modules and main) :
 
 ```text
 main_directory
@@ -34,9 +34,10 @@ main_directory
  └── main.ini
 ```
 
-##HOW TO USE
+## HOW TO USE
 
-### **main.py** :
+
+### **main.py :**
 
 You will need all the files described in "Folders structure" above and the correct folder structure. If not, 
 PlantGEMs will ask you for every file one by one, which is definitely not convenient. 
@@ -49,7 +50,7 @@ $ python main.py run "path/to/main/directory/"
 ```
 
 
-### **blasting.py only** :
+### **blasting.py only :**
 You will need : (see also _Folders structure_)
 * The model's sbml file (.sbml)
 * The model's proteome fasta (.faa)
@@ -72,24 +73,6 @@ $ python blasting.py unique_pipeline "name" "path/to/main/directory/" [model_fil
 **NB** : the arguments in [brackets] are optional for the launch. If you put the files correctly in the "files" folder, 
 PlantGEMs will find and use them, if not, you'll be prompted to give an exact path to those files. You can then use a 
 single reconstruction instruction on a previously used folder with many species by calling only one of them.
-
-
-[comment]: <> (For a normal use with proper file sorting :)
-
-[comment]: <> (```bash)
-
-[comment]: <> ($ python blasting.py pipeline "name_of_reconstructed_organism" "path/to/main/directory/")
-
-[comment]: <> (```)
-
-[comment]: <> (**NB** : if you didn't put the files in the _files/_ directory, you will be asked to give the exact path for each file needed. You can also choose to specify them following the structure below &#40;every parameter is a string&#41; :)
-
-[comment]: <> (```bash)
-
-[comment]: <> ($ python blasting.py pipeline [name][main_directory][optional=model_file_path][optional=model_fasta_path][optional=subject_fasta_path])
-
-[comment]: <> (```)
-
 
 
 ### **mpwting.py only :**
