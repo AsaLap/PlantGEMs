@@ -111,7 +111,7 @@ $ python mpwting.py pipeline "path/to/main/directory"
 
 - ``module.py`` -- File for the parent class of all the modules, contains useful methods that can be inherited in all module's classes.
 
-- ``mpwting.py`` -- Preparation of files to run Pathway Tools automatically and create a draft based on Metacyc with the mpwt library (see https://github.com/AuReMe/mpwt).
+- ``mpwting.py`` -- Preparation of files to run Pathway Tools (http://bioinformatics.ai.sri.com/ptools/) automatically and create a draft based on Metacyc with the mpwt library (see https://github.com/AuReMe/mpwt).
 
 - ``utils.py`` -- Utility file to avoid code redundancy.
 
