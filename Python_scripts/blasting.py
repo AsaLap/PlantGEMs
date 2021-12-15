@@ -332,5 +332,10 @@ def pipeline_unique(*args):
               "subject_proteomic_fasta_path, subject_gff_path\n")
 
 
+# def rerun_blast_selection(blasted_object):
+#     species = utils.load_obj(blasted_object)
+
+
 if __name__ == "__main__":
     globals()[sys.argv[1]](*sys.argv[2:])
+    # rerun_blast_selection("/home/asa/INRAE/These/runs/run_06_12_2021/blast/blast_object_history/kiwi_blasted.pkl")
