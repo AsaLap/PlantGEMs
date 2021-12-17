@@ -204,9 +204,9 @@ def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_
         cpu = nb_cpu - 1
     print("\n------\nNow launching MPWT on %s core(s)\n------" % cpu)
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
-                          patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, dat_extraction=True,
-                          number_cpu=cpu, size_reduction=False, patho_log=log_directory, ignore_error=False,
-                          taxon_file=input_directory + "taxon_id.tsv", verbose=True)
+                          patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, flat_creation=True,
+                          dat_extraction=True, number_cpu=cpu, size_reduction=False, patho_log=log_directory,
+                          ignore_error=False, taxon_file=input_directory + "taxon_id.tsv", verbose=True)
 
 
 def pipeline(main_directory):
