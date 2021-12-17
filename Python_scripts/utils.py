@@ -7,7 +7,6 @@
 """This file contains utility functions used in several PlantGEMs' scripts."""
 import sys
 
-import cobra
 import configparser
 import copy
 import csv
@@ -20,6 +19,13 @@ import re
 
 from upsetplot import from_memberships
 from upsetplot import plot
+
+
+def check_path(path):
+    if os.path.exists(path):
+        return True
+    else:
+        sys.exit("File or folder not found : ", path)
 
 
 def make_directory(directory):
@@ -140,8 +146,9 @@ def save_obj(obj, path):
 def load_obj(path):
     """Loads a pickle object."""
 
-    with open(path, 'rb') as input_file:
-        return pickle.load(input_file)
+    if check_path(path):
+        with open(path, 'rb') as input_file:
+            return pickle.load(input_file)
 
 
 def get_pwt_reactions(path):
