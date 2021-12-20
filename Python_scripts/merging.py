@@ -10,23 +10,33 @@ mpwt package."""
 
 import cobra
 import copy
+import os
 import re
 
+import module
 import utils
 
 
-class Merging:
+class Merging(module.Module):
 
-    def __init__(self, _name, _metacyc_correspondence_file_path, _wd_log, _wd_pgdb, _pwt_reactions_path,
-                 _blast_sbml_path, _metacyc_sbml_path):
+    def __init__(self, _name, _main_directory):
+        """Explanations here"""
+        super().__init__(_name, _main_directory)
         self.name = _name
-        self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
-            utils.build_correspondence_dict(_metacyc_correspondence_file_path)
-        self.wd_log = _wd_log
-        self.wd_pgdb = _wd_pgdb
-        self.pwt_reactions = utils.get_pwt_reactions(_pwt_reactions_path)
-        self.blast_model = cobra.io.load_json_model(_blast_sbml_path)
-        self.metacyc_model = cobra.io.load_json_model(_metacyc_sbml_path)
+        self.main_directory = _main_directory
+        self.species_directory = self.main_directory + self.name
+        self.wd_log = self.main_directory + "merge/logs/"
+        utils.make_directory(self.wd_log)
+        self.wd_pgdbs = self.main_directory + "merge/pgdbs/"
+        utils.make_directory(self.wd_pgdbs)
+        self.metacyc_model = cobra.io.load_json_model(self.main_directory + "files/metacyc.sbml")
+        self.metacyc_correspondence_file_path = self.main_directory + "merge/metacyc_correspondence.tsv"
+        # if not os.path.isfile(self.metacyc_correspondence_file_path):
+        #     utils.make_metacyc_correspondence_file(self.metacyc_model)  # TODO
+        #     self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
+        #         utils.build_correspondence_dict(self.metacyc_correspondence_file_path)
+        # self.pwt_reactions = utils.get_pwt_reactions(_pwt_reactions_path)
+        # self.blast_model = cobra.io.load_json_model(_blast_sbml_path)
         self.reactions_list = []
         self.pwt_reactions_list = []
         self.blast_reactions_list = []
@@ -155,7 +165,8 @@ class Merging:
         return reaction
 
     def merge(self, verbose=False):
-        """Function to merge two models, one from an Aracyc model, the other one from Pathway Tools.
+        """Function to merge models, either from a model-based reconstruction (blasting module), the other one(s) from
+        Pathway Tools's Pathologic software.
         
         ARGS:
             corres (str) -- the path to the file containing the correspondence 
