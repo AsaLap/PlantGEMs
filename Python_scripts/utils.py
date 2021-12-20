@@ -21,154 +21,37 @@ from upsetplot import from_memberships
 from upsetplot import plot
 
 
+def build_correspondence_dict(path, sep="\t"):
+    """Function to create a dictionary of correspondence between
+    elements from a correspondence file (Metacyc short and long IDs for example).
+
+    PARAMS:
+        path (str) -- the path to the csv/tsv file containing the corresponding information (only two elements).
+        sep (str) -- the separator of the correspondence file (default = tab).
+    RETURNS:
+        matching_dict -- dictionary with an element as key that matches the value.
+        matching_dict_reversed -- same thing as matching_dict but in reversed (value is key and vice-versa).
+    """
+
+    matching = read_file_listed(path)
+    matching_dict = {}
+    matching_dict_reversed = {}
+    for line in matching:
+        if line:
+            couple = line.rstrip().split(sep)
+            if couple[0] in matching_dict.keys():
+                matching_dict[couple[0]].append(couple[1])
+            else:
+                matching_dict[couple[0]] = [couple[1]]
+            matching_dict_reversed[couple[1]] = couple[0]
+    return matching_dict, matching_dict_reversed
+
+
 def check_path(path):
     if os.path.exists(path):
         return True
     else:
         sys.exit("File or folder not found : ", path)
-
-
-def make_directory(directory):
-    if not os.path.isdir(directory):
-        new_dir = directory.strip(" /").split("/")[-1]
-        base_dir = directory.strip(" /")[:-len(directory.strip(" /").split("/")[-1])]
-        print("Creation of directory '" + new_dir + "' in '" + base_dir + "'")
-        try:
-            subprocess.run(["mkdir", directory])
-        except PermissionError:
-            print("Permission to create this folder :\n" + directory + "\nnot granted !")
-        except FileNotFoundError:
-            print("Path not found : ", directory)
-    else:
-        print("Directory already exists : ", directory)
-
-
-def remove_directory(directory):
-    try:
-        subprocess.run(["rm", "-rf", directory])
-    except FileNotFoundError:
-        pass
-    except PermissionError:
-        print("Permission to erase this folder :\n" + directory + "\nnot granted !")
-
-
-def read_file_listed(path):
-    """Function to read and return a file line by line in a list."""
-
-    f = open(path, "r")
-    res = f.readlines()
-    f.close()
-    return res
-
-
-def read_file_stringed(path):
-    """Function to read and return a file in a string."""
-
-    f = open(path, "r")
-    res = f.read()
-    f.close()
-    return res
-
-
-def read_csv(path, delim):
-    """Function to read and return a csv file in a list, choosing the delimiter."""
-
-    f = open(path, "r")
-    res = []
-    for row in csv.reader(f, delimiter=delim):
-        res.append(row)
-    f.close()
-    return res
-
-
-def read_json(path):
-    """Function to read a JSON file."""
-
-    f = open(path, "r")
-    res = f.read()
-    data = json.loads(res)
-    f.close()
-    return data
-
-
-def read_config(ini):
-    """Runs the config file containing all the information to make a new model.
-    
-    PARAMS :
-        ini (str) -- the path to the .ini file.
-    RETURNS :
-        config (dict of str) -- the configuration in a python dictionary object.
-    """
-
-    if os.path.isfile(ini):
-        config = configparser.ConfigParser()
-        config.read(ini)
-    else:
-        print("File not found : " + ini + "\nEnding the process.")
-        sys.exit()
-    return config
-
-
-def write_file(wd, data, strip=True):
-    """Function to write a file from a list."""
-
-    f = open(wd, "w")
-    if strip:
-        for i in data:
-            f.write(i.rstrip() + "\n")
-    else:
-        for i in data:
-            f.write(i)
-    f.close()
-
-
-def write_csv(wd, name, list_value, separator=","):
-    """Function to save a file as a CSV format, needs a list of lists, 
-    first list as the column names."""
-
-    if separator == "\t":
-        extension = ".tsv"
-    else:
-        extension = ".csv"
-    with open(wd + name + extension, 'w', newline='') as file:
-        writer = csv.writer(file, delimiter=separator)
-        for f in list_value:
-            writer.writerow(f)
-
-
-def save_obj(obj, path):
-    """Saves an object in a pickle file."""
-
-    with open(path + '.pkl', 'wb+') as output:
-        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-
-
-def load_obj(path):
-    """Loads a pickle object."""
-
-    if check_path(path):
-        with open(path, 'rb') as input_file:
-            return pickle.load(input_file)
-
-
-def get_pwt_reactions(path):
-    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
-    
-    PARAMS:
-        path (str) -- the path to the reactions.dat file.
-    RETURNS:
-        liste_reactions (list of str) -- the list containing all the reactions in this model.
-    """
-
-    list_reactions = []
-    pwt_reactions = open(path, "r")
-    for line in pwt_reactions:
-        if "UNIQUE-ID" in line and "#" not in line:
-            try:
-                list_reactions.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
-            except AttributeError:
-                print("No match for : ", line)
-    return list_reactions
 
 
 def clean_sbml(wd, name):
@@ -221,112 +104,43 @@ def cobra_compatibility(reaction, side=True):
     return reaction
 
 
-def metacyc_ids(wd, path):
-    """Function to make the correspondence file between short and long ID of Metacyc.
-    
-    PARAMS:
-        wd (str) -- the directory to save the correspondence file.
-        path (str) -- the path to the metacyc model in JSON format.
-    """
+def get_clusters(cluster_list):
+    """Function to create every individual cluster depending on
+    the number of organisms given to the UpSetPlot function."""
 
-    data = read_json(path)
     res = []
-    print(len(data["reactions"]))
-    for reaction in data["reactions"]:
-        long_id = reaction["name"].split("/")[0]
-        # Getting rid of the brackets in the name sometimes!
-        reaction_pattern = re.compile('([[].*[]])')
-        tmp_id = reaction_pattern.sub("", long_id)
-        short_id = tmp_id
-        # Regexp to "clean" the metabolite's names
-        meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
-        if len(reaction["metabolites"].keys()) != 0:
-            for metabolite in reaction["metabolites"].keys():
-                # The metabolite are "cleaned" here
-                metabolite = meta_pattern.sub("", metabolite)
-                len_id, len_meta = len(tmp_id), len(metabolite)
-                diff = len_id - len_meta
-                # Small trick to get only the end of the ID removed and not the beginning
-                # (metabolite's names can be in the reaction's name)
-                test_id = tmp_id[:diff - 1] + tmp_id[diff - 1:].replace("-" + metabolite, "")
-                if len(test_id) < len(short_id):
-                    short_id = test_id
-            res.append([short_id, reaction["name"]])
-    write_csv(wd, "MetacycCorresIDs", res, "\t")
+    final_res = []
+    for i in range(len(cluster_list) - 1):
+        if i == 0:
+            for x in cluster_list:
+                z = cluster_list.index(x)
+                for j in range(len(cluster_list) - z - 1):
+                    res.append([x, cluster_list[z + j + 1]])
+            [final_res.append(k) for k in res]
+        else:
+            res = get_sub_clusters(cluster_list, res)
+            [final_res.append(r) for r in res]
+    return final_res
 
 
-def build_correspondence_dict(path, sep="\t"):
-    """Function to create a dictionary of correspondence between
-    elements from a correspondence file (Metacyc short and long IDs for example).
-    
+def get_pwt_reactions(path):
+    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
+
     PARAMS:
-        path (str) -- the path to the csv/tsv file containing the corresponding information (only two elements).
-        sep (str) -- the separator of the correspondence file (default = tab).
+        path (str) -- the path to the reactions.dat file.
     RETURNS:
-        matching_dict -- dictionary with an element as key that matches the value.
-        matching_dict_reversed -- same thing as matching_dict but in reversed (value is key and vice-versa).
+        liste_reactions (list of str) -- the list containing all the reactions in this model.
     """
 
-    matching = read_file_listed(path)
-    matching_dict = {}
-    matching_dict_reversed = {}
-    for line in matching:
-        if line:
-            couple = line.rstrip().split(sep)
-            if couple[0] in matching_dict.keys():
-                matching_dict[couple[0]].append(couple[1])
-            else:
-                matching_dict[couple[0]] = [couple[1]]
-            matching_dict_reversed[couple[1]] = couple[0]
-    return matching_dict, matching_dict_reversed
-
-
-def trans_short_id(list_ids, correspondence, short=True, keep=False):
-    """Function to transform short IDs that can be ambiguous
-    into long ones thanks to the correspondence ID file.
-    
-    PARAMS:
-        list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
-        correspondence (str) -- the path to the correspondence file of Metacyc IDs.
-        short (boolean) -- True if you want to have short IDs becoming long,
-        False if you want long IDs to become short.
-        keep (boolean) -- True if you want to keep the reactions even if they are not found.
-    RETURNS:
-        new_list (list of str) -- the list with the converted IDs.
-    """
-
-    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(correspondence)
-    new_list = []
-    if short:
-        for reaction in list_ids:
-            reaction = reaction.rstrip()
+    list_reactions = []
+    pwt_reactions = open(path, "r")
+    for line in pwt_reactions:
+        if "UNIQUE-ID" in line and "#" not in line:
             try:
-                for long_reaction in metacyc_matching_id_dict[reaction]:
-                    new_list.append(long_reaction)
-            except KeyError:
-                try:
-                    if reaction in metacyc_matching_id_dict_reversed.keys():
-                        new_list.append(reaction)
-                except KeyError:
-                    print("No match for reaction : ", reaction)
-                    if keep:
-                        new_list.append(reaction)
-                        print("Keeping it anyway...")
-    else:
-        for reaction in list_ids:
-            reaction = reaction.rstrip()
-            try:
-                if reaction in metacyc_matching_id_dict.keys():
-                    new_list.append(reaction)
-            except KeyError:
-                try:
-                    new_list.append(metacyc_matching_id_dict_reversed[reaction])
-                except KeyError:
-                    print("No match for reaction : ", reaction)
-                    if keep:
-                        new_list.append(reaction)
-                        print("Keeping it anyway...")
-    return new_list
+                list_reactions.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+            except AttributeError:
+                print("No match for : ", line)
+    return list_reactions
 
 
 def get_sequence_region(gff_file_path):
@@ -385,7 +199,20 @@ def get_sequence_region(gff_file_path):
     return regions_dict
 
 
-def list_reactions(data):
+def get_sub_clusters(cluster_list, res):
+    """Sub-function of the clusters (algorithmic architecture)."""
+
+    sub_res = []
+    for y in res:
+        z = cluster_list.index(y[len(y) - 1])
+        for i in range(z + 1, len(cluster_list)):
+            x = copy.deepcopy(y)
+            x.append(cluster_list[i])
+            sub_res.append(x)
+    return sub_res
+
+
+def list_reactions_cobra(data):
     """Function to gather all the reactions' id of a cobra model in a list.
 
     PARAMS:
@@ -398,6 +225,29 @@ def list_reactions(data):
     for reaction in data.reactions:
         res.append(reaction.id)
     return res
+
+
+def load_obj(path):
+    """Loads a pickle object."""
+
+    if check_path(path):
+        with open(path, 'rb') as input_file:
+            return pickle.load(input_file)
+
+
+def make_directory(directory):
+    if not os.path.isdir(directory):
+        new_dir = directory.strip(" /").split("/")[-1]
+        base_dir = directory.strip(" /")[:-len(directory.strip(" /").split("/")[-1])]
+        print("Creation of directory '" + new_dir + "' in '" + base_dir + "'")
+        try:
+            subprocess.run(["mkdir", directory])
+        except PermissionError:
+            print("Permission to create this folder :\n" + directory + "\nnot granted !")
+        except FileNotFoundError:
+            print("Path not found : ", directory)
+    else:
+        print("Directory already exists : ", directory)
 
 
 def make_upsetplot(directory, name, data, title):
@@ -438,6 +288,113 @@ def make_upsetplot(directory, name, data, title):
     plt.show()
 
 
+def metacyc_ids(wd, path):
+    """Function to make the correspondence file between short and long ID of Metacyc.
+
+    PARAMS:
+        wd (str) -- the directory to save the correspondence file.
+        path (str) -- the path to the metacyc model in JSON format.
+    """
+
+    data = read_json(path)
+    res = []
+    print(len(data["reactions"]))
+    for reaction in data["reactions"]:
+        long_id = reaction["name"].split("/")[0]
+        # Getting rid of the brackets in the name sometimes!
+        reaction_pattern = re.compile('([[].*[]])')
+        tmp_id = reaction_pattern.sub("", long_id)
+        short_id = tmp_id
+        # Regexp to "clean" the metabolite's names
+        meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
+        if len(reaction["metabolites"].keys()) != 0:
+            for metabolite in reaction["metabolites"].keys():
+                # The metabolite are "cleaned" here
+                metabolite = meta_pattern.sub("", metabolite)
+                len_id, len_meta = len(tmp_id), len(metabolite)
+                diff = len_id - len_meta
+                # Small trick to get only the end of the ID removed and not the beginning
+                # (metabolite's names can be in the reaction's name)
+                test_id = tmp_id[:diff - 1] + tmp_id[diff - 1:].replace("-" + metabolite, "")
+                if len(test_id) < len(short_id):
+                    short_id = test_id
+            res.append([short_id, reaction["name"]])
+    write_csv(wd, "MetacycCorresIDs", res, "\t")
+
+
+def read_config(ini):
+    """Runs the config file containing all the information to make a new model.
+
+    PARAMS :
+        ini (str) -- the path to the .ini file.
+    RETURNS :
+        config (dict of str) -- the configuration in a python dictionary object.
+    """
+
+    if os.path.isfile(ini):
+        config = configparser.ConfigParser()
+        config.read(ini)
+    else:
+        print("File not found : " + ini + "\nEnding the process.")
+        sys.exit()
+    return config
+
+
+def read_csv(path, delim):
+    """Function to read and return a csv file in a list, choosing the delimiter."""
+
+    f = open(path, "r")
+    res = []
+    for row in csv.reader(f, delimiter=delim):
+        res.append(row)
+    f.close()
+    return res
+
+
+def read_file_listed(path):
+    """Function to read and return a file line by line in a list."""
+
+    f = open(path, "r")
+    res = f.readlines()
+    f.close()
+    return res
+
+
+def read_file_stringed(path):
+    """Function to read and return a file in a string."""
+
+    f = open(path, "r")
+    res = f.read()
+    f.close()
+    return res
+
+
+def read_json(path):
+    """Function to read a JSON file."""
+
+    f = open(path, "r")
+    res = f.read()
+    data = json.loads(res)
+    f.close()
+    return data
+
+
+def remove_directory(directory):
+    try:
+        subprocess.run(["rm", "-rf", directory])
+    except FileNotFoundError:
+        pass
+    except PermissionError:
+        print("Permission to erase this folder :\n" + directory + "\nnot granted !")
+
+
+def save_obj(obj, path):
+    """Saves an object in a pickle file."""
+
+    with open(path + '.pkl', 'wb+') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
 def similarity_count(data, args, others):
     """Function which is part of the process to make the UpSetPlot,
     counting and returning the similarities between the clusters."""
@@ -448,33 +405,77 @@ def similarity_count(data, args, others):
     return cluster_set, len(cluster_set)
 
 
-def get_clusters(cluster_list):
-    """Function to create every individual cluster depending on
-    the number of organisms given to the UpSetPlot function."""
+def trans_short_id(list_ids, correspondence, short=True, keep=False):
+    """Function to transform short IDs that can be ambiguous
+    into long ones thanks to the correspondence ID file.
 
-    res = []
-    final_res = []
-    for i in range(len(cluster_list) - 1):
-        if i == 0:
-            for x in cluster_list:
-                z = cluster_list.index(x)
-                for j in range(len(cluster_list) - z - 1):
-                    res.append([x, cluster_list[z + j + 1]])
-            [final_res.append(k) for k in res]
-        else:
-            res = get_sub_clusters(cluster_list, res)
-            [final_res.append(r) for r in res]
-    return final_res
+    PARAMS:
+        list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
+        correspondence (str) -- the path to the correspondence file of Metacyc IDs.
+        short (boolean) -- True if you want to have short IDs becoming long,
+        False if you want long IDs to become short.
+        keep (boolean) -- True if you want to keep the reactions even if they are not found.
+    RETURNS:
+        new_list (list of str) -- the list with the converted IDs.
+    """
+
+    metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(correspondence)
+    new_list = []
+    if short:
+        for reaction in list_ids:
+            reaction = reaction.rstrip()
+            try:
+                for long_reaction in metacyc_matching_id_dict[reaction]:
+                    new_list.append(long_reaction)
+            except KeyError:
+                try:
+                    if reaction in metacyc_matching_id_dict_reversed.keys():
+                        new_list.append(reaction)
+                except KeyError:
+                    print("No match for reaction : ", reaction)
+                    if keep:
+                        new_list.append(reaction)
+                        print("Keeping it anyway...")
+    else:
+        for reaction in list_ids:
+            reaction = reaction.rstrip()
+            try:
+                if reaction in metacyc_matching_id_dict.keys():
+                    new_list.append(reaction)
+            except KeyError:
+                try:
+                    new_list.append(metacyc_matching_id_dict_reversed[reaction])
+                except KeyError:
+                    print("No match for reaction : ", reaction)
+                    if keep:
+                        new_list.append(reaction)
+                        print("Keeping it anyway...")
+    return new_list
 
 
-def get_sub_clusters(cluster_list, res):
-    """Sub-function of the clusters (algorithmic architecture)."""
+def write_csv(wd, name, list_value, separator=","):
+    """Function to save a file as a CSV format, needs a list of lists,
+    first list as the column names."""
 
-    sub_res = []
-    for y in res:
-        z = cluster_list.index(y[len(y) - 1])
-        for i in range(z + 1, len(cluster_list)):
-            x = copy.deepcopy(y)
-            x.append(cluster_list[i])
-            sub_res.append(x)
-    return sub_res
+    if separator == "\t":
+        extension = ".tsv"
+    else:
+        extension = ".csv"
+    with open(wd + name + extension, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=separator)
+        for f in list_value:
+            writer.writerow(f)
+
+
+def write_file(wd, data, strip=True):
+    """Function to write a file from a list."""
+
+    f = open(wd, "w")
+    if strip:
+        for i in data:
+            f.write(i.rstrip() + "\n")
+    else:
+        for i in data:
+            f.write(i)
+    f.close()
+
