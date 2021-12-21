@@ -24,19 +24,19 @@ class Merging(module.Module):
         super().__init__(_name, _main_directory)
         self.name = _name
         self.main_directory = _main_directory
-        self.species_directory = self.main_directory + self.name
-        self.wd_log = self.main_directory + "merge/logs/"
+        self.species_directory = self.main_directory + "merge/" + self.name + "/"
+        utils.make_directory(self.species_directory)
+        self.wd_log = self.species_directory + "logs/"
         utils.make_directory(self.wd_log)
-        self.wd_pgdbs = self.main_directory + "merge/pgdbs/"
-        utils.make_directory(self.wd_pgdbs)
+        self.pwt_reactions = utils.get_pwt_reactions(
+            self.main_directory + "mpwt/" + self.name + "/output/reactions.dat")
+        self.blast_model = cobra.io.load_json_model(self.main_directory + "blast/" + self.name + "_blast_draft.json")
         self.metacyc_model = cobra.io.load_json_model(self.main_directory + "files/metacyc.sbml")
         self.metacyc_correspondence_file_path = self.main_directory + "merge/metacyc_correspondence.tsv"
-        # if not os.path.isfile(self.metacyc_correspondence_file_path):
-        #     utils.make_metacyc_correspondence_file(self.metacyc_model)  # TODO
-        #     self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
-        #         utils.build_correspondence_dict(self.metacyc_correspondence_file_path)
-        # self.pwt_reactions = utils.get_pwt_reactions(_pwt_reactions_path)
-        # self.blast_model = cobra.io.load_json_model(_blast_sbml_path)
+        if not os.path.isfile(self.metacyc_correspondence_file_path):
+            utils.make_metacyc_correspondence_file(self.metacyc_model)  # TODO
+        self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
+            utils.build_correspondence_dict(self.metacyc_correspondence_file_path)
         self.reactions_list = []
         self.pwt_reactions_list = []
         self.blast_reactions_list = []
@@ -74,8 +74,9 @@ class Merging(module.Module):
                 else:
                     no_match_list.append(reaction + "\n")
                     print("No match for reaction :", reaction.id, " | ", reaction.name)
-        print("Nb of reactions from Aracyc model : %i\n\Number of those reactions found in Metacyc : %i\n\Total of "
-              "reactions not found : %i"
+        print("Nb of reactions from Pathway Tools reconstructed model : %i\n"
+              "Number of those reactions found in Metacyc : %i\n"
+              "Total of reactions not found : %i"
               % (len(self.blast_model.reactions), len(self.reactions_list), len(no_match_list)))
         no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
         utils.write_file(self.wd_log + self.name + "_error_reaction_blast_reconstruction.log", no_match_list)
@@ -165,19 +166,11 @@ class Merging(module.Module):
         return reaction
 
     def merge(self, verbose=False):
-        """Function to merge models, either from a model-based reconstruction (blasting module), the other one(s) from
+        """Function to merge models, either from a model-based reconstruction (blasting module) or from
         Pathway Tools's Pathologic software.
         
         ARGS:
-            corres (str) -- the path to the file containing the correspondence 
-            between short and long ID of Metacyc's reactions (see utils.metacyc_ids()).
-            aracyc_model_path (str) -- the path to the aracyc based reconstructed model.
-            metacyc_path (str) -- the path to the metacyc model. (=self.pwt_reactions/self.pwt_reactions_list)
-            save_path (str) -- the path and name to the saving directory.
-            WDlog (str) -- the working directory to store the log file containing 
-            all the reactions not found in get_pwtools_reac().
-            WD_pgdb (str) -- path to the .dat files for the organism (from the mpwt script).
-            verbose (boolean) -- print or not enzyme matches.
+            verbose (boolean) -- print or not protein matches.
         """
 
         self._get_pwt_reactions()
