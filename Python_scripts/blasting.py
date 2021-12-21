@@ -258,7 +258,7 @@ class Blasting(module.Module):
                         except KeyError:
                             print("No match for : ", protein)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
-            cobra.io.save_json_model(self.draft, self.directory + self.name + "_gene_blast" + ".json")
+            cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
         else:
             print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
             sys.exit()
