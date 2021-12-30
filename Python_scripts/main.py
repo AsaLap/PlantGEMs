@@ -21,10 +21,19 @@ def run(main_directory):
     # Launching the first part of MPWT (files checking & folder generation)
     list_objects, cpu, input_directory, output_directory, log_directory = mpwting.sub_pipeline_first(main_directory)
 
+    # TODO : adding a check-file function here if needed
+
     # Then, launching the rest of the pipeline in multiprocess without the need of any input from the user
     print("Everything's fine, now launching BLAST and then MPWT processes, it may take some time...")
     blasting.sub_pipeline_last(list_objects_to_blast)
     mpwting.sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_directory)
+
+    # TODO
+    # Migrate each organism's files to merge directory
+    # migrate()  # Declare this function in utils.py to be used in merging.py by the user if wished so
+
+    # launch merge
+    # merge()  # uses each subdirectory (species) of the /merging directory
 
 
 if __name__ == "__main__":
