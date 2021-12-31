@@ -51,7 +51,7 @@ def check_path(path):
     if os.path.exists(path):
         return True
     else:
-        sys.exit("File or folder not found : ", path)
+        sys.exit("File or folder not found : " + path)
 
 
 def clean_sbml(wd, name):
