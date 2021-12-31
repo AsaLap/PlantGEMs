@@ -22,7 +22,8 @@ import utils
 class Blasting(module.Module):
 
     def __init__(self, _name, _main_directory, _model_file_path=None, _model_proteomic_fasta_path=None,
-                 _subject_proteomic_fasta_path=None, _subject_gff_path=None):
+                 _subject_proteomic_fasta_path=None, _subject_gff_path=None,
+                 identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
         """
         ARGS :
             _name -- name of the subject, must corresponds to the files' names.
@@ -57,12 +58,12 @@ class Blasting(module.Module):
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
         self.blast_result = {}
         self.gene_dictionary = {}
-        self._identity = 50
-        self._difference = 30
-        self._e_val = 1e-100
-        self._coverage = 20
-        self._bit_score = 300
-
+        self._identity = identity
+        self._difference = difference
+        self._e_val = e_val
+        self._coverage = coverage
+        self._bit_score = bit_score
+        # TODO : change all the properties into normal properties (not private) and destroy the getters and setters
         """
             identity (int) -- the identity's threshold value to select the subject genes.
             difference (int) -- the percentage of length difference tolerated between subject and query.
@@ -132,13 +133,6 @@ class Blasting(module.Module):
             self._bit_score = value
         else:
             print("Denied : value must be between 0 and 10000 (both included)")
-
-    def set_default_values(self):
-        self.identity = 50
-        self.difference = 30
-        self.e_val = 1e-100
-        self.coverage = 20
-        self.bit_score = 300
 
     def _blast_run(self):
         """Runs multiple blasts between the model and the subject."""
@@ -264,11 +258,11 @@ class Blasting(module.Module):
         utils.make_directory(self.directory)
         self._make_protein_correspondence_file()
         self._blast_run()
-        # self._history_save("blasted")
+        self._history_save("blasted")
         self._select_genes()
-        # self._history_save("genes_selected")
+        self._history_save("genes_selected")
         self._drafting()
-        # self._history_save("drafted")
+        self._history_save("drafted")
         self._protein_to_gene()
 
 
@@ -322,17 +316,23 @@ def pipeline_unique(*args):
         unique_blast = Blasting(*args)
         unique_blast.build()
     except TypeError:
-        print("Usage : $ python blasting.py pipeline parameter1=value parameter2=value parameter3=value...\n"
+        print("Usage : $ python blasting.py pipeline 'parameter1=value parameter2=value parameter3=value...'\n"
               "Parameters (in order) : \n"
               "required : name, main_directory\n"
               "optional : model_file_path, model_proteomic_fasta_path,"
               "subject_proteomic_fasta_path, subject_gff_path\n")
 
 
-# def rerun_blast_selection(blasted_object):
-#     species = utils.load_obj(blasted_object)
+def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
+    species = utils.load_obj(blasted_object)
+    species.directory = os.path.dirname(blasted_object) + "/"
+    # species.identity = identity
+    # species.difference = difference
+    # species.e_val = e_val
+    # species.coverage = coverage
+    # species.bit_score = bit_score
+    species.build()
 
 
 if __name__ == "__main__":
     globals()[sys.argv[1]](*sys.argv[2:])
-    # rerun_blast_selection("/home/asa/INRAE/These/runs/run_06_12_2021/blast/blast_object_history/kiwi_blasted.pkl")
