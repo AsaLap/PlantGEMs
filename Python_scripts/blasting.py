@@ -270,7 +270,7 @@ class Blasting(module.Module):
         self._object_history_save("drafted")
         self._protein_to_gene()
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + "_".join(
-            (self.identity, self.difference, self.e_val, self.coverage, self._bit_score)) + ".json")
+            (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage), str(self._bit_score))) + ".json")
 
 
 def build_blast_objects(organism_object):
