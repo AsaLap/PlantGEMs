@@ -8,6 +8,7 @@
    - [main.py](#mainpy-)
    - [blasting.py](#blastingpy-only-)
    - [mpwting.py](#mpwtingpy-only-)
+   - [merging.py](#mergingpy-only-)
  - [Files description](#files-description-)
  - [NEWS](#news-)
 
@@ -37,7 +38,7 @@ main_directory
 ## HOW TO USE
 
 
-### **main.py :**
+## **main.py :**
 
 You will need all the files described in "Folders structure" above and the correct folder structure. If not, 
 PlantGEMs will ask you for every file one by one, which is definitely not convenient. 
@@ -50,7 +51,7 @@ $ python main.py run "path/to/main/directory/"
 ```
 
 
-### **blasting.py only :**
+## **blasting.py only :**
 You will need : (see also _Folders structure_)
 * The model's sbml file (.sbml)
 * The model's proteome fasta (.faa)
@@ -75,7 +76,7 @@ PlantGEMs will find and use them, if not, you'll be prompted to give an exact pa
 single reconstruction instruction on a previously used folder with many species by calling only one of them.
 
 
-### **mpwting.py only :**
+## **mpwting.py only :**
 This module needs you to create a "files/" directory in a directory of your choice (can be the same as for _blasting.py_
 above for single use, **has** to be the same for a complete pipeline use with _main.py_) and put in there the following 
 files, for each organism you want to reconstruct :
@@ -99,6 +100,9 @@ $ python mpwting.py run "path/to/main/directory"
 
 **NB2** : every dependency needed is normally listed in the _requirements.txt_, but you will also need **Pathway-Tools** to be installed. Please see mpwt's GitHub page for more information : https://github.com/AuReMe/mpwt.
 
+## **blasting.py only :**
+_**WIP**_
+
 ## Files description :
 
 ### -- Python files --
@@ -107,7 +111,7 @@ $ python mpwting.py run "path/to/main/directory"
 
 - ``main.py`` -- Main file to launch all the workflow with a single command line.
 
-- ``merging.py`` -- Merge two draft of metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
+- ``merging.py`` -- Merge two drafts of metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
 
 - ``module.py`` -- File for the parent class of all the modules, contains useful methods that can be inherited in all module's classes.
 
