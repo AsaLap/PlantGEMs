@@ -157,9 +157,9 @@ def build_mpwt_objects(organism):
     organism.build()
 
 
-def sub_pipeline_first(main_directory):
+def multirun_first(main_directory):
     """
-    Split of major function 'pipeline', first part = gathering the parameters, files and candidates' names and
+    Split of major function 'run', first part = gathering the parameters, files and candidates' names and
     creating one Mpwting object for each.
     """
 
@@ -191,9 +191,9 @@ def sub_pipeline_first(main_directory):
     return [list_objects, cpu, input_directory, output_directory, log_directory]
 
 
-def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_directory):
+def multirun_last(list_objects, cpu, input_directory, output_directory, log_directory):
     """
-    Split of major function 'pipeline', second part = launching the process on each given object with multiprocessing
+    Split of major function 'run', second part = launching the process on each given object with multiprocessing
     and launching the mpwt reconstruction.
     """
 
@@ -209,10 +209,10 @@ def sub_pipeline_last(list_objects, cpu, input_directory, output_directory, log_
                           ignore_error=False, taxon_file=input_directory + "taxon_id.tsv", verbose=True)
 
 
-def pipeline(main_directory):
-    """The function to make all the pipeline working."""
+def run(main_directory):
+    """The function to make all the run working."""
 
-    sub_pipeline_last(*sub_pipeline_first(main_directory))
+    multirun_last(*multirun_first(main_directory))
 
 
 if __name__ == "__main__":

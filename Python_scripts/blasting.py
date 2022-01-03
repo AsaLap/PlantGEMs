@@ -227,7 +227,7 @@ class Blasting(module.Module):
                     correspondence.append([gene.upper(), protein.upper()])
         utils.write_csv(self.directory, "protein_gene_correspondence", correspondence, "\t")
 
-    def _protein_to_gene(self):  # TODO : Review this code and use it in the pipeline
+    def _protein_to_gene(self):  # TODO : Review this code and use it in the run
         """Function to transform the proteins in gene_reaction_rule into their corresponding genes.
         It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
@@ -279,9 +279,9 @@ def build_blast_objects(organism_object):
     organism_object.build()
 
 
-def sub_pipeline_first(main_directory):
+def multirun_first(main_directory):
     """
-    Split of major function 'pipeline', first part = gathering the files and candidates' names and creating one
+    Split of major function 'run', first part = gathering the files and candidates' names and creating one
     Blasting object for each.
     """
 
@@ -296,9 +296,9 @@ def sub_pipeline_first(main_directory):
     return list_objects
 
 
-def sub_pipeline_last(list_objects):
+def multirun_last(list_objects):
     """
-    Split of major function 'pipeline', second part = launching the process on each given object with multiprocessing.
+    Split of major function 'run', second part = launching the process on each given object with multiprocessing.
     """
 
     cpu = len(list_objects)
@@ -306,14 +306,14 @@ def sub_pipeline_last(list_objects):
     p.map(build_blast_objects, list_objects)
 
 
-def pipeline(main_directory):
+def run(main_directory):
     """The function to launch the process when used alone."""
 
-    list_objects = sub_pipeline_first(main_directory)
-    sub_pipeline_last(list_objects)
+    list_objects = multirun_first(main_directory)
+    multirun_last(list_objects)
 
 
-def pipeline_unique(*args):
+def run_unique(*args):
     """
     This function allows to launch a blasting process on a unique organism with every argument in command line
     if wished so.
@@ -323,7 +323,7 @@ def pipeline_unique(*args):
         unique_blast = Blasting(*args)
         unique_blast.build()
     except TypeError:
-        print("Usage : $ python blasting.py pipeline 'parameter1=value parameter2=value parameter3=value...'\n"
+        print("Usage : $ python blasting.py run 'parameter1=value parameter2=value parameter3=value...'\n"
               "Parameters (in order) : \n"
               "required : name, main_directory\n"
               "optional : model_file_path, model_proteomic_fasta_path,"

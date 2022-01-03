@@ -63,7 +63,7 @@ You can store the files in a _files/_ directory if you reconstruct several netwo
 
 __Example of use for multiple reconstruction with _main.ini_:__
 ```bash
-$ python blasting.py pipeline "path/to/main/directory/"
+$ python blasting.py run "path/to/main/directory/"
 ```
 
 __Example of use for single reconstruction without _main.ini_:__
@@ -92,7 +92,7 @@ Then, make a _main.ini_ file corresponding to your needs and save it under the _
 
 __Example of use :__
 ```bash
-$ python mpwting.py pipeline "path/to/main/directory"
+$ python mpwting.py run "path/to/main/directory"
 ```
 
 **NB** : if you didn't put the files in the _files/_ directory, you will be asked to give the exact path for each file needed. Not recommended if you reconstruct several organisms at once for obvious practicality.
