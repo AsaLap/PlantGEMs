@@ -63,18 +63,17 @@ class Blasting(module.Module):
         self._e_val = e_val
         self._coverage = coverage
         self._bit_score = bit_score
-        # TODO : change all the properties into normal properties (not private) and destroy the getters and setters
+
         """
-            identity (int) -- the identity's threshold value to select the subject genes.
-            difference (int) -- the percentage of length difference tolerated between subject and query.
-            e_val (int) -- the minimum E-Value chosen.
-            coverage (int) -- the minimum coverage's percentage of the match.
-            bit_score (int) -- the minimum Bit-Score chosen.
+        identity (int) -- the blast result identity's threshold value to select the subject genes.
+        difference (int) -- the percentage of length difference tolerated between subject and query.
+        e_val (int) -- the minimum E-Value of each match.
+        coverage (int) -- the minimum sequence coverage of the match (percentage).
+        bit_score (int) -- the minimum Bit-Score of each match.
         """
 
     @property
     def identity(self):
-        print("Getting identity value...")
         return self._identity
 
     @identity.setter
@@ -83,11 +82,10 @@ class Blasting(module.Module):
             print("Setting identity value to %s" % (str(value)))
             self._identity = value
         else:
-            print("Denied : value must be between 0 and 100 (both included)")
+            print("Identity value denied : value must be between 0 and 100 (both included), value not changed")
 
     @property
     def difference(self):
-        print("Getting difference value...")
         return self._difference
 
     @difference.setter
@@ -96,7 +94,7 @@ class Blasting(module.Module):
             print("Setting difference value to %s" % (str(value)))
             self._difference = value
         else:
-            print("Denied : value must be between 0 and 100 (both included)")
+            print("Difference value denied : value must be between 0 and 100 (both included), value not changed")
 
     @property
     def e_val(self):
@@ -108,7 +106,7 @@ class Blasting(module.Module):
             print("Setting E-value to %s" % (str(value)))
             self._e_val = value
         else:
-            print("Denied : value must be between 0 and 10 (both included)")
+            print("E_val value denied : value must be between 0 and 10 (both included), value not changed")
 
     @property
     def coverage(self):
@@ -120,7 +118,7 @@ class Blasting(module.Module):
             print("Setting coverage value to %s" % (str(value)))
             self._coverage = value
         else:
-            print("Denied : value must be between 0 and 100 (both included)")
+            print("Coverage value denied : value must be between 0 and 100 (both included), value not changed")
 
     @property
     def bit_score(self):
@@ -132,7 +130,7 @@ class Blasting(module.Module):
             print("Setting Bit-score value to %s" % (str(value)))
             self._bit_score = value
         else:
-            print("Denied : value must be between 0 and 10000 (both included)")
+            print("Bit_score value denied : value must be between 0 and 10000 (both included), value not changed")
 
     def _blast_run(self):
         """Runs multiple blasts between the model and the subject."""
@@ -214,10 +212,10 @@ class Blasting(module.Module):
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 
-    def _history_save(self, step):
-        history_directory = self.directory + "/object_history/"
-        utils.make_directory(history_directory)
-        utils.save_obj(self, history_directory + step)
+    def _object_history_save(self, step):
+        objects_directory = self.directory + "/objects_history/"
+        utils.make_directory(objects_directory)
+        utils.save_obj(self, objects_directory + step)
 
     def _make_protein_correspondence_file(self):
         """Function to create a csv file with the correspondence between a protein and the associated gene."""
@@ -249,7 +247,6 @@ class Blasting(module.Module):
                         except KeyError:
                             print("No match for : ", protein)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
-            cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
         else:
             print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
             sys.exit()
@@ -258,12 +255,22 @@ class Blasting(module.Module):
         utils.make_directory(self.directory)
         self._make_protein_correspondence_file()
         self._blast_run()
-        self._history_save("blasted")
+        self._object_history_save("blasted")
         self._select_genes()
-        self._history_save("genes_selected")
+        self._object_history_save("genes_selected")
         self._drafting()
-        self._history_save("drafted")
+        self._object_history_save("drafted")
         self._protein_to_gene()
+        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
+
+    def rebuild(self):
+        self._select_genes()
+        self._object_history_save("genes_selected")
+        self._drafting()
+        self._object_history_save("drafted")
+        self._protein_to_gene()
+        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + "_".join(
+            (self.identity, self.difference, self.e_val, self.coverage, self._bit_score)) + ".json")
 
 
 def build_blast_objects(organism_object):
@@ -325,13 +332,12 @@ def pipeline_unique(*args):
 
 def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
     species = utils.load_obj(blasted_object)
-    species.directory = os.path.dirname(blasted_object) + "/"
-    # species.identity = identity
-    # species.difference = difference
-    # species.e_val = e_val
-    # species.coverage = coverage
-    # species.bit_score = bit_score
-    species.build()
+    species.identity = int(identity)
+    species.difference = int(difference)
+    species.e_val = float(e_val)
+    species.coverage = int(coverage)
+    species.bit_score = int(bit_score)
+    species.rebuild()
 
 
 if __name__ == "__main__":
