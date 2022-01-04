@@ -45,8 +45,9 @@ class Merging(module.Module):
         list_sbml_model = utils.find_files(self.directory, "sbml")
         for sbml_model in list_sbml_model:
             self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
+
     # def _get_pwt_reactions(self):  # TODO : make this function unspecific, only browsing through a reactions.dat file.
-    #     """Function to get the reaction's ID of Metacyc from a Pathway Tools reconstruction."""
+    #     """Function to get Metacyc's reactions from Pathway Tools reactions' IDs."""
     #
     #     no_match_list = []
     #
@@ -65,109 +66,89 @@ class Merging(module.Module):
     #     no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
     #     utils.write_file(self.wd_log + self.name + "_error_reaction_pwt.log", no_match_list)
 
-    # def _get_blast_model_reactions(self):  # TODO : make this function unspecific, only taking sbml/json in account.
-    #     """Function to get the reaction's ID of Metacyc from a reconstruction with Aracyc as model."""
-    #
-    #     no_match_list = []
-    #     for reaction in self.blast_model.reactions:
-    #         try:
-    #             self.reactions_list += self.metacyc_matching_id_dict[reaction.name]
-    #         except KeyError:
-    #             if reaction.name in self.metacyc_matching_id_dict_reversed.keys():
-    #                 self.reactions_list.append(reaction.name)
-    #             else:
-    #                 no_match_list.append(reaction + "\n")
-    #                 print("No match for reaction :", reaction.id, " | ", reaction.name)
-    #     print("Nb of reactions from Pathway Tools reconstructed model : %i\n"
-    #           "Number of those reactions found in Metacyc : %i\n"
-    #           "Total of reactions not found : %i"
-    #           % (len(self.blast_model.reactions), len(self.reactions_list), len(no_match_list)))
-    #     no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-    #     utils.write_file(self.wd_log + self.name + "_error_reaction_blast_reconstruction.log", no_match_list)
+    def _correct_gene_rule_reactions(self, reaction, verbose=True):
+        """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
+        to make it fit the organism for which the model is reconstructed.
 
-    # def _correct_gene_rule_reactions(self, reaction, verbose=True):
-    #     """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
-    #     to make it fit the organism for which the model is reconstructed.
-    #
-    #     Args:
-    #         reaction: the reaction's gene reaction rule to change.
-    #     Returns the corrected gene reaction rule.
-    #     """
-    #
-    #     reactions_file = utils.read_file_listed(self.wd_pgdb + "/reactions.dat")
-    #     enzrxns_file = utils.read_file_listed(self.wd_pgdb + "/enzrxns.dat")
-    #     proteins_file = utils.read_file_listed(self.wd_pgdb + "/proteins.dat")
-    #
-    #     # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
-    #     stop = False
-    #     enzrxns = []
-    #     for reaction_line in reactions_file:
-    #         if "UNIQUE-ID" in reaction_line and "#" not in reaction_line:
-    #             if stop:
-    #                 break
-    #             try:
-    #                 unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', reaction_line).group(0).rstrip()
-    #                 if unique_id == reaction.name or unique_id == self.metacyc_matching_id_dict_reversed[reaction.name]:
-    #                     stop = True
-    #             except AttributeError:
-    #                 print("No UNIQUE-ID match for reactions.dat : ", reaction_line)
-    #         if stop and "ENZYMATIC-REACTION " in reaction_line and "#" not in reaction_line:
-    #             try:
-    #                 enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*',
-    #                                          reaction_line).group(0).rstrip())
-    #             except AttributeError:
-    #                 print("No ENZYMATIC-REACTION match for reactions.dat : ", reaction_line)
-    #     if verbose:
-    #         print("%s : %i enzymatic reaction(s) found associated to this reaction." % (reaction.name, len(enzrxns)))
-    #
-    #     # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
-    #     stop = False
-    #     gene_list = []
-    #     if enzrxns:
-    #         for enzrxn in enzrxns:
-    #             for line_enzrxn in enzrxns_file:
-    #                 if "UNIQUE-ID" in line_enzrxn and "#" not in line_enzrxn:
-    #                     if stop:
-    #                         stop = False
-    #                         break
-    #                     try:
-    #                         unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(
-    #                             0).rstrip()
-    #                         if unique_id_rxn == enzrxn:
-    #                             stop = True
-    #                     except AttributeError:
-    #                         print("No UNIQUE-ID match for enzrxns.Dat : ", line_enzrxn)
-    #                 if stop and "ENZYME " in line_enzrxn and "#" not in line_enzrxn:
-    #                     try:
-    #                         enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(0).rstrip()
-    #                     except AttributeError:
-    #                         print("No ENZYME match for enzrxns.dat : ", line_enzrxn)
-    #             # Third step into the second one : getting the corresponding GENE for each ENZYME and put it into
-    #             # geneList (which contains all that we're looking for).
-    #             for lineProt in proteins_file:
-    #                 if "UNIQUE-ID " in lineProt and "#" not in lineProt:
-    #                     if stop:
-    #                         stop = False
-    #                         break
-    #                     try:
-    #                         unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(
-    #                             0).rstrip()
-    #                         if unique_id_prot == enzyme:
-    #                             stop = True
-    #                     except AttributeError:
-    #                         print("No UNIQUE-ID match for proteins.dat : ", lineProt)
-    #                 if stop and "GENE " in lineProt and "#" not in lineProt:
-    #                     try:
-    #                         gene_list.append(
-    #                             re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
-    #                     except AttributeError:
-    #                         print("No GENE match for proteins.dat : ", lineProt)
-    #         if verbose:
-    #             print(unique_id, "\n", " or ".join(set(gene_list)))
-    #     else:
-    #         pass
-    #     reaction.gene_reaction_rule = " or ".join(set(gene_list))
-    #     return reaction
+        Args:
+            reaction: the reaction's gene reaction rule to change.
+        Returns the corrected gene reaction rule.
+        """
+
+        reactions_file = utils.read_file_listed(self.wd_pgdb + "/reactions.dat")
+        enzrxns_file = utils.read_file_listed(self.wd_pgdb + "/enzrxns.dat")
+        proteins_file = utils.read_file_listed(self.wd_pgdb + "/proteins.dat")
+
+        # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
+        stop = False
+        enzrxns = []
+        for reaction_line in reactions_file:
+            if "UNIQUE-ID" in reaction_line and "#" not in reaction_line:
+                if stop:
+                    break
+                try:
+                    unique_id = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', reaction_line).group(0).rstrip()
+                    if unique_id == reaction.name or unique_id == self.metacyc_matching_id_dict_reversed[reaction.name]:
+                        stop = True
+                except AttributeError:
+                    print("No UNIQUE-ID match for reactions.dat : ", reaction_line)
+            if stop and "ENZYMATIC-REACTION " in reaction_line and "#" not in reaction_line:
+                try:
+                    enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*',
+                                             reaction_line).group(0).rstrip())
+                except AttributeError:
+                    print("No ENZYMATIC-REACTION match for reactions.dat : ", reaction_line)
+        if verbose:
+            print("%s : %i enzymatic reaction(s) found associated to this reaction." % (reaction.name, len(enzrxns)))
+
+        # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
+        stop = False
+        gene_list = []
+        if enzrxns:
+            for enzrxn in enzrxns:
+                for line_enzrxn in enzrxns_file:
+                    if "UNIQUE-ID" in line_enzrxn and "#" not in line_enzrxn:
+                        if stop:
+                            stop = False
+                            break
+                        try:
+                            unique_id_rxn = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(
+                                0).rstrip()
+                            if unique_id_rxn == enzrxn:
+                                stop = True
+                        except AttributeError:
+                            print("No UNIQUE-ID match for enzrxns.Dat : ", line_enzrxn)
+                    if stop and "ENZYME " in line_enzrxn and "#" not in line_enzrxn:
+                        try:
+                            enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(0).rstrip()
+                        except AttributeError:
+                            print("No ENZYME match for enzrxns.dat : ", line_enzrxn)
+                # Third step into the second one : getting the corresponding GENE for each ENZYME and put it into
+                # geneList (which contains all that we're looking for).
+                for lineProt in proteins_file:
+                    if "UNIQUE-ID " in lineProt and "#" not in lineProt:
+                        if stop:
+                            stop = False
+                            break
+                        try:
+                            unique_id_prot = re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(
+                                0).rstrip()
+                            if unique_id_prot == enzyme:
+                                stop = True
+                        except AttributeError:
+                            print("No UNIQUE-ID match for proteins.dat : ", lineProt)
+                    if stop and "GENE " in lineProt and "#" not in lineProt:
+                        try:
+                            gene_list.append(
+                                re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
+                        except AttributeError:
+                            print("No GENE match for proteins.dat : ", lineProt)
+            if verbose:
+                print(unique_id, "\n", " or ".join(set(gene_list)))
+        else:
+            pass
+        reaction.gene_reaction_rule = " or ".join(set(gene_list))
+        return reaction
 
     # def merge(self, verbose=False):
     #     """Function to merge models, either from a model-based reconstruction (blasting module) or from
