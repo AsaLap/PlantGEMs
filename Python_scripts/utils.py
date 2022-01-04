@@ -104,6 +104,42 @@ def cobra_compatibility(reaction, side=True):
     return reaction
 
 
+def find_file(directory, target, extension):
+    """Search a file corresponding to the target in the 'files' directory. If no match is found,
+    asks the user to input the exact path to the file he wants to use.
+
+    PARAMS:
+        path (str) -- the
+        target (str) -- the name of the file to search if correctly named.
+        extension (str) -- the file's extension.
+
+    RETURNS:
+        file_path (str) -- the exact path to the file.
+    """
+
+    file_path = directory + target + extension
+    if os.path.isfile(file_path):
+        return file_path
+    else:
+        print("No corresponding file found...")
+        try:
+            file_path = str(input("Path to " + target + extension + "'s file : "))
+            if os.path.isfile(file_path):
+                return file_path
+            else:
+                print("No file found with this path, make sure you entered it correctly... Restarting.")
+                find_file(directory, target, extension)
+        except ValueError:
+            print("Please enter a string only... Restarting.")
+            find_file(directory, target, extension)
+
+
+def find_files(directory, extension):
+    """Function to return the list of files in a given directory with a certain extension"""
+
+    return [i for i in os.listdir(directory) if i.endswith(extension)]
+
+
 def get_clusters(cluster_list):
     """Function to create every individual cluster depending on
     the number of organisms given to the UpSetPlot function."""
@@ -478,4 +514,3 @@ def write_file(wd, data, strip=True):
         for i in data:
             f.write(i)
     f.close()
-
