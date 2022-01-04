@@ -47,6 +47,11 @@ class Module:
                 print("Please enter a string only... Restarting.")
                 self._find_file(target, extension)
 
+    def _find_files(self, extension):
+        files_directory = self.main_directory + "files/"
+        files = [i for i in os.listdir(files_directory) if i.endswith(extension)]
+        return files
+
     def _find_genomic_fasta(self, target):
         return self._find_file(target, ".fna")
 
@@ -59,10 +64,9 @@ class Module:
     def _find_eggnog(self, target):
         return self._find_file(target, ".tsv")
 
-    def _find_model(self):
+    def _find_sbml_model(self):
         # TODO : log of the file used
-        files_directory = self.main_directory + "files/"
-        model = [i for i in os.listdir(files_directory) if i.endswith("sbml")]
+        model = self._find_files("sbml")
         if len(model) == 0:
             print("No SBML file found in the files directory...")
             try:
@@ -71,10 +75,10 @@ class Module:
                     return model
                 else:
                     print("No SBML file found here... Restarting.")
-                    self._find_model()
+                    self._find_sbml_model()
             except ValueError:
                 print("Please enter strings only... Restarting.")
-                self._find_model()
+                self._find_sbml_model()
         elif len(model) >= 2:
             print("More than one SBML file has been found, please select one by entering its corresponding number :")
             for i in range(len(model)):
@@ -84,9 +88,9 @@ class Module:
                 return files_directory + model[res - 1]
             except IndexError:
                 print("Please choose a valid number... Restarting.")
-                self._find_model()
+                self._find_sbml_model()
             except ValueError:
                 print("Please enter a number only... Restarting.")
-                self._find_model()
+                self._find_sbml_model()
         else:
             return self.main_directory + "files/" + model[0]
