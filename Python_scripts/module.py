@@ -19,8 +19,8 @@ class Module:
         self.name = _name
         self.main_directory = _main_directory.rstrip("/ ") + "/"
 
-    # TODO : take multiple file format in account for the different "find" functions
-    # TODO : log of the file used
+    # TODO : take multiple file format in account for the different "find" functions (cf. find_file in utils.py)
+    # TODO : log of the file(s) used
     def _find_genomic_fasta(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".fna")
 

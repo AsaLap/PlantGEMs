@@ -104,12 +104,12 @@ def cobra_compatibility(reaction, side=True):
     return reaction
 
 
-def find_file(directory, target, extension):
+def find_file(directory, target, extension):  # TODO : take multiple file extensions in parameters
     """Search a file corresponding to the target in the 'files' directory. If no match is found,
     asks the user to input the exact path to the file he wants to use.
 
     PARAMS:
-        path (str) -- the
+        directory (str) -- the directory where to find the file.
         target (str) -- the name of the file to search if correctly named.
         extension (str) -- the file's extension.
 
@@ -142,7 +142,14 @@ def find_files(directory, extension):
 
 def get_clusters(cluster_list):
     """Function to create every individual cluster depending on
-    the number of organisms given to the UpSetPlot function."""
+    the number of values given to the UpSetPlot function.
+
+    PARAMS:
+        cluster_list (list) -- the list of subjects for the upSetPlot.
+
+    RETURNS:
+        final_res (list of lists) -- a list of all the possible clusters.
+    """
 
     res = []
     final_res = []
@@ -160,12 +167,7 @@ def get_clusters(cluster_list):
 
 
 def get_metacyc_ids(metacyc_json_model_path):
-    """Function to make the correspondence file between short and long ID of Metacyc.
-
-    PARAMS:
-        metacyc_json_model (str) -- the path to the metacyc model in JSON format. Result will be saved in the
-        same directory.
-    """
+    """Function to make the correspondence file between short and long ID of Metacyc."""
 
     data = read_json(metacyc_json_model_path)
     res = []
@@ -199,7 +201,7 @@ def get_pwt_reactions(path):
     PARAMS:
         path (str) -- the path to the reactions.dat file.
     RETURNS:
-        liste_reactions (list of str) -- the list containing all the reactions in this model.
+        list_reactions (list of str) -- the list containing all the reactions in this model.
     """
 
     list_reactions = []
@@ -306,6 +308,8 @@ def load_obj(path):
 
 
 def make_directory(directory):
+    """Function to create a directory with a given path."""
+
     if not os.path.isdir(directory):
         new_dir = directory.strip(" /").split("/")[-1]
         base_dir = directory.strip(" /")[:-len(directory.strip(" /").split("/")[-1])]
@@ -359,6 +363,8 @@ def make_upsetplot(directory, name, data, title):
 
 
 def point(extension):
+    """Utility function to put a point before the extension if needed."""
+
     if extension[0] != ".":
         return "." + extension
 
@@ -447,6 +453,8 @@ def similarity_count(data, args, others):
 
 
 def slash(directory):
+    """Utility function to put a slash after a directory path if needed."""
+
     if directory[-1] != "/":
         return directory + "/"
 
