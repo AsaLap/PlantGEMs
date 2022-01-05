@@ -33,9 +33,8 @@ class Module:
     def _find_eggnog(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".tsv")
 
-    def _find_sbml_model(self):
+    def _find_sbml_model(self, files_directory):
         # TODO : log of the file used
-        files_directory = self.main_directory + "/files/"
         model = utils.find_files(files_directory, "sbml")
         if len(model) == 0:
             print("No SBML file found in the files directory...")
@@ -45,10 +44,10 @@ class Module:
                     return model
                 else:
                     print("No SBML file found here... Restarting.")
-                    self._find_sbml_model()
+                    self._find_sbml_model(files_directory)
             except ValueError:
                 print("Please enter strings only... Restarting.")
-                self._find_sbml_model()
+                self._find_sbml_model(files_directory)
         elif len(model) >= 2:
             print("More than one SBML file has been found, please select one by entering its corresponding number :")
             for i in range(len(model)):
@@ -58,9 +57,9 @@ class Module:
                 return files_directory + model[res - 1]
             except IndexError:
                 print("Please choose a valid number... Restarting.")
-                self._find_sbml_model()
+                self._find_sbml_model(files_directory)
             except ValueError:
                 print("Please enter a number only... Restarting.")
-                self._find_sbml_model()
+                self._find_sbml_model(files_directory)
         else:
             return self.main_directory + "files/" + model[0]

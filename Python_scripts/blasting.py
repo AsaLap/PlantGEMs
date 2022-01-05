@@ -38,7 +38,7 @@ class Blasting(module.Module):
         if _model_file_path is not None:
             self.model = cobra.io.read_sbml_model(_model_file_path)
         else:
-            self.model = cobra.io.read_sbml_model(self._find_sbml_model())
+            self.model = cobra.io.read_sbml_model(self._find_sbml_model(self.main_directory + "/files/"))
         if _model_proteomic_fasta_path is not None:
             self.model_proteomic_fasta_path = _model_proteomic_fasta_path
             self.model_proteomic_fasta = utils.read_file_stringed(self.model_proteomic_fasta_path)
