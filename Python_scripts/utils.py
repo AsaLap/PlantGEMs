@@ -159,6 +159,40 @@ def get_clusters(cluster_list):
     return final_res
 
 
+def get_metacyc_ids(metacyc_json_model_path):
+    """Function to make the correspondence file between short and long ID of Metacyc.
+
+    PARAMS:
+        metacyc_json_model (str) -- the path to the metacyc model in JSON format. Result will be saved in the
+        same directory.
+    """
+
+    data = read_json(metacyc_json_model_path)
+    res = []
+    print(len(data["reactions"]))
+    for reaction in data["reactions"]:
+        long_id = reaction["name"].split("/")[0]
+        # Getting rid of the brackets in the name sometimes!
+        reaction_pattern = re.compile('([[].*[]])')
+        tmp_id = reaction_pattern.sub("", long_id)
+        short_id = tmp_id
+        # Regexp to "clean" the metabolite's names
+        meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
+        if len(reaction["metabolites"].keys()) != 0:
+            for metabolite in reaction["metabolites"].keys():
+                # The metabolite are "cleaned" here
+                metabolite = meta_pattern.sub("", metabolite)
+                len_id, len_meta = len(tmp_id), len(metabolite)
+                diff = len_id - len_meta
+                # Small trick to get only the end of the ID removed and not the beginning
+                # (metabolite's names can be in the reaction's name)
+                test_id = tmp_id[:diff - 1] + tmp_id[diff - 1:].replace("-" + metabolite, "")
+                if len(test_id) < len(short_id):
+                    short_id = test_id
+            res.append([short_id, reaction["name"]])
+    write_csv(os.path.dirname(metacyc_json_model_path), "/metacyc_ids", res, "\t")
+
+
 def get_pwt_reactions(path):
     """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
 
@@ -322,40 +356,6 @@ def make_upsetplot(directory, name, data, title):
     plt.suptitle(title)
     plt.savefig(directory + name + ".pdf")
     plt.show()
-
-
-def get_metacyc_ids(metacyc_json_model_path):
-    """Function to make the correspondence file between short and long ID of Metacyc.
-
-    PARAMS:
-        metacyc_json_model (str) -- the path to the metacyc model in JSON format. Result will be saved in the
-        same directory.
-    """
-
-    data = read_json(metacyc_json_model_path)
-    res = []
-    print(len(data["reactions"]))
-    for reaction in data["reactions"]:
-        long_id = reaction["name"].split("/")[0]
-        # Getting rid of the brackets in the name sometimes!
-        reaction_pattern = re.compile('([[].*[]])')
-        tmp_id = reaction_pattern.sub("", long_id)
-        short_id = tmp_id
-        # Regexp to "clean" the metabolite's names
-        meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
-        if len(reaction["metabolites"].keys()) != 0:
-            for metabolite in reaction["metabolites"].keys():
-                # The metabolite are "cleaned" here
-                metabolite = meta_pattern.sub("", metabolite)
-                len_id, len_meta = len(tmp_id), len(metabolite)
-                diff = len_id - len_meta
-                # Small trick to get only the end of the ID removed and not the beginning
-                # (metabolite's names can be in the reaction's name)
-                test_id = tmp_id[:diff - 1] + tmp_id[diff - 1:].replace("-" + metabolite, "")
-                if len(test_id) < len(short_id):
-                    short_id = test_id
-            res.append([short_id, reaction["name"]])
-    write_csv(os.path.dirname(metacyc_json_model_path), "/metacyc_ids", res, "\t")
 
 
 def read_config(ini):
