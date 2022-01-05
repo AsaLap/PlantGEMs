@@ -54,7 +54,7 @@ def check_path(path):
         sys.exit("File or folder not found : " + path)
 
 
-def clean_sbml(wd, name):
+def clean_sbml(directory, name):
     """Function to get rid of specific character COBRA puts into its 
     sbml models, and cannot read (you read it right...).
     
@@ -65,7 +65,7 @@ def clean_sbml(wd, name):
         the name of the new file.
     """
 
-    file = read_file_listed(wd + name)
+    file = read_file_listed(directory + name)
     new_file = []
     meta = re.compile('( id="M_)')
     sp_ref = re.compile('(<speciesReference species="M_)')
@@ -76,7 +76,7 @@ def clean_sbml(wd, name):
         if "<reaction" in i:
             i = reaction.sub('id="', i)
         new_file.append(i)
-    write_file(wd + "clean_" + name, new_file)
+    write_file(directory + "clean_" + name, new_file)
     return "clean_" + name
 
 
@@ -324,15 +324,15 @@ def make_upsetplot(directory, name, data, title):
     plt.show()
 
 
-def metacyc_ids(wd, path):
+def get_metacyc_ids(metacyc_json_model_path):
     """Function to make the correspondence file between short and long ID of Metacyc.
 
     PARAMS:
-        wd (str) -- the directory to save the correspondence file.
-        path (str) -- the path to the metacyc model in JSON format.
+        metacyc_json_model (str) -- the path to the metacyc model in JSON format. Result will be saved in the
+        same directory.
     """
 
-    data = read_json(path)
+    data = read_json(metacyc_json_model_path)
     res = []
     print(len(data["reactions"]))
     for reaction in data["reactions"]:
@@ -355,7 +355,7 @@ def metacyc_ids(wd, path):
                 if len(test_id) < len(short_id):
                     short_id = test_id
             res.append([short_id, reaction["name"]])
-    write_csv(wd, "MetacycCorresIDs", res, "\t")
+    write_csv(os.path.dirname(metacyc_json_model_path), "/metacyc_ids", res, "\t")
 
 
 def read_config(ini):
@@ -489,24 +489,26 @@ def trans_short_id(list_ids, correspondence, short=True, keep=False):
     return new_list
 
 
-def write_csv(wd, name, list_value, separator=","):
+def write_csv(directory, name, list_value, separator=","):
     """Function to save a file as a CSV format, needs a list of lists,
     first list as the column names."""
 
+    if directory[-1] != "/":
+        directory += "/"
     if separator == "\t":
         extension = ".tsv"
     else:
         extension = ".csv"
-    with open(wd + name + extension, 'w', newline='') as file:
+    with open(directory + name + extension, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=separator)
         for f in list_value:
             writer.writerow(f)
 
 
-def write_file(wd, data, strip=True):
+def write_file(directory, data, strip=True):
     """Function to write a file from a list."""
 
-    f = open(wd, "w")
+    f = open(directory, "w")
     if strip:
         for i in data:
             f.write(i.rstrip() + "\n")
