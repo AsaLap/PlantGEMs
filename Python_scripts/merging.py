@@ -27,11 +27,11 @@ class Merging(module.Module):
         self.json_reactions_list = []
         self.sbml_reactions_list = []
 
-        # self.metacyc_correspondence_file_path = self.main_directory + "merge/metacyc_correspondence.tsv"
-        # if not os.path.isfile(self.metacyc_correspondence_file_path):
-        #     utils.make_metacyc_correspondence_file(self.metacyc_model)  # TODO
-        # self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
-        #     utils.build_correspondence_dict(self.metacyc_correspondence_file_path)
+        self.metacyc_ids_file_path = utils.find_file(self.main_directory + "merge/", "metacyc_ids", "tsv")
+        if not os.path.isfile(self.metacyc_ids_file_path):
+            utils.get_metacyc_ids(self._find_sbml_model(self.directory))
+        self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
+            utils.build_correspondence_dict(self.metacyc_ids_file_path)
 
     def _get_pwt_reactions(self):
         self.pwt_reactions_id_list = utils.get_pwt_reactions(self.directory + "/reactions.dat")
@@ -46,7 +46,7 @@ class Merging(module.Module):
         for sbml_model in list_sbml_model:
             self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
 
-    # def _get_pwt_reactions(self):  # TODO : make this function unspecific, only browsing through a reactions.dat file.
+    # def _get_pwt_reactions(self):
     #     """Function to get Metacyc's reactions from Pathway Tools reactions' IDs."""
     #
     #     no_match_list = []
@@ -66,7 +66,7 @@ class Merging(module.Module):
     #     no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
     #     utils.write_file(self.wd_log + self.name + "_error_reaction_pwt.log", no_match_list)
 
-    def _correct_gene_rule_reactions(self, reaction, verbose=True):
+    def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
         to make it fit the organism for which the model is reconstructed.
 
@@ -75,9 +75,9 @@ class Merging(module.Module):
         Returns the corrected gene reaction rule.
         """
 
-        reactions_file = utils.read_file_listed(self.wd_pgdb + "/reactions.dat")
-        enzrxns_file = utils.read_file_listed(self.wd_pgdb + "/enzrxns.dat")
-        proteins_file = utils.read_file_listed(self.wd_pgdb + "/proteins.dat")
+        reactions_file = utils.read_file_listed(self.directory + "/reactions.dat")
+        enzrxns_file = utils.read_file_listed(self.directory + "/enzrxns.dat")
+        proteins_file = utils.read_file_listed(self.directory + "/proteins.dat")
 
         # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
         stop = False
@@ -172,7 +172,7 @@ class Merging(module.Module):
     #             if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
     #                 reaction = "_" + reaction
     #             added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
-    #             added_reactions_corrected = self._correct_gene_rule_reactions(added_reactions, verbose)
+    #             added_reactions_corrected = self._correct_gene_reaction_rule(added_reactions, verbose)
     #             new_model.add_reactions([added_reactions_corrected])
     #         except KeyError:
     #             list_fail.append(reaction)
@@ -185,6 +185,26 @@ if __name__ == '__main__':
     main_directory = "/home/asa/INRAE/These/Tests/"
     test = Merging("cucumis_sativus", main_directory)
     test._get_pwt_reactions()
-    print(len(test.pwt_reactions_id_list))
-    test._get_json_models_reactions()
-    print([i.id for i in test.json_reactions_list])
+    short_count = []
+    no_match_short_count = []
+    long_count = []
+    no_match_long_count = []
+    total_count = []
+    for reaction in test.pwt_reactions_id_list:
+        try:
+            short_count.append(test.metacyc_matching_id_dict[reaction])
+        except KeyError:
+            no_match_short_count.append(reaction)
+        try:
+            long_count.append(test.metacyc_matching_id_dict_reversed[reaction])
+        except KeyError:
+            no_match_long_count.append(reaction)
+        try:
+            total_count.append(test.metacyc_matching_id_dict[reaction])
+        except KeyError:
+            try:
+                total_count.append(test.metacyc_matching_id_dict_reversed[reaction])
+            except KeyError:
+                pass
+    print(len(short_count), len(long_count), len(total_count))
+    print(no_match_short_count)
