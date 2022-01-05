@@ -521,10 +521,10 @@ def write_csv(directory, name, list_value, separator=","):
             writer.writerow(f)
 
 
-def write_file(directory, data, strip=True):
+def write_file(path, data, strip=True):
     """Function to write a file from a list."""
 
-    f = open(directory, "w")
+    f = open(path, "w")
     if strip:
         for i in data:
             f.write(i.rstrip() + "\n")
