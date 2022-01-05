@@ -117,7 +117,7 @@ def find_file(directory, target, extension):
         file_path (str) -- the exact path to the file.
     """
 
-    file_path = directory + target + extension
+    file_path = slash(directory) + target + point(extension)
     if os.path.isfile(file_path):
         return file_path
     else:
@@ -137,7 +137,7 @@ def find_file(directory, target, extension):
 def find_files(directory, extension):
     """Function to return the list of files in a given directory with a certain extension"""
 
-    return [i for i in os.listdir(directory) if i.endswith(extension)]
+    return [i for i in os.listdir(slash(directory)) if i.endswith(point(extension))]
 
 
 def get_clusters(cluster_list):
@@ -358,6 +358,11 @@ def make_upsetplot(directory, name, data, title):
     plt.show()
 
 
+def point(extension):
+    if extension[0] != ".":
+        return "." + extension
+
+
 def read_config(ini):
     """Runs the config file containing all the information to make a new model.
 
@@ -441,6 +446,11 @@ def similarity_count(data, args, others):
     return cluster_set, len(cluster_set)
 
 
+def slash(directory):
+    if directory[-1] != "/":
+        return directory + "/"
+
+
 def trans_short_id(list_ids, correspondence, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
@@ -493,13 +503,11 @@ def write_csv(directory, name, list_value, separator=","):
     """Function to save a file as a CSV format, needs a list of lists,
     first list as the column names."""
 
-    if directory[-1] != "/":
-        directory += "/"
     if separator == "\t":
         extension = ".tsv"
     else:
         extension = ".csv"
-    with open(directory + name + extension, 'w', newline='') as file:
+    with open(slash(directory) + name + extension, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=separator)
         for f in list_value:
             writer.writerow(f)
