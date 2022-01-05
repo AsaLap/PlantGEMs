@@ -121,9 +121,9 @@ def find_file(directory, target, extension):  # TODO : take multiple file extens
     if os.path.isfile(file_path):
         return file_path
     else:
-        print("No corresponding file found...")
+        print("No corresponding file found here : " + directory)
         try:
-            file_path = str(input("Path to " + target + extension + "'s file : "))
+            file_path = str(input("Path to " + target + point(extension) + "'s file : "))
             if os.path.isfile(file_path):
                 return file_path
             else:
@@ -367,6 +367,8 @@ def point(extension):
 
     if extension[0] != ".":
         return "." + extension
+    else:
+        return extension
 
 
 def read_config(ini):
@@ -457,6 +459,8 @@ def slash(directory):
 
     if directory[-1] != "/":
         return directory + "/"
+    else:
+        return directory
 
 
 def trans_short_id(list_ids, correspondence, short=True, keep=False):
