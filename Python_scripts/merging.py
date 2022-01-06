@@ -46,25 +46,22 @@ class Merging(module.Module):
         for sbml_model in list_sbml_model:
             self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
 
-    # def _get_pwt_reactions(self):
-    #     """Function to get Metacyc's reactions from Pathway Tools reactions' IDs."""
-    #
-    #     no_match_list = []
-    #
-    #     for reaction in self.pwt_reactions:
-    #         try:
-    #             self.pwt_reactions_list += self.metacyc_matching_id_dict[reaction]
-    #         except KeyError:
-    #             if reaction in self.metacyc_matching_id_dict_reversed.keys():
-    #                 self.pwt_reactions_list.append(reaction)
-    #             else:
-    #                 no_match_list.append(reaction + "\n")
-    #                 print("No match for reaction :", reaction.id, " | ", reaction.name)
-    #     print("Number of reactions from PT model : %i\nNumber of those reactions found in Metacyc : %i\nTotal of "
-    #           "reactions not found : %i "
-    #           % (len(self.pwt_reactions), len(set(self.pwt_reactions_list)), len(no_match_list)))
-    #     no_match_list.append("------\nTotal no match : " + str(len(no_match_list)) + "\n------")
-    #     utils.write_file(self.wd_log + self.name + "_error_reaction_pwt.log", no_match_list)
+    def _search_metacyc_reactions_ids(self):
+        reactions_ids = []
+        long_reactions_ids = []
+        no_match_ids = []
+        for reaction in self.pwt_reactions_id_list:
+            try:
+                var = self.metacyc_matching_id_dict[reaction]
+                reactions_ids.append(reaction)
+            except KeyError:
+                try:
+                    reactions_ids.append(self.metacyc_matching_id_dict_reversed[
+                                         reaction])  # despécialisation de la réaction (long à court)
+                    long_reactions_ids.append(reaction)
+                except KeyError:
+                    no_match_ids.append(reaction)
+        return reactions_ids, long_reactions_ids, no_match_ids
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -183,28 +180,4 @@ class Merging(module.Module):
 
 if __name__ == '__main__':
     main_directory = "/home/asa/INRAE/These/Tests/"
-    test = Merging("cucumis_sativus", main_directory)
-    test._get_pwt_reactions()
-    short_count = []
-    no_match_short_count = []
-    long_count = []
-    no_match_long_count = []
-    total_count = []
-    for reaction in test.pwt_reactions_id_list:
-        try:
-            short_count.append(test.metacyc_matching_id_dict[reaction])
-        except KeyError:
-            no_match_short_count.append(reaction)
-        try:
-            long_count.append(test.metacyc_matching_id_dict_reversed[reaction])
-        except KeyError:
-            no_match_long_count.append(reaction)
-        try:
-            total_count.append(test.metacyc_matching_id_dict[reaction])
-        except KeyError:
-            try:
-                total_count.append(test.metacyc_matching_id_dict_reversed[reaction])
-            except KeyError:
-                pass
-    print(len(short_count), len(long_count), len(total_count))
-    print(no_match_short_count)
+    test = Merging("actinidia_chinensis", main_directory)
