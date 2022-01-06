@@ -24,6 +24,9 @@ class Merging(module.Module):
         super().__init__(_name, _main_directory)
         self.directory = self.main_directory + "merge/" + self.name + "/"
         self.pwt_reactions_id_list = []
+        self.pwt_metacyc_reactions_id_list = []
+        self.pwt_metacyc_no_match_id_list = []
+        self.pwt_metacyc_long_id_list = []
         self.json_reactions_list = []
         self.sbml_reactions_list = []
 
@@ -47,21 +50,17 @@ class Merging(module.Module):
             self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
 
     def _search_metacyc_reactions_ids(self):
-        reactions_ids = []
-        long_reactions_ids = []
-        no_match_ids = []
         for reaction in self.pwt_reactions_id_list:
             try:
                 var = self.metacyc_matching_id_dict[reaction]
-                reactions_ids.append(reaction)
+                self.pwt_metacyc_reactions_id_list.append(reaction)
             except KeyError:
                 try:
-                    reactions_ids.append(self.metacyc_matching_id_dict_reversed[
+                    self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
                                          reaction])  # despécialisation de la réaction (long à court)
-                    long_reactions_ids.append(reaction)
+                    self.pwt_metacyc_long_id_list.append(reaction)
                 except KeyError:
-                    no_match_ids.append(reaction)
-        return reactions_ids, long_reactions_ids, no_match_ids
+                    self.pwt_metacyc_no_match_id_list.append(reaction)
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -177,7 +176,13 @@ class Merging(module.Module):
     #     cobra.io.save_json_model(new_model, self.wd_log + "/../" + self.name + "_merged.json")
     #     print("Nb of reactions in the merged model : ", len(new_model.reactions))
 
+    def run(self):
+        self._get_pwt_reactions()
+        self._search_metacyc_reactions_ids()
+
 
 if __name__ == '__main__':
     main_directory = "/home/asa/INRAE/These/Tests/"
     test = Merging("actinidia_chinensis", main_directory)
+    test.run()
+    print(test.pwt_metacyc_no_match_id_list)
