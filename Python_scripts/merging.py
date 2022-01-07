@@ -39,16 +39,6 @@ class Merging(module.Module):
     def _get_pwt_reactions(self):
         self.pwt_reactions_id_list = utils.get_pwt_reactions(self.directory + "/reactions.dat")
 
-    def _get_json_models_reactions(self):
-        list_json_model = utils.find_files(self.directory, "json")
-        for json_model in list_json_model:
-            self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
-
-    def _get_sbml_models_reactions(self):
-        list_sbml_model = utils.find_files(self.directory, "sbml")
-        for sbml_model in list_sbml_model:
-            self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
-
     def _search_metacyc_reactions_ids(self):
         for reaction in self.pwt_reactions_id_list:
             try:
@@ -57,10 +47,26 @@ class Merging(module.Module):
             except KeyError:
                 try:
                     self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
-                                         reaction])  # despécialisation de la réaction (long à court)
+                                                                  reaction])  # despécialisation de la réaction (long à court)
                     self.pwt_metacyc_long_id_list.append(reaction)
                 except KeyError:
                     self.pwt_metacyc_no_match_id_list.append(reaction)
+
+    def _get_json_models_reactions(self):
+        list_json_model = utils.find_files(self.directory, "json")
+        if list_json_model:
+            for json_model in list_json_model:
+                self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
+        else:
+            print("------\nNo json file for drafts or models found.\n------")
+
+    def _get_sbml_models_reactions(self):
+        list_sbml_model = utils.find_files(self.directory, "sbml")
+        if list_sbml_model:
+            for sbml_model in list_sbml_model:
+                self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
+        else:
+            print("------\nNo sbml file for drafts or models found.\n------")
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -146,14 +152,17 @@ class Merging(module.Module):
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction
 
-    # def merge(self, verbose=False):
-    #     """Function to merge models, either from a model-based reconstruction (blasting module) or from
-    #     Pathway Tools's Pathologic software.
-    #
-    #     ARGS:
-    #         verbose (boolean) -- print or not protein matches.
-    #     """
-    #
+    def _merge(self, trust_model=False, verbose=False):
+        """Function to merge models, either from a model-based reconstruction (blasting module) or from
+        Pathway Tools's Pathologic software.
+
+        ARGS:
+            trust_model (boolean) -- True if you trust the model(s) you gave in input (blasting/merging), taking all of
+                their reactions even if they are not found in the Metacyc network.
+                False if you only want the Metacyc reactions.
+            verbose (boolean) -- print or not the protein matches in the terminal (won't change the logs).
+        """
+
     #     self._get_pwt_reactions()
     #     self._get_blast_model_reactions()
     #     # Here we take away the reactions of the blast reconstruction because we will deep-copy them as they are
@@ -177,12 +186,20 @@ class Merging(module.Module):
     #     print("Nb of reactions in the merged model : ", len(new_model.reactions))
 
     def run(self):
-        self._get_pwt_reactions()
-        self._search_metacyc_reactions_ids()
+        if utils.check_path(self.directory + "reactions.dat"):
+            self._get_pwt_reactions()
+            self._search_metacyc_reactions_ids()
+        else:
+            print("No .dat files found, proceeding with drafts and models only.")
+        if utils.check_path(self.directory):
+            self._get_json_models_reactions()
+            self._get_sbml_models_reactions()
 
 
 if __name__ == '__main__':
     main_directory = "/home/asa/INRAE/These/Tests/"
-    test = Merging("actinidia_chinensis", main_directory)
+    test = Merging("chimera", main_directory)
+    # test = Merging("actinidia_chinensis", main_directory)
+    # test = Merging("cucumis_sativus", main_directory)
     test.run()
-    print(test.pwt_metacyc_no_match_id_list)
+    print(len(set(test.json_reactions_list)))
