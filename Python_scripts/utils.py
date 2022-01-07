@@ -127,13 +127,13 @@ def find_file(directory, target, extension):  # TODO : take multiple file extens
         file_path (str) -- the exact path to the file.
     """
 
-    file_path = slash(directory) + target + point(extension)
+    file_path = slash(directory) + target + dot(extension)
     if os.path.isfile(file_path):
         return file_path
     else:
         print("No corresponding file found here : " + directory)
         try:
-            file_path = str(input("Path to " + target + point(extension) + "'s file : "))
+            file_path = str(input("Path to " + target + dot(extension) + "'s file : "))
             if os.path.isfile(file_path):
                 return file_path
             else:
@@ -147,7 +147,7 @@ def find_file(directory, target, extension):  # TODO : take multiple file extens
 def find_files(directory, extension):
     """Function to return the list of files in a given directory with a certain extension"""
 
-    return [i for i in os.listdir(slash(directory)) if i.endswith(point(extension))]
+    return [i for i in os.listdir(slash(directory)) if i.endswith(dot(extension))]
 
 
 def get_clusters(cluster_list):
@@ -372,8 +372,8 @@ def make_upsetplot(directory, name, data, title):
     plt.show()
 
 
-def point(extension):
-    """Utility function to put a point before the extension if needed."""
+def dot(extension):
+    """Utility function to put a dot before the extension if needed."""
 
     if extension[0] != ".":
         return "." + extension
