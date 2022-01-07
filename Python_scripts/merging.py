@@ -52,21 +52,17 @@ class Merging(module.Module):
                 except KeyError:
                     self.pwt_metacyc_no_match_id_list.append(reaction)
 
-    def _get_json_models_reactions(self):
-        list_json_model = utils.find_files(self.directory, "json")
-        if list_json_model:
-            for json_model in list_json_model:
-                self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
+    def _get_networks_reactions(self, extension):
+        list_networks = utils.find_files(self.directory, extension)
+        if list_networks:
+            if extension == "json":
+                for json_model in list_networks:
+                    self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
+            if extension == "sbml":
+                for sbml_model in list_networks:
+                    self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
         else:
-            print("------\nNo json file for drafts or models found.\n------")
-
-    def _get_sbml_models_reactions(self):
-        list_sbml_model = utils.find_files(self.directory, "sbml")
-        if list_sbml_model:
-            for sbml_model in list_sbml_model:
-                self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
-        else:
-            print("------\nNo sbml file for drafts or models found.\n------")
+            print("------\nNo " + extension + " file of draft network or model found.\n------")
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -189,11 +185,12 @@ class Merging(module.Module):
         if utils.check_path(self.directory + "reactions.dat"):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
+
         else:
             print("No .dat files found, proceeding with drafts and models only.")
-        if utils.check_path(self.directory):
-            self._get_json_models_reactions()
-            self._get_sbml_models_reactions()
+        if utils.check_path(self.directory, sys_exit=True):
+            self._get_networks_reactions("json")
+            self._get_networks_reactions("sbml")
 
 
 if __name__ == '__main__':
