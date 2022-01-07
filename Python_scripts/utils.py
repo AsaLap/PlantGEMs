@@ -47,11 +47,21 @@ def build_correspondence_dict(path, sep="\t"):
     return matching_dict, matching_dict_reversed
 
 
-def check_path(path):
+def check_path(path, sys_exit=False):
+    """Function to check a file or folder existence.
+
+    ARGS:
+        path (str) -- the path to check.
+        sys_exit (boolean) -- True if you want to stop the process and quit, False (default) if you juste want the
+            return to be False if applicable (doesn't stop the process).
+        """
+
     if os.path.exists(path):
         return True
-    else:
+    elif sys_exit:
         sys.exit("File or folder not found : " + path)
+    else:
+        return False
 
 
 def clean_sbml(directory, name):

@@ -163,7 +163,7 @@ def multirun_first(main_directory):
     creating one Mpwting object for each.
     """
 
-    if os.path.isdir(main_directory):
+    if utils.check_path(main_directory):
         parameters = utils.read_config(main_directory + "main.ini")
         mpwt_directory = main_directory + "mpwt/"
         input_directory = mpwt_directory + "input/"
@@ -186,9 +186,7 @@ def multirun_first(main_directory):
                 taxon_name_list.append([species_name, taxon_id, element_type])
                 list_objects.append(Mpwting(species_name, main_directory, element_type))
                 make_taxon_file(input_directory, taxon_name_list)
-    else:
-        sys.exit("Main directory given does not exist : " + main_directory)
-    return [list_objects, cpu, input_directory, output_directory, log_directory]
+        return [list_objects, cpu, input_directory, output_directory, log_directory]
 
 
 def multirun_last(list_objects, cpu, input_directory, output_directory, log_directory):
