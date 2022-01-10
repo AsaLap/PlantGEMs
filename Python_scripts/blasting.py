@@ -273,12 +273,6 @@ class Blasting(module.Module):
             (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage), str(self._bit_score))) + ".json")
 
 
-def build_blast_objects(organism_object):
-    """Small function required for the multiprocessing reconstruction."""
-
-    organism_object.build()
-
-
 def blast_multirun_first(main_directory):
     """
     Split of major function 'run', first part = gathering the files and candidates' names and creating one
@@ -304,6 +298,12 @@ def blast_multirun_last(list_objects):
     cpu = len(list_objects)
     p = multiprocessing.Pool(cpu)
     p.map(build_blast_objects, list_objects)
+
+
+def build_blast_objects(organism_object):
+    """Small function required for the multiprocessing reconstruction."""
+
+    organism_object.build()
 
 
 def run(main_directory):

@@ -151,12 +151,6 @@ def make_taxon_file(directory, taxon_name_list):
     utils.write_csv(directory, "taxon_id", res, separator="\t")
 
 
-def build_mpwt_objects(organism):
-    """Function to build the mpwting object received from a multiprocess call."""
-
-    organism.build()
-
-
 def mpwt_multirun_first(main_directory):
     """
     Split of major function 'run', first part = gathering the parameters, files and candidates' names and
@@ -205,6 +199,12 @@ def mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, flat_creation=True,
                           dat_extraction=True, number_cpu=cpu, size_reduction=False, patho_log=log_directory,
                           ignore_error=False, taxon_file=input_directory + "taxon_id.tsv", verbose=True)
+
+
+def build_mpwt_objects(organism):
+    """Function to build the mpwting object received from a multiprocess call."""
+
+    organism.build()
 
 
 def run(main_directory):
