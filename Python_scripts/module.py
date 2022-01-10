@@ -21,17 +21,17 @@ class Module:
 
     # TODO : take multiple file format in account for the different "find" functions (cf. find_file in utils.py)
     # TODO : log of the file(s) used
+    def _find_eggnog(self, target):
+        return utils.find_file(self.main_directory + "/files/", target, ".tsv")
+
     def _find_genomic_fasta(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".fna")
-
-    def _find_proteomic_fasta(self, target):
-        return utils.find_file(self.main_directory + "/files/", target, ".faa")
 
     def _find_gff(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".gff")
 
-    def _find_eggnog(self, target):
-        return utils.find_file(self.main_directory + "/files/", target, ".tsv")
+    def _find_proteomic_fasta(self, target):
+        return utils.find_file(self.main_directory + "/files/", target, ".faa")
 
     def _find_sbml_model(self, files_directory):
         # TODO : log of the file used
