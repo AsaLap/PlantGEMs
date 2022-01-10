@@ -27,6 +27,7 @@ class Merging(module.Module):
         """Explanations here"""
         super().__init__(_name, _main_directory)
         self.directory = self.main_directory + "merge/" + self.name + "/"
+        self.files_directory = self.main_directory + "/files"
         self.pwt_reactions_id_list = []
         self.pwt_metacyc_reactions_id_list = []
         self.pwt_metacyc_no_match_id_list = []
@@ -34,10 +35,12 @@ class Merging(module.Module):
         self.json_reactions_list = []
         self.sbml_reactions_list = []
         self.merged_model = cobra.Model(self.name, name=self.name + "_PlantGEMs_" + str(date.today()))
-        self.metacyc_model = cobra.io.load_json_model(self.main_directory + "merge/metacyc.json")
-        self.metacyc_ids_file_path = utils.find_file(self.main_directory + "merge/", "metacyc_ids", "tsv")
-        if not os.path.isfile(self.metacyc_ids_file_path):
-            utils.get_metacyc_ids(self._find_sbml_model(self.directory))
+
+        # Metacyc files
+        self.metacyc_file_path = utils.find_file(self.files_directory, "metacyc", "json")
+        self.metacyc_model = cobra.io.load_json_model(self.metacyc_file_path)
+        utils.get_metacyc_ids(self.metacyc_file_path)
+        self.metacyc_ids_file_path = utils.find_file(self.files_directory, "metacyc_ids", "tsv")
         self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
             utils.build_correspondence_dict(self.metacyc_ids_file_path)
 
@@ -215,11 +218,9 @@ class Merging(module.Module):
 
 
 def merging_multirun_first(main_directory):
-    merge_directory = main_directory + "/merge/"
     list_objects = []
-    for species in os.listdir(merge_directory):  # Read directories named after the species
-        if os.path.isdir(merge_directory + species):
-            list_objects.append(Merging(species, main_directory))
+    for species in utils.get_list_directory(main_directory + "/merge/"):
+        list_objects.append(Merging(species, main_directory))
     return list_objects
 
 
