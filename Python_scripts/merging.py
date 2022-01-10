@@ -245,5 +245,3 @@ def run(main_directory):
 # TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
 if __name__ == '__main__':
     globals()[sys.argv[1]](*sys.argv[2:])
-    # run("actinidia_chinensis", "/home/asa/INRAE/These/Tests/")
-    # run("cucumis_sativus", "/home/asa/INRAE/These/Tests/")
