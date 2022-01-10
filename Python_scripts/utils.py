@@ -176,6 +176,22 @@ def get_clusters(cluster_list):
     return final_res
 
 
+def get_list_directory(path):
+    """Function to retrieve all the directories names at a specified location (path)
+
+    ARGS:
+        path (str) -- the folder path in which are searched the sub-folders.
+    RETURNS:
+        list_directory (list of str) -- the names of the found folders.
+    """
+
+    list_directory = []
+    for found in os.listdir(path):
+        if os.path.isdir(path + found):
+            list_directory.append(found)
+    return list_directory
+
+
 def get_metacyc_ids(metacyc_json_model_path):
     """Function to make the correspondence file between short and long ID of Metacyc."""
 
