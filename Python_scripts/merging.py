@@ -10,8 +10,10 @@ mpwt package."""
 
 import cobra
 import copy
+import multiprocessing
 import os
 import re
+import sys
 
 from datetime import date
 
@@ -39,9 +41,6 @@ class Merging(module.Module):
         self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
             utils.build_correspondence_dict(self.metacyc_ids_file_path)
 
-    def _get_pwt_reactions(self):
-        self.pwt_reactions_id_list = utils.get_pwt_reactions(self.directory + "/reactions.dat")
-
     def _search_metacyc_reactions_ids(self):
         for reaction in self.pwt_reactions_id_list:
             try:
@@ -65,7 +64,25 @@ class Merging(module.Module):
                 for sbml_model in list_networks:
                     self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
         else:
-            print("------\nNo " + extension + " file of draft network or model found.\n------")
+            print("------\nNo " + extension + " file of draft network or model found for " + self.name + ".\n------")
+
+    def _get_pwt_reactions(self):
+        """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
+
+        PARAMS:
+            path (str) -- the path to the reactions.dat file.
+        RETURNS:
+            list_reactions (list of str) -- the list containing all the reactions in this model.
+        """
+
+        pwt_reactions = open(self.directory + "/reactions.dat", "r")
+        for line in pwt_reactions:
+            if "UNIQUE-ID" in line and "#" not in line:
+                try:
+                    self.pwt_reactions_id_list.append(
+                        re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+                except AttributeError:
+                    print("No match for : ", line)
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -83,6 +100,7 @@ class Merging(module.Module):
         # First step : gathering the ENZYME-REACTION fields in enzrxns (could be several or none for one ID).
         stop = False
         enzrxns = []
+        unique_id = ""
         for reaction_line in reactions_file:
             if "UNIQUE-ID" in reaction_line and "#" not in reaction_line:
                 if stop:
@@ -105,6 +123,7 @@ class Merging(module.Module):
         # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
         stop = False
         gene_list = []
+        enzyme = ""
         if enzrxns:
             for enzrxn in enzrxns:
                 for line_enzrxn in enzrxns_file:
@@ -162,7 +181,11 @@ class Merging(module.Module):
             verbose (boolean) -- print or not the protein matches in the terminal (won't change the logs).
         """
 
+        count = 0
         for reaction in self.pwt_reactions_id_list:
+            if count % 100 == 0:
+                print("%s : gene correction %s ou of %s" % (self.name, str(count), str(len(self.pwt_reactions_id_list))))
+            count += 1
             if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
                 reaction = "_" + reaction
             try:
@@ -178,7 +201,7 @@ class Merging(module.Module):
                 self.merged_model.add_reactions([reaction])
         # else:  # TODO
 
-    def run(self):
+    def build(self):
         if utils.check_path(self.directory + "reactions.dat"):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
@@ -190,12 +213,37 @@ class Merging(module.Module):
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
 
-    # TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
+
+def merging_multirun_first(main_directory):
+    merge_directory = main_directory + "/merge/"
+    list_objects = []
+    for species in os.listdir(merge_directory):  # Read directories named after the species
+        if os.path.isdir(merge_directory + species):
+            list_objects.append(Merging(species, main_directory))
+    return list_objects
 
 
+def merging_multirun_last(list_objects):
+    """
+    Split of major function 'run', second part = launching the process on each given object with multiprocessing.
+    """
+
+    cpu = len(list_objects)
+    p = multiprocessing.Pool(cpu)
+    p.map(build_merge_objects, list_objects)
+
+
+def build_merge_objects(organism):
+    organism.build()
+
+
+def run(main_directory):
+    list_objects = merging_multirun_first(main_directory)
+    merging_multirun_last(list_objects)
+
+
+# TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
 if __name__ == '__main__':
-    main_directory = "/home/asa/INRAE/These/Tests/"
-    test = Merging("chimera", main_directory)
-    # test = Merging("actinidia_chinensis", main_directory)
-    # test = Merging("cucumis_sativus", main_directory)
-    test.run()
+    globals()[sys.argv[1]](*sys.argv[2:])
+    # run("actinidia_chinensis", "/home/asa/INRAE/These/Tests/")
+    # run("cucumis_sativus", "/home/asa/INRAE/These/Tests/")

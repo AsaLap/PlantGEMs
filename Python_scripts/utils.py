@@ -205,26 +205,6 @@ def get_metacyc_ids(metacyc_json_model_path):
     write_csv(os.path.dirname(metacyc_json_model_path), "/metacyc_ids", res, "\t")
 
 
-def get_pwt_reactions(path):
-    """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
-
-    PARAMS:
-        path (str) -- the path to the reactions.dat file.
-    RETURNS:
-        list_reactions (list of str) -- the list containing all the reactions in this model.
-    """
-
-    list_reactions = []
-    pwt_reactions = open(path, "r")
-    for line in pwt_reactions:
-        if "UNIQUE-ID" in line and "#" not in line:
-            try:
-                list_reactions.append(re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
-            except AttributeError:
-                print("No match for : ", line)
-    return list_reactions
-
-
 def get_sequence_region(gff_file_path):
     """Function that browses the .gff file and gets the name of each gene,
     the position in the genome and each corresponding region and protein(s).
