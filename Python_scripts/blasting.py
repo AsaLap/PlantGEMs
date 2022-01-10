@@ -279,7 +279,7 @@ def build_blast_objects(organism_object):
     organism_object.build()
 
 
-def multirun_first(main_directory):
+def blast_multirun_first(main_directory):
     """
     Split of major function 'run', first part = gathering the files and candidates' names and creating one
     Blasting object for each.
@@ -296,7 +296,7 @@ def multirun_first(main_directory):
     return list_objects
 
 
-def multirun_last(list_objects):
+def blast_multirun_last(list_objects):
     """
     Split of major function 'run', second part = launching the process on each given object with multiprocessing.
     """
@@ -309,8 +309,8 @@ def multirun_last(list_objects):
 def run(main_directory):
     """The function to launch the process when used alone."""
 
-    list_objects = multirun_first(main_directory)
-    multirun_last(list_objects)
+    list_objects = blast_multirun_first(main_directory)
+    blast_multirun_last(list_objects)
 
 
 def run_unique(*args):

@@ -157,7 +157,7 @@ def build_mpwt_objects(organism):
     organism.build()
 
 
-def multirun_first(main_directory):
+def mpwt_multirun_first(main_directory):
     """
     Split of major function 'run', first part = gathering the parameters, files and candidates' names and
     creating one Mpwting object for each.
@@ -189,7 +189,7 @@ def multirun_first(main_directory):
         return [list_objects, cpu, input_directory, output_directory, log_directory]
 
 
-def multirun_last(list_objects, cpu, input_directory, output_directory, log_directory):
+def mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log_directory):
     """
     Split of major function 'run', second part = launching the process on each given object with multiprocessing
     and launching the mpwt reconstruction.
@@ -210,7 +210,7 @@ def multirun_last(list_objects, cpu, input_directory, output_directory, log_dire
 def run(main_directory):
     """The function to make all the run working."""
 
-    multirun_last(*multirun_first(main_directory))
+    mpwt_multirun_last(*mpwt_multirun_first(main_directory))
 
 
 if __name__ == "__main__":
