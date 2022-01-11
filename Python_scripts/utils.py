@@ -114,6 +114,18 @@ def cobra_compatibility(reaction, side=True):
     return reaction
 
 
+def copy_file(start, end):
+    if check_path(start):
+        try:
+            subprocess.run(["cp", start, end])
+        except PermissionError:
+            print("Permission to create this folder :\n" + end + "\nnot granted !")
+        except FileNotFoundError:
+            print("Path not found : ", end)
+    else:
+        print("File not found : " + start)
+
+
 def find_file(directory, target, extension):  # TODO : take multiple file extensions in parameters
     """Search a file corresponding to the target in the 'files' directory. If no match is found,
     asks the user to input the exact path to the file he wants to use.
