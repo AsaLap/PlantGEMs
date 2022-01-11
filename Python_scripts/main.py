@@ -8,10 +8,28 @@
 """This file is the main, calling the others files to create an entirely new metabolic network."""
 
 import blasting
+import merging
 import mpwting
-import os
 import utils
 import sys
+
+
+def migrate(main_directory):
+    blast_directory = main_directory + "blast/"
+    merge_directory = main_directory + "merge/"
+    mpwt_directory = main_directory + "mpwt/"
+    utils.make_directory(merge_directory)
+    list_species = utils.get_list_directory(blast_directory)
+    for species in list_species:
+        utils.make_directory(merge_directory + species)
+        utils.copy_file(blast_directory + species + "/" + species + "_blast_draft.json",
+                        merge_directory + species + "/" + species + "_blast_draft.json")
+        utils.copy_file(mpwt_directory + "/output/" + species + "/reactions.dat",
+                        merge_directory + species + "/reactions.dat")
+        utils.copy_file(mpwt_directory + "/output/" + species + "/proteins.dat",
+                        merge_directory + species + "/proteins.dat")
+        utils.copy_file(mpwt_directory + "/output/" + species + "/enzrxns.dat",
+                        merge_directory + species + "/enzrxns.dat")
 
 
 def run(main_directory):
@@ -28,12 +46,9 @@ def run(main_directory):
     blasting.blast_multirun_last(list_objects_to_blast)
     mpwting.mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log_directory)
 
-    # TODO
-    # Migrate each organism's files to merge directory
-    # migrate()  # Declare this function in utils.py to be used in merging.py by the user if wished so
-
-    # launch merge
-    # merge()  # uses each subdirectory (species) of the /merging directory
+    # Merging all the new drafts and pathway tools pgdbs for each organism
+    migrate(main_directory)
+    merging.run(main_directory)
 
 
 if __name__ == "__main__":
