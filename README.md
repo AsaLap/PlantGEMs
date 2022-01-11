@@ -11,28 +11,68 @@
    - [merging.py](#mergingpy-only-)
  - [Files description](#files-description-)
  - [NEWS](#news-)
+ 
+NB : Each script can be launched separately. However, the pipeline can be entirely launched with _main.py_.<br />
+NB' : Every module can be used in CLI or in a Python script. Don't forget to use a virtual environment meeting the requirements.txt file specifications.
 
-Each script can be launched separately. However, the pipeline can be entirely launched with _main.py_.
-
-Every module can be used in CLI or in a Python script.
-
-## Folders structure (common to all modules and main) :
+## Folder structure you have to follow (common to all modules and _main_) :
 
 ```text
-main_directory
- ├── files
- │    └── model.sbml (blasting.py)
- │    └── model.faa (blasting.py)
- │    └── species_1.gff (blasting.py + mpwting.py)
- │    └── species_1.faa (blasting.py + EggNOG Mapper)
- │    └── species_1.fna (mpwting.py)
- │    └── species_1.tsv (=EggNOG annotation on species.faa file) (mpwting.py)
- │    └── species_2.gff
- │    └── species_2.faa
- │    └── species_2.fna
- │    └── species_2.tsv
- │    └── ...
- └── main.ini
+main_directory/
+  ├── files/
+  │    ├── metacyc.json (merging.py)
+  │    ├── model.sbml (blasting.py)
+  │    ├── model.faa (blasting.py)
+  │    ├── species_1.gff (blasting.py + mpwting.py)
+  │    ├── species_1.faa (blasting.py + EggNOG Mapper)
+  │    ├── species_1.fna (mpwting.py)
+  │    ├── species_1.tsv (=EggNOG annotation on species.faa file) (mpwting.py)
+  │    ├── species_2.gff
+  │    ├── species_2.faa
+  │    ├── species_2.fna
+  │    ├── species_2.tsv
+  │    └── ...
+  └── main.ini
+```
+
+## Output of the entire pipeline :
+```text
+main_directory/
+  ├── files/
+  │    ├── metacyc.json (merging.py)
+  │    ├── metacyc_ids.tsv (created by merging.py)
+  │    ├── model.sbml (blasting.py)
+  │    ├── model.faa (blasting.py)
+  │    ├── species_1.gff (blasting.py + mpwting.py)
+  │    ├── species_1.faa (blasting.py + EggNOG Mapper)
+  │    ├── species_1.fna (mpwting.py)
+  │    ├── species_1.tsv (=EggNOG annotation on species.faa file) (mpwting.py)
+  │    ├── species_2.gff
+  │    ├── species_2.faa
+  │    ├── species_2.fna
+  │    ├── species_2.tsv
+  │    └── ...
+  ├── blast/
+  │    ├── species_1/
+  │    │    ├── species_1_blast_draft.json
+  │    │    ├── protein_gene_correspondence.tsv
+  │    │    └── objects_history/
+  │    │         ├── blasted.pkl
+  │    │         ├── drafted.pkl
+  │    │         └── genes_selected.pkl
+  │    ├── species_2/
+  │    └── ...
+  ├── mpwt/ (see mpwt at https://github.com/AuReMe/mpwt)
+  ├── merge/
+  │    ├── species_1/
+  │    │    ├── species_1_blast_draft.json
+  │    │    ├── species_1_merged.json (Currently PlantGEMs' final result)
+  │    │    ├── enzrxns.dat
+  │    │    ├── proteins.dat
+  │    │    └── reactions.dat
+  │    ├── species_2/
+  │    └── ...
+  └── main.ini
 ```
 
 ## HOW TO USE
@@ -100,8 +140,16 @@ $ python mpwting.py run "path/to/main/directory"
 
 **NB2** : every dependency needed is normally listed in the _requirements.txt_, but you will also need **Pathway-Tools** to be installed. Please see mpwt's GitHub page for more information : https://github.com/AuReMe/mpwt.
 
-## **blasting.py only :**
-_**WIP**_
+
+## **merging.py only :**
+This module merges all the models (sbml/json) and the .dat flat files from Pathway Tools that are present in the merge folder.
+This folder is either created automatically if the pipeline is launched with _main.py_, or you need to make it and fill it with the files you want.
+See the structure (above) to make it. You can merge as many sbml and json models you want but only one of each flat files (reactions/enzrxns/proteins.dat) from Pathway Tools.
+
+__Example of use :__
+```bash
+$ python merging.py run "path/to/main/directory"
+```
 
 ## Files description :
 
@@ -143,12 +191,13 @@ NCBI_TAXON_ID = 3659
 
 Some improvements are to come : 
 - A complete pipeline (blast draft & mpwt draft + merging + gap-filling + global analysis of the reconstructed networks).
-  - The blast values will be customizable as it suits you.
-  - _Merging.py_ reworking is on its way (next module to come).
-    - A merge of any sbml model will also be possible in the _merging.py_ module.
+  - The blast values ~~will be~~ **are** customizable as it suits you when rerun.
+  - _Merging.py_ reworking is ~~on its way~~ **done !**
+    - A merge of any sbml model ~~will also be~~ **is** possible in the _merging.py_ module.
   - The compartmentalization of the reactions.
   - The Meneco-based gap-filling (https://github.com/bioasp/meneco) will be done subsequently.
   
 Further ideas :
 - Multiple models reconstruction in the blast module.
 - Graphical interface for a common user utility and easy metabolic reconstruction.
+- A docker version for more compatibility and easy deployment.
