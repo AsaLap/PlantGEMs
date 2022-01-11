@@ -185,6 +185,7 @@ def get_list_directory(path):
         list_directory (list of str) -- the names of the found folders.
     """
 
+    path = slash(path)
     list_directory = []
     for found in os.listdir(path):
         if os.path.isdir(path + found):
