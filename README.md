@@ -15,7 +15,7 @@
 NB : Each script can be launched separately. However, the pipeline can be entirely launched with _main.py_.<br />
 NB' : Every module can be used in CLI or in a Python script. Don't forget to use a virtual environment meeting the requirements.txt file specifications.
 
-## Folder structure you have to follow (common to all modules and _main_) :
+## Folders' structure to follow (common to all modules and _main_) :
 
 ```text
 main_directory/
@@ -125,7 +125,7 @@ files, for each organism you want to reconstruct :
 * all the .tsv from EggNOG-mapper annotation (you have to do that manually here : http://eggnog-mapper.embl.de/
 on the proteomic fasta (.faa) file (e.g.: _grape.tsv_).
 
-**NB** : GFF parsing won't work if the CDS' lines have the protein version number associated to their names (protein.1.**1**, protein.2.**2**...).
+**NB** : GFF parsing won't work if the CDS' lines have the protein version number associated to their names (protein.1.**1**, protein.2.**2**...) Issue to be fixed.
 
 The directory in which is stored the _files/_ directory is called the _main_directory_. It is the only argument needed by this module.
 \
@@ -159,7 +159,7 @@ $ python merging.py run "path/to/main/directory"
 
 - ``main.py`` -- Main file to launch all the workflow with a single command line.
 
-- ``merging.py`` -- Merge two drafts of metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the other one from a homemade reconstruction based on an already curated model (cf. blasting.py).
+- ``merging.py`` -- Merge metabolic networks, one from the Metacyc database using Pathway Tools (cf. mpwting.py) and the others from homemade reconstructions (cf. blasting.py) or from already curated models or other draft software.
 
 - ``module.py`` -- File for the parent class of all the modules, contains useful methods that can be inherited in all module's classes.
 
@@ -190,10 +190,10 @@ NCBI_TAXON_ID = 3659
 ## NEWS :
 
 Some improvements are to come : 
-- A complete pipeline (blast draft & mpwt draft + merging + gap-filling + global analysis of the reconstructed networks).
-  - The blast values ~~will be~~ **are** customizable as it suits you when rerun.
+- A complete pipeline (blast draft (done) & mpwt draft (done) + merging (done) + gap-filling + global analysis of the reconstructed networks).
+  - The blast values ~~will be~~ **are** customizable as it suits you when using the rerun function.
   - _Merging.py_ reworking is ~~on its way~~ **done !**
-    - A merge of any sbml model ~~will also be~~ **is** possible in the _merging.py_ module.
+    - A merge of any sbml **and json** model ~~will also be~~ **is** possible in the _merging.py_ module.
   - The compartmentalization of the reactions.
   - The Meneco-based gap-filling (https://github.com/bioasp/meneco) will be done subsequently.
   
