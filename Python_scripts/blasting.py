@@ -361,11 +361,10 @@ def main(argv):
             usage()
         if opt == "-d":
             main_directory = arg
-            print(main_directory)
         if opt in ("-i", "--identity"):
             identity = arg
-            print(identity)
 
 
 if __name__ == "__main__":
-    globals()[sys.argv[1]](*sys.argv[2:])
+    # globals()[sys.argv[1]](*sys.argv[2:])
+    run(sys.argv[1:])
