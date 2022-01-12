@@ -8,6 +8,7 @@
 
 import cobra
 import copy
+import getopt
 import multiprocessing
 import os
 import re
@@ -338,6 +339,32 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
     species.coverage = int(coverage)
     species.bit_score = int(bit_score)
     species.rebuild()
+
+
+def usage():
+    print("blasting.py -n <name> -md <main directory>")
+
+
+def main(argv):
+    short_options = "d:hi"
+    long_options = ["directory=", "help", "identity="]
+    try:
+        opts, args = getopt.getopt(argv, short_options, long_options)
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+        sys.exit(2)
+    main_directory = ""
+    identity = 50
+    for opt, arg in opts:
+        if opt == "-h":
+            usage()
+        if opt == "-d":
+            main_directory = arg
+            print(main_directory)
+        if opt in ("-i", "--identity"):
+            identity = arg
+            print(identity)
 
 
 if __name__ == "__main__":
