@@ -6,6 +6,7 @@
 # Mars - Aout 2020
 """This file is used for the metabolic reconstruction using sequence homology."""
 
+import argparse
 import cobra
 import copy
 import getopt
@@ -341,30 +342,39 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
     species.rebuild()
 
 
-def usage():
-    print("blasting.py -n <name> -md <main directory>")
+# def usage():
+#     print("blasting.py -n <name> -md <main directory>")
 
 
-def main(argv):
-    short_options = "d:hi"
-    long_options = ["directory=", "help", "identity="]
-    try:
-        opts, args = getopt.getopt(argv, short_options, long_options)
-    except getopt.GetoptError as err:
-        print(err)
-        usage()
-        sys.exit(2)
-    main_directory = ""
-    identity = 50
-    for opt, arg in opts:
-        if opt == "-h":
-            usage()
-        if opt == "-d":
-            main_directory = arg
-        if opt in ("-i", "--identity"):
-            identity = arg
+# def main(argv):
+#     short_options = "d:hi:"
+#     long_options = ["directory=", "help", "identity="]
+#     try:
+#         opts, args = getopt.getopt(argv, short_options, long_options)
+#     except getopt.GetoptError as err:
+#         print(err)
+#         usage()
+#         sys.exit(2)
+#     main_directory = ""
+#     identity = 50
+#     for opt, arg in opts:
+#         if opt == "-h":
+#             usage()
+#         if opt == "-d":
+#             main_directory = arg
+#         if opt in ("-i", "--identity"):
+#             identity = arg
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("main_directory", type=str, help="The path to the main directory")
+    parser.add_argument("-i", "--identity", help="The the blast's identity percentage",
+                        action="store_false")
+    args = parser.parse_args()
+    print(args.main_directory)
 
 
 if __name__ == "__main__":
     # globals()[sys.argv[1]](*sys.argv[2:])
-    run(sys.argv[1:])
+    # run(sys.argv[1:])
+    main()
