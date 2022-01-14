@@ -276,20 +276,23 @@ class Blasting(module.Module):
              str(self._bit_score))) + ".json")
 
 
-def blast_multirun_first(main_directory):
+def blast_multirun_first(args):
     """
     Split of major function 'run', first part = gathering the files and candidates' names and creating one
     Blasting object for each.
     """
 
-    parameters = utils.read_config(main_directory + "main.ini")
-    if os.path.isdir(main_directory):
+    parameters = utils.read_config(args.main_directory + "main.ini")
+    if os.path.isdir(args.main_directory):
         list_objects = []
         for i in parameters.keys():
             if i != "DEFAULT":
-                list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], main_directory))
+                list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
+                                             args.model_file_path, args.model_proteomic_fasta_path,
+                                             args.subject_proteomic_fasta_path, args.subject_gff_path,
+                                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
     else:
-        sys.exit("Main directory given does not exist : " + main_directory)
+        sys.exit("Main directory given does not exist : " + args.main_directory)
     return list_objects
 
 
@@ -309,10 +312,10 @@ def build_blast_objects(organism_object):
     organism_object.build()
 
 
-def run(main_directory):
+def run(args):
     """The function to launch the process when used alone."""
 
-    list_objects = blast_multirun_first(main_directory)
+    list_objects = blast_multirun_first(args)
     blast_multirun_last(list_objects)
 
 
@@ -340,14 +343,22 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("name", help="The future draft's name", type=str)
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
-    parser.add_argument("-m", "--model_file_path", help="Model's file's path", type=str)
-    parser.add_argument("-mfaa", "--model_proteomic_fasta_path", help="Model's proteomic fasta's path")
-    parser.add_argument("-sfaa", "--subject_proteomic_fasta_path", help="Subject's proteomic fasta's path")
-    parser.add_argument("-sgff", "--subject_gff_path", help="Subject's gff file's path")
+    parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
+                        action="store_true")
+    parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
+                                               " blasted.pkl object and give its path", type=str)
+    parser.add_argument("-n", "--name", help="The future draft's name", type=str)
+    parser.add_argument("-m", "--model_file_path", help="Model's file's path, use if 'files/' directory doesn't exist",
+                        type=str)
+    parser.add_argument("-mfaa", "--model_proteomic_fasta_path",
+                        help="Model's proteomic fasta's path, use if 'files/' directory doesn't exist")
+    parser.add_argument("-sfaa", "--subject_proteomic_fasta_path",
+                        help="Subject's proteomic fasta's path, use if 'files/' directory doesn't exist")
+    parser.add_argument("-sgff", "--subject_gff_path",
+                        help="Subject's gff file's path, use if 'files/' directory doesn't exist")
     parser.add_argument("-i", "--identity", help="The blast's identity percentage tolerated. Default=50",
                         type=int, default=50, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-d", "--difference",
@@ -360,11 +371,18 @@ def main():
                         type=int, default=20, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
                         type=int, default=300, choices=range(0, 1001), metavar="[0-1000]")
+
     args = parser.parse_args()
-    run_unique(args)
+    if args.rerun:
+        rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
+    elif args.unique:
+        if args.name:
+            run_unique(args)
+        else:
+            print("-n or --name is necessary if you do a unique run")
+    else:
+        run(args)
 
 
 if __name__ == "__main__":
-    # globals()[sys.argv[1]](*sys.argv[2:])
-    # run(sys.argv[1:])
     main()
