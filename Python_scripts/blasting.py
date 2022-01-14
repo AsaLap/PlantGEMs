@@ -9,7 +9,6 @@
 import argparse
 import cobra
 import copy
-import getopt
 import multiprocessing
 import os
 import re
@@ -288,8 +287,6 @@ def blast_multirun_first(args):
         for i in parameters.keys():
             if i != "DEFAULT":
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
-                                             args.model_file_path, args.model_proteomic_fasta_path,
-                                             args.subject_proteomic_fasta_path, args.subject_gff_path,
                                              args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
     else:
         sys.exit("Main directory given does not exist : " + args.main_directory)
@@ -341,7 +338,7 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
     species.rebuild()
 
 
-def main():
+def blast_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
@@ -371,8 +368,12 @@ def main():
                         type=int, default=20, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
                         type=int, default=300, choices=range(0, 1001), metavar="[0-1000]")
-
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = blast_arguments()
     if args.rerun:
         rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
     elif args.unique:

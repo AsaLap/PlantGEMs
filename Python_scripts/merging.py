@@ -8,6 +8,7 @@
 reconstruction and another one from a Pathway Tools reconstruction with the AuReMe's 
 mpwt package."""
 
+import argparse
 import cobra
 import copy
 import multiprocessing
@@ -243,6 +244,20 @@ def run(main_directory):
     merging_multirun_last(list_objects)
 
 
+def merging_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
+                        type=str)
+    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = merging_arguments()
+    run(args.main_directory)
+
+
 # TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
-if __name__ == '__main__':
-    globals()[sys.argv[1]](*sys.argv[2:])
+if __name__ == "__main__":
+    main()

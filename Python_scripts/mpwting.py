@@ -8,6 +8,7 @@
 Pathway Tools software reconstruction and launching of reconstruction 
 using mpwt package from AuReMe."""
 
+import argparse
 import module
 import mpwt
 import multiprocessing
@@ -213,5 +214,19 @@ def run(main_directory):
     mpwt_multirun_last(*mpwt_multirun_first(main_directory))
 
 
+def mpwt_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
+                        type=str)
+    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = mpwt_arguments()
+    run(args.main_directory)
+
+
 if __name__ == "__main__":
-    globals()[sys.argv[1]](*sys.argv[2:])
+    main()
