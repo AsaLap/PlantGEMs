@@ -272,7 +272,8 @@ class Blasting(module.Module):
         self._object_history_save("drafted")
         self._protein_to_gene()
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + "_".join(
-            (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage), str(self._bit_score))) + ".json")
+            (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
+             str(self._bit_score))) + ".json")
 
 
 def blast_multirun_first(main_directory):
@@ -315,63 +316,52 @@ def run(main_directory):
     blast_multirun_last(list_objects)
 
 
-def run_unique(*args):
+def run_unique(args):
     """
     This function allows to launch a blasting process on a unique organism with every argument in command line
     if wished so.
     """
 
-    try:
-        unique_blast = Blasting(*args)
-        unique_blast.build()
-    except TypeError:
-        print("Usage : $ python blasting.py run 'parameter1=value parameter2=value parameter3=value...'\n"
-              "Parameters (in order) : \n"
-              "required : name, main_directory\n"
-              "optional : model_file_path, model_proteomic_fasta_path,"
-              "subject_proteomic_fasta_path, subject_gff_path\n")
+    unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
+                            args.subject_proteomic_fasta_path, args.subject_gff_path,
+                            args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
+    unique_blast.build()
 
 
 def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
     species = utils.load_obj(blasted_object)
-    species.identity = int(identity)
-    species.difference = int(difference)
-    species.e_val = float(e_val)
-    species.coverage = int(coverage)
-    species.bit_score = int(bit_score)
+    species.identity = identity
+    species.difference = difference
+    species.e_val = e_val
+    species.coverage = coverage
+    species.bit_score = bit_score
     species.rebuild()
 
 
-# def usage():
-#     print("blasting.py -n <name> -md <main directory>")
-
-
-# def main(argv):
-#     short_options = "d:hi:"
-#     long_options = ["directory=", "help", "identity="]
-#     try:
-#         opts, args = getopt.getopt(argv, short_options, long_options)
-#     except getopt.GetoptError as err:
-#         print(err)
-#         usage()
-#         sys.exit(2)
-#     main_directory = ""
-#     identity = 50
-#     for opt, arg in opts:
-#         if opt == "-h":
-#             usage()
-#         if opt == "-d":
-#             main_directory = arg
-#         if opt in ("-i", "--identity"):
-#             identity = arg
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("main_directory", type=str, help="The path to the main directory")
-    parser.add_argument("-i", "--identity", help="The the blast's identity percentage",
-                        action="store_false")
+    parser.add_argument("name", help="The future draft's name", type=str)
+    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
+                        type=str)
+    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-m", "--model_file_path", help="Model's file's path", type=str)
+    parser.add_argument("-mfaa", "--model_proteomic_fasta_path", help="Model's proteomic fasta's path")
+    parser.add_argument("-sfaa", "--subject_proteomic_fasta_path", help="Subject's proteomic fasta's path")
+    parser.add_argument("-sgff", "--subject_gff_path", help="Subject's gff file's path")
+    parser.add_argument("-i", "--identity", help="The blast's identity percentage tolerated. Default=50",
+                        type=int, default=50, choices=range(0, 101), metavar="[0-100]")
+    parser.add_argument("-d", "--difference",
+                        help="The tolerated length difference between the two aligned sequences. Default=30",
+                        type=int, default=30, choices=range(0, 101), metavar="[0-100]")
+    parser.add_argument("-ev", "--e_val",
+                        help="The blast's e-value threshold value. Default=e-100",
+                        type=float, default=1e-100, choices=range(0, 1), metavar="[0-1]")
+    parser.add_argument("-c", "--coverage", help="The minimum sequence coverage tolerated. Default=20",
+                        type=int, default=20, choices=range(0, 101), metavar="[0-100]")
+    parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
+                        type=int, default=300, choices=range(0, 1001), metavar="[0-1000]")
     args = parser.parse_args()
-    print(args.main_directory)
+    run_unique(args)
 
 
 if __name__ == "__main__":
