@@ -86,7 +86,7 @@ class Merging(module.Module):
                     self.pwt_reactions_id_list.append(
                         re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
                 except AttributeError:
-                    print("No match for : ", line)
+                    print("No match for : ", line)  # TODO : log that
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -170,7 +170,7 @@ class Merging(module.Module):
             if verbose:
                 print(unique_id, "\n", " or ".join(set(gene_list)))
         else:
-            pass
+            pass  # TODO : log that (no corresponding enzrxns entry)
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction
 
@@ -216,6 +216,7 @@ class Merging(module.Module):
             self._get_networks_reactions("sbml")
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
+        # TODO : log the lists of reactions
 
 
 def merging_multirun_first(main_directory):
