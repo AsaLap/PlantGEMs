@@ -143,13 +143,13 @@ class Blasting(module.Module):
             tmp_dir = self.directory + "tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
-            for seq in self.model_proteomic_fasta.split(">"):
+            for seq in self.model_proteomic_fasta.split(">"):  # TODO : log nb of seq
                 if seq:
                     try:
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        print("Gene name not found in :", seq)  # TODO : Log this
+                        print("Gene name not found in :", seq)  # TODO : log this
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
@@ -167,7 +167,7 @@ class Blasting(module.Module):
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             utils.remove_directory(tmp_dir)
-            print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))
+            print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))  # TODO : log time
 
     def _select_genes(self):
         """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
@@ -190,7 +190,7 @@ class Blasting(module.Module):
                             and len_query[0] <= len_subject <= len_query[1] \
                             and spl[4] >= min_align \
                             and spl[9] >= self.bit_score \
-                            and spl[8] <= self.e_val:
+                            and spl[8] <= self.e_val:  # TODO : log all the genes selected and those who are not
                         try:
                             self.gene_dictionary[key].append(spl[2])
                         except KeyError:
@@ -205,7 +205,7 @@ class Blasting(module.Module):
             for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
                     to_add += self.gene_dictionary[gene]  # TODO : faire le changement de protein/gene ici
-                except KeyError:
+                except KeyError:  # TODO : log this
                     pass
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
@@ -246,7 +246,7 @@ class Blasting(module.Module):
                             if protein in gene_protein_dict.keys():
                                 genes.append(protein)
                         except KeyError:
-                            print("No match for : ", protein)
+                            print("No match for : ", protein)  # TODO : log this
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
             print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
@@ -285,7 +285,7 @@ def blast_multirun_first(args):
     if os.path.isdir(args.main_directory):
         list_objects = []
         for i in parameters.keys():
-            if i != "DEFAULT":
+            if i != "DEFAULT":  # TODO : log all the species reconstructed and args used
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
                                              args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
     else:
