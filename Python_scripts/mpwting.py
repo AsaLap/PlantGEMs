@@ -134,8 +134,11 @@ class Mpwting(module.Module):
         return info
 
     def build(self):
+        print(self.name + " : Creating the .dat files...")
         self._make_dat_files()
+        print(self.name + " : Creating the .fsa files...")
         self._make_fsa_files()
+        print(self.name + " : Creating the .pf files...")
         self._make_pf_files()
 
 
