@@ -9,6 +9,7 @@
 import argparse
 import cobra
 import copy
+import logging
 import multiprocessing
 import os
 import re
@@ -145,7 +146,7 @@ class Blasting(module.Module):
             tmp_dir = self.directory + "tmp_dir/"
             utils.remove_directory(tmp_dir)
             utils.make_directory(tmp_dir)
-            for seq in self.model_proteomic_fasta.split(">"):  # TODO : log nb of seq
+            for seq in self.model_proteomic_fasta.split(">"):
                 if seq:
                     try:
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
@@ -169,7 +170,9 @@ class Blasting(module.Module):
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             utils.remove_directory(tmp_dir)
-            print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))  # TODO : log time
+            log_message = self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time)
+            logging.info(log_message)
+            print(log_message)
 
     def _select_genes(self):
         """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
