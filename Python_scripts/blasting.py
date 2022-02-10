@@ -59,11 +59,13 @@ class Blasting(module.Module):
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
         self.blast_result = {}
         self.gene_dictionary = {}
+        self.draft = cobra.Model(self.name)
         self._identity = identity
         self._difference = difference
         self._e_val = e_val
         self._coverage = coverage
         self._bit_score = bit_score
+        self.version = 1.0
 
         """
         identity (int) -- the blast result identity's threshold value to select the subject genes.
@@ -199,7 +201,6 @@ class Blasting(module.Module):
     def _drafting(self):
         """Creates the new COBRA model for the subject organism."""
 
-        self.draft = cobra.Model(self.name)
         for reaction in self.model.reactions:
             to_add = []
             for gene in reaction.gene_reaction_rule.split(" or "):
