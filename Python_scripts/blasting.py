@@ -338,6 +338,7 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
     species.coverage = coverage
     species.bit_score = bit_score
     species.gene_dictionary = {}
+    species.draft = cobra.Model(species.name)
     species.rebuild()
 
 
