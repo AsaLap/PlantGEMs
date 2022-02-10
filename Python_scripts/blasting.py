@@ -265,14 +265,14 @@ class Blasting(module.Module):
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
 
     def rebuild(self):
+        surname = "_".join((str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
+                            str(self._bit_score)))
         self._select_genes()
-        self._object_history_save("genes_selected")
+        self._object_history_save("genes_selected_" + surname)
         self._drafting()
-        self._object_history_save("drafted")
+        self._object_history_save("drafted_" + surname)
         self._protein_to_gene()
-        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + "_".join(
-            (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
-             str(self._bit_score))) + ".json")
+        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + surname + ".json")
 
 
 def blast_multirun_first(args):
@@ -336,6 +336,7 @@ def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-1
     species.e_val = e_val
     species.coverage = coverage
     species.bit_score = bit_score
+    species.gene_dictionary = {}
     species.rebuild()
 
 
