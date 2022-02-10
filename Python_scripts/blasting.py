@@ -287,7 +287,8 @@ def blast_multirun_first(args):
         for i in parameters.keys():
             if i != "DEFAULT":
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
-                                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
+                                             identity=args.identity, difference=args.difference, e_val=args.e_val,
+                                             coverage=args.coverage, bit_score=args.bit_score))
     else:
         sys.exit("Main directory given does not exist : " + args.main_directory)
     return list_objects
