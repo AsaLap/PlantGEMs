@@ -334,7 +334,7 @@ def build_blast_objects(organism_object):
 def run(args):
     """The function to launch the process when used alone."""
 
-    logging.info("\n------ Running multiple species or unique but with a config file ------\n")
+    logging.info("\n------ Running multiple species or unique but with a config file ------")
     logging.info("Reading parameters...")
     list_objects = blast_multirun_first(args)
     logging.info("Launching the blast(s) with given parameters...")
@@ -347,7 +347,7 @@ def run_unique(args):
     if wished so.
     """
 
-    logging.info("\n------ Running a unique species ------\n")
+    logging.info("\n------ Running a unique species ------")
     unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
                             args.subject_proteomic_fasta_path, args.subject_gff_path,
                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
@@ -355,8 +355,12 @@ def run_unique(args):
 
 
 def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
-    logging.info("\n------ Rerunning a species' genes selection ------\n")
+    logging.info("\n------ Rerunning a species' genes selection ------")
     species = utils.load_obj(blasted_object)
+    logging.info("Parameters for : {}\n - Main directory : {}\n - Identity : {} -> {}\n - Difference : {} -> {}\n"
+                 " - E_Value : {} -> {}\n - Coverage : {} -> {}\n - Bit_Score : {} -> {}"
+                 .format(species.name, species.main_directory, species.identity, identity, species.difference,
+                         difference, species.e_val, e_val, species.coverage, coverage, species.bit_score, bit_score))
     species.identity = identity
     species.difference = difference
     species.e_val = e_val
@@ -404,7 +408,7 @@ def blast_arguments():
 def main():
     logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S')
-    logging.info("\n------ Blasting module started ------\n")
+    logging.info("\n------ Blasting module started ------")
     args = blast_arguments()
     if args.rerun:
         rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
