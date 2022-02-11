@@ -382,6 +382,8 @@ def blast_arguments():
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
     parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
                         action="store_true")
     parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
@@ -412,17 +414,21 @@ def blast_arguments():
 
 
 def main():
-    logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S %p')
-    logging.info("\n------ Blasting module started ------")
     args = blast_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename='blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    logging.info("\n------ Blasting module started ------")
     if args.rerun:
         rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
     elif args.unique:
         if args.name:
             run_unique(args)
         else:
-            print("-n or --name is necessary if you do a unique run")
+            print("Optional argument --name (-n) becomes necessary if you do a unique run")
     else:
         run(args)
 
