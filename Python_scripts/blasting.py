@@ -416,10 +416,10 @@ def blast_arguments():
 def main():
     args = blast_arguments()
     if args.log_erase:
-        logging.basicConfig(filename='blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     logging.info("\n------ Blasting module started ------")
     if args.rerun:

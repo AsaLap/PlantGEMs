@@ -230,13 +230,13 @@ def mpwt_arguments():
 def main():
     args = mpwt_arguments()
     if args.log_erase:
-        logging.basicConfig(filename='mpwting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename='mpwting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO, format='%(asctime)s %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p')
     logging.info("\n------ Mpwting module started ------")
-    run(args.main_directory)
+    run(utils.slash(args.main_directory))
 
 
 if __name__ == "__main__":
