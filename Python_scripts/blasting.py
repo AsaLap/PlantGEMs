@@ -348,6 +348,12 @@ def run_unique(args):
     """
 
     logging.info("\n------ Running a unique species ------")
+    logging.info("\nParameters for : {}\n - Main directory : {}\n - Model's file's path : {}\n - Model's proteomic "
+                 "fasta's path : {}\n - Subject's proteomic fasta's path : {}\n - Subject's gff file's path : {}\n"
+                 " - Identity : {}\n - Difference : {}\n - E_Value : {}\n - Coverage : {}\n - Bit_Score : {}"
+                 .format(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
+                         args.subject_proteomic_fasta_path, args.subject_gff_path,
+                         args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
     unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
                             args.subject_proteomic_fasta_path, args.subject_gff_path,
                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
@@ -407,7 +413,7 @@ def blast_arguments():
 
 def main():
     logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S')
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
     logging.info("\n------ Blasting module started ------")
     args = blast_arguments()
     if args.rerun:
