@@ -9,13 +9,12 @@ Pathway Tools software reconstruction and launching of reconstruction
 using mpwt package from AuReMe."""
 
 import argparse
+import logging
 import module
 import mpwt
 import multiprocessing
 import numpy as np
-import os
 import re
-import sys
 import utils
 
 
@@ -222,12 +221,21 @@ def mpwt_arguments():
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
     args = parser.parse_args()
     return args
 
 
 def main():
     args = mpwt_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename='mpwting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename='mpwting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    logging.info("\n------ Mpwting module started ------")
     run(args.main_directory)
 
 
