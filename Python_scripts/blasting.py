@@ -178,6 +178,8 @@ class Blasting(module.Module):
         """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
 
         if not self.blast_result:
+            logging.info(self.name + " : No blast results found... Please run a blast with blast_run() before launching"
+                                     " select_genes()")
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
         else:
             for key in self.blast_result.keys():  # key = region name
@@ -195,7 +197,7 @@ class Blasting(module.Module):
                             and len_query[0] <= len_subject <= len_query[1] \
                             and spl[4] >= min_align \
                             and spl[9] >= self.bit_score \
-                            and spl[8] <= self.e_val:  # TODO : log all the genes selected and those who are not
+                            and spl[8] <= self.e_val:  # TODO : collect all the genes selected and those who are not
                         try:
                             self.gene_dictionary[key].append(spl[2])
                         except KeyError:
@@ -250,10 +252,15 @@ class Blasting(module.Module):
                             if protein in gene_protein_dict.keys():
                                 genes.append(protein)
                         except KeyError:
-                            print("No match for : ", protein)  # TODO : log this
+                            log_message = self.name + " : No match for : ", protein
+                            logging.error(log_message)
+                            print(log_message)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
-            print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
+            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path +\
+                          "\nAborting..."
+            logging.info(log_message)
+            print(log_message)
             sys.exit()
 
     def build(self):
@@ -289,12 +296,21 @@ def blast_multirun_first(args):
     if os.path.isdir(args.main_directory):
         list_objects = []
         for i in parameters.keys():
-            if i != "DEFAULT":  # TODO : log all the species reconstructed and args used
+            if i != "DEFAULT":
+                logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
+                             "\n - Main directory : " + args.main_directory +
+                             "\n - Identity : " + args.identity +
+                             "\n - Difference : " + args.difference +
+                             "\n - E_Value : " + args.e_val +
+                             "\n - Coverage : " + args.coverage +
+                             "\n - Bit_Score : " + args.bit_score)
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
                                              identity=args.identity, difference=args.difference, e_val=args.e_val,
                                              coverage=args.coverage, bit_score=args.bit_score))
     else:
-        sys.exit("Main directory given does not exist : " + args.main_directory)
+        log_message = "Main directory given does not exist : " + args.main_directory
+        logging.error(log_message)
+        sys.exit(log_message)
     return list_objects
 
 
@@ -304,6 +320,7 @@ def blast_multirun_last(list_objects):
     """
 
     cpu = len(list_objects)
+    logging.info("Launching %i processes with multiprocess" % cpu)
     p = multiprocessing.Pool(cpu)
     p.map(build_blast_objects, list_objects)
 
@@ -317,7 +334,10 @@ def build_blast_objects(organism_object):
 def run(args):
     """The function to launch the process when used alone."""
 
+    logging.info("\n------ Running multiple species or unique but with a config file ------\n")
+    logging.info("Reading parameters...")
     list_objects = blast_multirun_first(args)
+    logging.info("Launching the blast(s) with given parameters...")
     blast_multirun_last(list_objects)
 
 
@@ -327,6 +347,7 @@ def run_unique(args):
     if wished so.
     """
 
+    logging.info("\n------ Running a unique species ------\n")
     unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
                             args.subject_proteomic_fasta_path, args.subject_gff_path,
                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
@@ -334,6 +355,7 @@ def run_unique(args):
 
 
 def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
+    logging.info("\n------ Rerunning a species' genes selection ------\n")
     species = utils.load_obj(blasted_object)
     species.identity = identity
     species.difference = difference
@@ -380,6 +402,9 @@ def blast_arguments():
 
 
 def main():
+    logging.basicConfig(filename='blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S')
+    logging.info("\n------ Blasting module started ------\n")
     args = blast_arguments()
     if args.rerun:
         rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
