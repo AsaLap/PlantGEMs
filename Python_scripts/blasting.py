@@ -55,9 +55,7 @@ class Blasting(module.Module):
             self.subject_gff_path = _subject_gff_path
         else:
             self.gff_file_path = self._find_gff(self.name)
-        # self.directory = "blast/" + self.name + "/"
-        # self.full_path = self.main_directory + self.directory
-        # self.directory = self.main_directory + "blast/" + self.name + "/"
+        self.directory = self.main_directory + "blast/" + self.name + "/"
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
         self.blast_result = {}
         self.gene_dictionary = {}
@@ -74,10 +72,6 @@ class Blasting(module.Module):
         coverage (int) -- the minimum sequence coverage of the match (percentage).
         bit_score (int) -- the minimum Bit-Score of each match.
         """
-
-    @property
-    def directory(self):
-        return self.main_directory + "blast/" + self.name + "/"
 
     @property
     def identity(self):
@@ -220,7 +214,7 @@ class Blasting(module.Module):
                 self.draft.add_reactions([x])
 
     def _object_history_save(self, step):
-        objects_directory = self.directory + "objects_history/"
+        objects_directory = self.directory + "/objects_history/"
         utils.make_directory(objects_directory)
         utils.save_obj(self, objects_directory + step)
 
@@ -334,9 +328,8 @@ def run_unique(args):
     unique_blast.build()
 
 
-def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
-    species = utils.load_obj(utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl")
-    species.main_directory = main_directory
+def rerun_blast_selection(blasted_object, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
+    species = utils.load_obj(blasted_object)
     species.identity = identity
     species.difference = difference
     species.e_val = e_val
@@ -382,7 +375,7 @@ def blast_arguments():
 def main():
     args = blast_arguments()
     if args.rerun:
-        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
+        rerun_blast_selection(args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
     elif args.unique:
         if args.name:
             run_unique(args)
