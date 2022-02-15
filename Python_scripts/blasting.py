@@ -155,7 +155,7 @@ class Blasting(module.Module):
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        print("Gene name not found in :", seq)  # TODO : log this
+                        print("Gene name not found in :", seq)  # TODO : Log this
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
