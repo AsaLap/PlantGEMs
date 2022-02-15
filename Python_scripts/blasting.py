@@ -9,6 +9,7 @@
 import argparse
 import cobra
 import copy
+import logging
 import multiprocessing
 import os
 import re
@@ -58,11 +59,13 @@ class Blasting(module.Module):
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
         self.blast_result = {}
         self.gene_dictionary = {}
+        self.draft = cobra.Model(self.name)
         self._identity = identity
         self._difference = difference
         self._e_val = e_val
         self._coverage = coverage
         self._bit_score = bit_score
+        self.version = 1.0
 
         """
         identity (int) -- the blast result identity's threshold value to select the subject genes.
@@ -152,7 +155,7 @@ class Blasting(module.Module):
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        print("Gene name not found in :", seq)  # TODO : Log this
+                        print("Gene name not found in :", seq)  # TODO : log this
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
@@ -170,12 +173,16 @@ class Blasting(module.Module):
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             utils.remove_directory(tmp_dir)
-            print(self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time))
+            log_message = self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time)
+            logging.info(log_message)
+            print(log_message)
 
     def _select_genes(self):
         """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
 
         if not self.blast_result:
+            logging.info(self.name + " : No blast results found... Please run a blast with blast_run() before launching"
+                                     " select_genes()")
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
         else:
             for key in self.blast_result.keys():  # key = region name
@@ -193,7 +200,7 @@ class Blasting(module.Module):
                             and len_query[0] <= len_subject <= len_query[1] \
                             and spl[4] >= min_align \
                             and spl[9] >= self.bit_score \
-                            and spl[8] <= self.e_val:
+                            and spl[8] <= self.e_val:  # TODO : collect all the genes selected and those who are not
                         try:
                             self.gene_dictionary[key].append(spl[2])
                         except KeyError:
@@ -202,13 +209,12 @@ class Blasting(module.Module):
     def _drafting(self):
         """Creates the new COBRA model for the subject organism."""
 
-        self.draft = cobra.Model(self.name)
         for reaction in self.model.reactions:
             to_add = []
             for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
                     to_add += self.gene_dictionary[gene]  # TODO : faire le changement de protein/gene ici
-                except KeyError:
+                except KeyError:  # TODO : log this
                     pass
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
@@ -249,10 +255,15 @@ class Blasting(module.Module):
                             if protein in gene_protein_dict.keys():
                                 genes.append(protein)
                         except KeyError:
-                            print("No match for : ", protein)
+                            log_message = self.name + " : No match for : ", protein
+                            logging.error(log_message)
+                            print(log_message)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
-            print("No correspondence file found here : " + correspondence_file_path + "\nAborting...")
+            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path +\
+                          "\nAborting..."
+            logging.info(log_message)
+            print(log_message)
             sys.exit()
 
     def build(self):
@@ -268,14 +279,14 @@ class Blasting(module.Module):
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
 
     def rebuild(self):
+        surname = "_".join((str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
+                            str(self._bit_score)))
         self._select_genes()
-        self._object_history_save("genes_selected")
+        self._object_history_save("genes_selected_" + surname)
         self._drafting()
-        self._object_history_save("drafted")
+        self._object_history_save("drafted_" + surname)
         self._protein_to_gene()
-        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + "_".join(
-            (str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
-             str(self._bit_score))) + ".json")
+        cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + surname + ".json")
 
 
 def blast_multirun_first(args):
@@ -289,10 +300,20 @@ def blast_multirun_first(args):
         list_objects = []
         for i in parameters.keys():
             if i != "DEFAULT":
+                logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
+                             "\n - Main directory : " + args.main_directory +
+                             "\n - Identity : " + args.identity +
+                             "\n - Difference : " + args.difference +
+                             "\n - E_Value : " + args.e_val +
+                             "\n - Coverage : " + args.coverage +
+                             "\n - Bit_Score : " + args.bit_score)
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
-                                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
+                                             identity=args.identity, difference=args.difference, e_val=args.e_val,
+                                             coverage=args.coverage, bit_score=args.bit_score))
     else:
-        sys.exit("Main directory given does not exist : " + args.main_directory)
+        log_message = "Main directory given does not exist : " + args.main_directory
+        logging.error(log_message)
+        sys.exit(log_message)
     return list_objects
 
 
@@ -302,6 +323,7 @@ def blast_multirun_last(list_objects):
     """
 
     cpu = len(list_objects)
+    logging.info("Launching %i processes with multiprocess" % cpu)
     p = multiprocessing.Pool(cpu)
     p.map(build_blast_objects, list_objects)
 
@@ -315,7 +337,10 @@ def build_blast_objects(organism_object):
 def run(args):
     """The function to launch the process when used alone."""
 
+    logging.info("\n------ Running multiple species or unique but with a config file ------")
+    logging.info("Reading parameters...")
     list_objects = blast_multirun_first(args)
+    logging.info("Launching the blast(s) with given parameters...")
     blast_multirun_last(list_objects)
 
 
@@ -325,6 +350,13 @@ def run_unique(args):
     if wished so.
     """
 
+    logging.info("\n------ Running a unique species ------")
+    logging.info("\nParameters for : {}\n - Main directory : {}\n - Model's file's path : {}\n - Model's proteomic "
+                 "fasta's path : {}\n - Subject's proteomic fasta's path : {}\n - Subject's gff file's path : {}\n"
+                 " - Identity : {}\n - Difference : {}\n - E_Value : {}\n - Coverage : {}\n - Bit_Score : {}"
+                 .format(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
+                         args.subject_proteomic_fasta_path, args.subject_gff_path,
+                         args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
     unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
                             args.subject_proteomic_fasta_path, args.subject_gff_path,
                             args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
@@ -332,17 +364,20 @@ def run_unique(args):
 
 
 def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
+    logging.info("\n------ Rerunning a species' genes selection ------")
     species = utils.load_obj(utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl")
-    if species is None:
-        print("File not found for " + utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl"
-              "\nBe careful to give the name as given when first running the process.")
-        sys.exit("Aborting the process")
+    logging.info("Parameters for : {}\n - Main directory : {}\n - Identity : {} -> {}\n - Difference : {} -> {}\n"
+                 " - E_Value : {} -> {}\n - Coverage : {} -> {}\n - Bit_Score : {} -> {}"
+                 .format(species.name, species.main_directory, species.identity, identity, species.difference,
+                         difference, species.e_val, e_val, species.coverage, coverage, species.bit_score, bit_score))
     species.main_directory = main_directory
     species.identity = identity
     species.difference = difference
     species.e_val = e_val
     species.coverage = coverage
     species.bit_score = bit_score
+    species.gene_dictionary = {}
+    species.draft = cobra.Model(species.name)
     species.rebuild()
 
 
@@ -351,6 +386,8 @@ def blast_arguments():
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
     parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
                         action="store_true")
     parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
@@ -382,13 +419,20 @@ def blast_arguments():
 
 def main():
     args = blast_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
+    logging.info("\n------ Blasting module started ------")
     if args.rerun:
         rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
     elif args.unique:
         if args.name:
             run_unique(args)
         else:
-            print("-n or --name is necessary if you do a unique run")
+            print("Optional argument --name (-n) becomes necessary if you do a unique run")
     else:
         run(args)
 
