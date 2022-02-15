@@ -24,11 +24,14 @@ class Mpwting(module.Module):
     def __init__(self, _name, _main_directory, _element_type):
         super().__init__(_name, _main_directory)
         self.element_type = _element_type
-        self.directory = self.main_directory + "mpwt/input/" + self.name + "/"
         self.genomic_fasta_file_path = self._find_genomic_fasta(self.name)
         self.gff_file_path = self._find_gff(self.name)
         self.eggnog_file_path = self._find_eggnog(self.name)
         self.regions_dict = utils.get_sequence_region(self.gff_file_path)
+
+    @property
+    def directory(self):
+        return self.main_directory + "mpwt/input/" + self.name + "/"
 
     def _make_dat_files(self):
         circular = 'N'
