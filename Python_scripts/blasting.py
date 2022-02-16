@@ -420,14 +420,17 @@ def blast_arguments():
 def main():
     args = blast_arguments()
     if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
-    logging.info("\n------ Blasting module started ------")
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info("------ Blasting module started ------")
     if args.rerun:
-        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
+        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
+                              args.coverage, args.bit_score)
     elif args.unique:
         if args.name:
             run_unique(args)
