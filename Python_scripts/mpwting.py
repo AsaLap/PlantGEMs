@@ -233,11 +233,13 @@ def mpwt_arguments():
 def main():
     args = mpwt_arguments()
     if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
     logging.info("\n------ Mpwting module started ------")
     run(utils.slash(args.main_directory))
 
