@@ -11,6 +11,7 @@ mpwt package."""
 import argparse
 import cobra
 import copy
+import logging
 import multiprocessing
 import os
 import re
@@ -63,12 +64,15 @@ class Merging(module.Module):
         if list_networks:
             if extension == "json":
                 for json_model in list_networks:
+                    logging.info("JSON model network found : {}".format(json_model))
                     self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
             if extension == "sbml":
                 for sbml_model in list_networks:
+                    logging.info("SBML model network found : {}".format(sbml_model))
                     self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
         else:
-            print("------\nNo " + extension + " file of draft network or model found for " + self.name + ".\n------")
+            logging.info("------\nNo {} file of draft network or model found for {}\n------".format(extension,
+                                                                                                    self.name))
 
     def _get_pwt_reactions(self):
         """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
@@ -80,13 +84,18 @@ class Merging(module.Module):
         """
 
         pwt_reactions = open(self.directory + "/reactions.dat", "r")
+        count = 0
         for line in pwt_reactions:
             if "UNIQUE-ID" in line and "#" not in line:
                 try:
+                    count += 1
                     self.pwt_reactions_id_list.append(
                         re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
                 except AttributeError:
-                    print("No match for : ", line)  # TODO : log that
+                    count -= 1
+                    logging.error("No match for : {}".format(line))
+        logging.info("{} : Number of reactions found in the Pathway Tools reconstruction files : {}".format(self.name,
+                                                                                                            count))
 
     def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
@@ -114,15 +123,15 @@ class Merging(module.Module):
                     if unique_id == reaction.name or unique_id == self.metacyc_matching_id_dict_reversed[reaction.name]:
                         stop = True
                 except AttributeError:
-                    print("No UNIQUE-ID match for reactions.dat : ", reaction_line)
+                    logging.error("No UNIQUE-ID match for reactions.dat : {}".format(reaction_line))
             if stop and "ENZYMATIC-REACTION " in reaction_line and "#" not in reaction_line:
                 try:
                     enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*',
                                              reaction_line).group(0).rstrip())
                 except AttributeError:
-                    print("No ENZYMATIC-REACTION match for reactions.dat : ", reaction_line)
-        if verbose:
-            print("%s : %i enzymatic reaction(s) found associated to this reaction." % (reaction.name, len(enzrxns)))
+                    logging.error("No ENZYMATIC-REACTION match for reactions.dat : {}".format(reaction_line))
+        logging.info("{} : {} enzymatic reaction(s) found associated to this reaction.".format(reaction.name,
+                                                                                               len(enzrxns)))
 
         # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
         stop = False
@@ -141,12 +150,12 @@ class Merging(module.Module):
                             if unique_id_rxn == enzrxn:
                                 stop = True
                         except AttributeError:
-                            print("No UNIQUE-ID match for enzrxns.Dat : ", line_enzrxn)
+                            logging.error("No UNIQUE-ID match for enzrxns.Dat : {}".format(line_enzrxn))
                     if stop and "ENZYME " in line_enzrxn and "#" not in line_enzrxn:
                         try:
                             enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(0).rstrip()
                         except AttributeError:
-                            print("No ENZYME match for enzrxns.dat : ", line_enzrxn)
+                            logging.error("No ENZYME match for enzrxns.dat : {}".format(line_enzrxn))
                 # Third step into the second one : getting the corresponding GENE for each ENZYME and put it into
                 # geneList (which contains all that we're looking for).
                 for lineProt in proteins_file:
@@ -160,17 +169,17 @@ class Merging(module.Module):
                             if unique_id_prot == enzyme:
                                 stop = True
                         except AttributeError:
-                            print("No UNIQUE-ID match for proteins.dat : ", lineProt)
+                            logging.error("No UNIQUE-ID match for proteins.dat : {}".format(lineProt))
                     if stop and "GENE " in lineProt and "#" not in lineProt:
                         try:
                             gene_list.append(
                                 re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
                         except AttributeError:
-                            print("No GENE match for proteins.dat : ", lineProt)
-            if verbose:
-                print(unique_id, "\n", " or ".join(set(gene_list)))
+                            logging.error("No GENE match for proteins.dat : {}".format(lineProt))
+                # logging.info(unique_id, "\n", " or ".join(set(gene_list))) Not needed, too much flooding
         else:
-            pass  # TODO : log that (no corresponding enzrxns entry)
+            logging.error("{} : No corresponding enzrxns entry for {}".format(self.name, unique_id))
+            pass
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction
 
@@ -210,13 +219,13 @@ class Merging(module.Module):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
         else:
-            print("------\nNo .dat files found, proceeding with drafts and models only.\n------")
+            logging.info("------\nNo .dat files found, proceeding with drafts and models only.\n------")
         if utils.check_path(self.directory, sys_exit=True):
             self._get_networks_reactions("json")
             self._get_networks_reactions("sbml")
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
-        # TODO : log the lists of reactions
+        # TODO : log the lists of reactions that are in both reconstruction method
 
 
 def merging_multirun_first(main_directory):
@@ -250,12 +259,23 @@ def merging_arguments():
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
     args = parser.parse_args()
     return args
 
 
 def main():
     args = merging_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename=args.main_directory + '/merging.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename=args.main_directory + '/merging.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info("------ Merging module started ------")
     run(args.main_directory)
 
 
