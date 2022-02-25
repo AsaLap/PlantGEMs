@@ -15,7 +15,6 @@ import logging
 import multiprocessing
 import os
 import re
-import sys
 
 from datetime import date
 
@@ -41,7 +40,8 @@ class Merging(module.Module):
         # Metacyc files
         self.metacyc_file_path = utils.find_file(self.files_directory, "metacyc", "json")
         self.metacyc_model = cobra.io.load_json_model(self.metacyc_file_path)
-        utils.get_metacyc_ids(self.metacyc_file_path)
+        if not os.path.isfile(self.files_directory + "metacyc_ids.tsv"):
+            utils.get_metacyc_ids(self.metacyc_file_path)
         self.metacyc_ids_file_path = utils.find_file(self.files_directory, "metacyc_ids", "tsv")
         self.metacyc_matching_id_dict, self.metacyc_matching_id_dict_reversed = \
             utils.build_correspondence_dict(self.metacyc_ids_file_path)
