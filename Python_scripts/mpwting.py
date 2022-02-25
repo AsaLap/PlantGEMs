@@ -178,6 +178,7 @@ def mpwt_multirun_first(main_directory):
         cpu = len(parameters.keys()) - 1
         for i in parameters.keys():
             if i != "DEFAULT":
+                logging.info("Species found : {}".format(i))
                 species_name = parameters[i]["ORGANISM_NAME"]
                 element_type = parameters[i]["ELEMENT_TYPE"]
                 taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
@@ -240,7 +241,7 @@ def main():
                             format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     if args.verbose:
         logging.getLogger().addHandler(logging.StreamHandler())
-    logging.info("\n------ Mpwting module started ------")
+    logging.info("------ Mpwting module started ------")
     run(utils.slash(args.main_directory))
 
 
