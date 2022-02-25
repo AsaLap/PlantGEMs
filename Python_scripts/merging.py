@@ -28,7 +28,7 @@ class Merging(module.Module):
         """Explanations here"""
         super().__init__(_name, _main_directory)
         self.directory = self.main_directory + "merge/" + self.name + "/"
-        self.files_directory = self.main_directory + "/files"
+        self.files_directory = self.main_directory + "files/"
         self.pwt_reactions_id_list = []
         self.pwt_metacyc_reactions_id_list = []
         self.pwt_metacyc_no_match_id_list = []
