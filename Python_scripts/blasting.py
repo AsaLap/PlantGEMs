@@ -302,11 +302,11 @@ def blast_multirun_first(args):
             if i != "DEFAULT":
                 logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
                              "\n - Main directory : " + args.main_directory +
-                             "\n - Identity : " + args.identity +
-                             "\n - Difference : " + args.difference +
-                             "\n - E_Value : " + args.e_val +
-                             "\n - Coverage : " + args.coverage +
-                             "\n - Bit_Score : " + args.bit_score)
+                             "\n - Identity : " + str(args.identity) +
+                             "\n - Difference : " + str(args.difference) +
+                             "\n - E_Value : " + str(args.e_val) +
+                             "\n - Coverage : " + str(args.coverage) +
+                             "\n - Bit_Score : " + str(args.bit_score))
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
                                              identity=args.identity, difference=args.difference, e_val=args.e_val,
                                              coverage=args.coverage, bit_score=args.bit_score))
