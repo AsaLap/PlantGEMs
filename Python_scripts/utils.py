@@ -381,6 +381,24 @@ def make_upsetplot(directory, name, data, title):
     plt.show()
 
 
+def migrate(main_directory):
+    blast_directory = main_directory + "blast/"
+    merge_directory = main_directory + "merge/"
+    mpwt_directory = main_directory + "mpwt/"
+    make_directory(merge_directory)
+    list_species = get_list_directory(blast_directory)
+    for species in list_species:
+        make_directory(merge_directory + species)
+        copy_file(blast_directory + species + "/" + species + "_blast_draft.json",
+                        merge_directory + species + "/" + species + "_blast_draft.json")
+        copy_file(mpwt_directory + "/output/" + species + "/reactions.dat",
+                        merge_directory + species + "/reactions.dat")
+        copy_file(mpwt_directory + "/output/" + species + "/proteins.dat",
+                        merge_directory + species + "/proteins.dat")
+        copy_file(mpwt_directory + "/output/" + species + "/enzrxns.dat",
+                        merge_directory + species + "/enzrxns.dat")
+
+
 def dot(extension):
     """Utility function to put a dot before the extension if needed."""
 

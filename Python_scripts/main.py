@@ -14,24 +14,6 @@ import mpwting
 import utils
 
 
-def migrate(main_directory):
-    blast_directory = main_directory + "blast/"
-    merge_directory = main_directory + "merge/"
-    mpwt_directory = main_directory + "mpwt/"
-    utils.make_directory(merge_directory)
-    list_species = utils.get_list_directory(blast_directory)
-    for species in list_species:
-        utils.make_directory(merge_directory + species)
-        utils.copy_file(blast_directory + species + "/" + species + "_blast_draft.json",
-                        merge_directory + species + "/" + species + "_blast_draft.json")
-        utils.copy_file(mpwt_directory + "/output/" + species + "/reactions.dat",
-                        merge_directory + species + "/reactions.dat")
-        utils.copy_file(mpwt_directory + "/output/" + species + "/proteins.dat",
-                        merge_directory + species + "/proteins.dat")
-        utils.copy_file(mpwt_directory + "/output/" + species + "/enzrxns.dat",
-                        merge_directory + species + "/enzrxns.dat")
-
-
 def run(args):
     print("Proceeding to create all the needed files and checking input files, please stay around...")
     # Launching the first part of Blast (files checking & folder generation)
@@ -48,7 +30,7 @@ def run(args):
     mpwting.mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log_directory)
 
     # Merging all the new drafts and pathway tools pgdbs for each organism
-    migrate(args.main_directory)
+    utils.migrate(args.main_directory)
     merging.run(args.main_directory)
 
 
