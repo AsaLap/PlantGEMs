@@ -230,7 +230,7 @@ class Merging(module.Module):
 
 def merging_multirun_first(main_directory):
     list_objects = []
-    for species in utils.get_list_directory(main_directory + "/merge/"):
+    for species in utils.get_list_directory(main_directory + "merge"):
         list_objects.append(Merging(species, main_directory))
     return list_objects
 
@@ -250,6 +250,7 @@ def build_merge_objects(organism):
 
 
 def run(main_directory):
+    utils.check_path(main_directory)
     list_objects = merging_multirun_first(main_directory)
     merging_multirun_last(list_objects)
 
@@ -258,6 +259,9 @@ def merging_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
+    parser.add_argument("-m", "--migrate", help="Take the files previously created by blasting or mpwting modules and "
+                                                "store them in a new merge folder, ready to be merged.",
+                        action="store_true")
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
     parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
                         action="store_true")
@@ -275,8 +279,10 @@ def main():
                             format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     if args.verbose:
         logging.getLogger().addHandler(logging.StreamHandler())
+    if args.migrate:
+        utils.migrate(utils.slash(args.main_directory))
     logging.info("------ Merging module started ------")
-    run(args.main_directory)
+    run(utils.slash(args.main_directory))
 
 
 # TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
