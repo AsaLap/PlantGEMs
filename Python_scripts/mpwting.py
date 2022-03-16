@@ -208,16 +208,11 @@ def mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log
                           taxon_file=input_directory + "taxon_id.tsv", verbose=True)
 
 
-def build_mpwt_objects(organism):
-    """Small function required for the multiprocessing reconstruction."""
-
-    organism.build()
-
-
-def run(main_directory):
-    """The function to make all the run working."""
-
-    mpwt_multirun_last(*mpwt_multirun_first(main_directory))
+def run(args):
+    cpu, input_directory, output_directory, log_directory, multirun_list = \
+        make_mpwt_architecture(utils.slash(args.main_directory))
+    make_mpwt_input_files(cpu, multirun_list)
+    run_mpwt(cpu, input_directory, output_directory, log_directory)
 
 
 def mpwt_arguments():
@@ -235,10 +230,10 @@ def main():
     args = mpwt_arguments()
     if args.log_erase:
         logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     else:
         logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
     if args.verbose:
         logging.getLogger().addHandler(logging.StreamHandler())
     logging.info("------ Mpwting module started ------")
