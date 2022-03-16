@@ -343,7 +343,7 @@ def make_directory(directory):
         print("Directory already exists : ", directory)
 
 
-def make_upsetplot(directory, name, data, title):
+def make_upsetplot(directory, name, data, title, remove_zero=True):
     """Function to make an UpSetPlot.
     Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
 
@@ -353,6 +353,7 @@ def make_upsetplot(directory, name, data, title):
         data -- the dictionary containing the organisms as keys
         and the genes/reactions/others to treat for the UpSetPlot.
         title (str) -- title of the graph.
+        remove_zero (boolean) -- False if you want to plot the 0 values intersections.
     """
 
     clusters = get_clusters(list(data.keys()))
@@ -374,6 +375,12 @@ def make_upsetplot(directory, name, data, title):
             log += cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
     write_file(directory + name + ".log", log, False)
+    # removing 0 values
+    if remove_zero:
+        while 0 in count:
+            x = count.index(0)
+            count.pop(x)
+            clusters.pop(x)
     my_upsetplot = from_memberships(clusters, count)
     plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
     plt.suptitle(title)
