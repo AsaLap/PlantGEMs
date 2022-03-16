@@ -8,14 +8,13 @@
 Pathway Tools software reconstruction and launching of reconstruction 
 using mpwt package from AuReMe."""
 
+import argparse
 import logging
+import module
 import mpwt
 import multiprocessing
 import numpy as np
 import re
-import sys
-
-import module
 import utils
 
 
@@ -221,5 +220,30 @@ def run(main_directory):
     mpwt_multirun_last(*mpwt_multirun_first(main_directory))
 
 
+def mpwt_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
+                        type=str)
+    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = mpwt_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info("------ Mpwting module started ------")
+    run(utils.slash(args.main_directory))
+
+
 if __name__ == "__main__":
-    sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")
+    main()
