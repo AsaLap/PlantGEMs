@@ -197,7 +197,8 @@ class Merging(module.Module):
         count = 0
         for reaction in self.pwt_reactions_id_list:
             if count % 100 == 0:
-                print("%s : gene correction %s ou of %s" % (self.name, str(count), str(len(self.pwt_reactions_id_list))))
+                print("%s : gene correction %s ou of %s" % (self.name, str(count),
+                                                            str(len(self.pwt_reactions_id_list))))
             count += 1
             if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
                 reaction = "_" + reaction
@@ -206,6 +207,7 @@ class Merging(module.Module):
                 added_reactions_corrected = self._correct_pwt_gene_reaction_rule(added_reactions, verbose)
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
+                logging.info("No match in gene correction for {} ({}'s correction)".format(reaction, self.name))
                 pass
         for reaction in self.json_reactions_list:
             self.merged_model.add_reactions([reaction])
