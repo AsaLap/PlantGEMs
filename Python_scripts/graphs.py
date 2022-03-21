@@ -110,5 +110,4 @@ if __name__ == '__main__':
         dicoUpset[model.id] = list_reactions_cobra(model)
 
     # Choose a name, an explanation and let's go !
-    make_upsetplot(wd, "Name", dicoUpset,
-               "Explanation")
+    make_upsetplot(wd, "Name", dicoUpset,  "Explanation")
