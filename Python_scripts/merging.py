@@ -183,7 +183,7 @@ class Merging(module.Module):
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction
 
-    def _merge(self, trust_model=True, verbose=False):
+    def _merge(self, verbose=False):
         """Function to merge models, either from a model-based reconstruction (blasting module) or from
         Pathway Tools's Pathologic software.
 
@@ -207,12 +207,10 @@ class Merging(module.Module):
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
                 pass
-        if trust_model:
-            for reaction in self.json_reactions_list:
-                self.merged_model.add_reactions([reaction])
-            for reaction in self.sbml_reactions_list:
-                self.merged_model.add_reactions([reaction])
-        # else:  # TODO
+        for reaction in self.json_reactions_list:
+            self.merged_model.add_reactions([reaction])
+        for reaction in self.sbml_reactions_list:
+            self.merged_model.add_reactions([reaction])
 
     def build(self):
         if utils.check_path(self.directory + "reactions.dat"):
