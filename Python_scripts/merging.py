@@ -18,6 +18,7 @@ import re
 
 from datetime import date
 
+import graphs
 import module
 import utils
 
@@ -35,6 +36,7 @@ class Merging(module.Module):
         self.pwt_metacyc_long_id_list = []
         self.json_reactions_list = []
         self.sbml_reactions_list = []
+        self.dict_upsetplot_reactions = {}
         self.merged_model = cobra.Model(self.name, name=self.name + "_PlantGEMs_" + str(date.today()))
 
         # Metacyc files
@@ -51,25 +53,35 @@ class Merging(module.Module):
             try:
                 var = self.metacyc_matching_id_dict[reaction]
                 self.pwt_metacyc_reactions_id_list.append(reaction)
+                self.dict_upsetplot_reactions["Pathway Tools"] = reaction
             except KeyError:
                 try:
                     self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
-                                                                  reaction])  # despécialisation de la réaction (long à court)
+                                                                  reaction])
                     self.pwt_metacyc_long_id_list.append(reaction)
+                    self.dict_upsetplot_reactions["Pathway Tools"] = reaction
                 except KeyError:
                     self.pwt_metacyc_no_match_id_list.append(reaction)
+        logging.info("List of despecialized reactions : {}".format(" & "
+                                                                   .join([i for i in self.pwt_metacyc_long_id_list])))
+        logging.info("List of unmatched reactions : {}".format(" & "
+                                                               .join(i for i in self.pwt_metacyc_no_match_id_list)))
 
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
         if list_networks:
             if extension == "json":
-                for json_model in list_networks:
-                    logging.info("JSON model network found : {}".format(json_model))
-                    self.json_reactions_list += cobra.io.load_json_model(self.directory + json_model).reactions
+                for json_model_file in list_networks:
+                    logging.info("JSON model network found : {}".format(json_model_file))
+                    json_model = cobra.io.load_json_model(self.directory + json_model_file)
+                    self.json_reactions_list += json_model.reactions
+                    self.dict_upsetplot_reactions[json_model.id] = [reaction.id for reaction in json_model.reactions]
             if extension == "sbml":
-                for sbml_model in list_networks:
-                    logging.info("SBML model network found : {}".format(sbml_model))
-                    self.sbml_reactions_list += cobra.io.read_sbml_model(self.directory + sbml_model).reactions
+                for sbml_model_file in list_networks:
+                    logging.info("SBML model network found : {}".format(sbml_model_file))
+                    sbml_model = cobra.io.read_sbml_model(self.directory + sbml_model_file)
+                    self.sbml_reactions_list += sbml_model.reactions
+                    self.dict_upsetplot_reactions[sbml_model.id] = [reaction.id for reaction in sbml_model.reactions]
         else:
             logging.info("------\nNo {} file of draft network or model found for {}\n------".format(extension,
                                                                                                     self.name))
@@ -225,7 +237,8 @@ class Merging(module.Module):
             self._get_networks_reactions("sbml")
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
-        # TODO : log the lists of reactions that are in both reconstruction method
+        graphs.make_upsetplot(self.directory, self.name + "_merging_upsetplot", self.dict_upsetplot_reactions,
+                              "Intersections of reactions in the different models/datasources used while merging")
 
 
 def merging_multirun_first(main_directory):
@@ -285,6 +298,5 @@ def main():
     run(utils.slash(args.main_directory))
 
 
-# TODO : Check for PHOSCHOL-RXN if specificity is kept during merging process (cucumis_sativus)
 if __name__ == "__main__":
     main()
