@@ -84,7 +84,7 @@ def make_upsetplot(directory, name, data, title, remove_zero=True, show_plot=Fal
         count.append(sim_count)
         for i in c:
             log += i + " "
-        log += " (" + str(sim_count) + ") :\n"
+        log += " (" + str(sim_count) + ") :\n\n"
         for i in cluster_data:
             log += cobra_compatibility(str(i)) + "\n"
         log += "\n------\n\n"
