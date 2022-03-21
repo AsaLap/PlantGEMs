@@ -273,10 +273,10 @@ def main():
     args = merging_arguments()
     if args.log_erase:
         logging.basicConfig(filename=args.main_directory + '/merging.log', filemode='w', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     else:
         logging.basicConfig(filename=args.main_directory + '/merging.log', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     if args.verbose:
         logging.getLogger().addHandler(logging.StreamHandler())
     if args.migrate:
