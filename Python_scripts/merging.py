@@ -49,23 +49,27 @@ class Merging(module.Module):
             utils.build_correspondence_dict(self.metacyc_ids_file_path)
 
     def _search_metacyc_reactions_ids(self):
-        for reaction in self.pwt_reactions_id_list:
-            try:
-                var = self.metacyc_matching_id_dict[reaction]
-                self.pwt_metacyc_reactions_id_list.append(reaction)
-                self.dict_upsetplot_reactions["Pathway Tools"] = reaction
-            except KeyError:
+        if self.pwt_reactions_id_list:
+            self.dict_upsetplot_reactions["Pathway_Tools"] = []
+            for reaction in self.pwt_reactions_id_list:
                 try:
-                    self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
-                                                                  reaction])
-                    self.pwt_metacyc_long_id_list.append(reaction)
-                    self.dict_upsetplot_reactions["Pathway Tools"] = reaction
+                    var = self.metacyc_matching_id_dict[reaction]
+                    self.pwt_metacyc_reactions_id_list.append(reaction)
+                    self.dict_upsetplot_reactions["Pathway_Tools"].append(reaction)
                 except KeyError:
-                    self.pwt_metacyc_no_match_id_list.append(reaction)
-        logging.info("List of despecialized reactions : {}".format(" & "
-                                                                   .join([i for i in self.pwt_metacyc_long_id_list])))
-        logging.info("List of unmatched reactions : {}".format(" & "
-                                                               .join(i for i in self.pwt_metacyc_no_match_id_list)))
+                    try:
+                        self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
+                                                                      reaction])
+                        self.pwt_metacyc_long_id_list.append(reaction)
+                        self.dict_upsetplot_reactions["Pathway_Tools"].append(reaction)
+                    except KeyError:
+                        self.pwt_metacyc_no_match_id_list.append(reaction)
+            logging.info("List of despecialized reactions : {}".format(" & "
+                                                                       .join(
+                [i for i in self.pwt_metacyc_long_id_list])))
+            logging.info("List of unmatched reactions ({}): {}".format(len(self.pwt_metacyc_no_match_id_list),
+                                                                       " & ".join(i for i in
+                                                                                  self.pwt_metacyc_no_match_id_list)))
 
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
@@ -207,6 +211,7 @@ class Merging(module.Module):
         """
 
         count = 0
+        list_no_match_correction = []
         for reaction in self.pwt_reactions_id_list:
             if count % 100 == 0:
                 print("%s : gene correction %s ou of %s" % (self.name, str(count),
@@ -219,8 +224,10 @@ class Merging(module.Module):
                 added_reactions_corrected = self._correct_pwt_gene_reaction_rule(added_reactions, verbose)
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
-                logging.info("No match in gene correction for {} ({}'s correction)".format(reaction, self.name))
+                list_no_match_correction.append(reaction)
                 pass
+        logging.info("No match in {} gene correction for gene : {}".format(self.name,
+                                                                           " & ".join(list_no_match_correction)))
         for reaction in self.json_reactions_list:
             self.merged_model.add_reactions([reaction])
         for reaction in self.sbml_reactions_list:
