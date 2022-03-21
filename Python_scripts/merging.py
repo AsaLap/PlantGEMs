@@ -32,8 +32,6 @@ class Merging(module.Module):
         self.files_directory = self.main_directory + "files/"
         self.pwt_reactions_id_list = []
         self.pwt_metacyc_reactions_id_list = []
-        self.pwt_metacyc_no_match_id_list = []
-        self.pwt_metacyc_long_id_list = []
         self.json_reactions_list = []
         self.sbml_reactions_list = []
         self.dict_upsetplot_reactions = {}
@@ -50,6 +48,8 @@ class Merging(module.Module):
 
     def _search_metacyc_reactions_ids(self):
         if self.pwt_reactions_id_list:
+            pwt_metacyc_long_id_list = []
+            pwt_metacyc_no_match_id_list = []
             self.dict_upsetplot_reactions["Pathway_Tools"] = []
             for reaction in self.pwt_reactions_id_list:
                 try:
@@ -60,16 +60,14 @@ class Merging(module.Module):
                     try:
                         self.pwt_metacyc_reactions_id_list.append(self.metacyc_matching_id_dict_reversed[
                                                                       reaction])
-                        self.pwt_metacyc_long_id_list.append(reaction)
+                        pwt_metacyc_long_id_list.append(reaction)
                         self.dict_upsetplot_reactions["Pathway_Tools"].append(reaction)
                     except KeyError:
-                        self.pwt_metacyc_no_match_id_list.append(reaction)
-            logging.info("List of despecialized reactions : {}".format(" & "
-                                                                       .join(
-                [i for i in self.pwt_metacyc_long_id_list])))
-            logging.info("List of unmatched reactions ({}): {}".format(len(self.pwt_metacyc_no_match_id_list),
-                                                                       " & ".join(i for i in
-                                                                                  self.pwt_metacyc_no_match_id_list)))
+                        pwt_metacyc_no_match_id_list.append(reaction)
+            logging.info("\n\nList of despecialized reactions ({}): \n{}".format(len(pwt_metacyc_long_id_list), "\n".join(
+                [i for i in pwt_metacyc_long_id_list])))
+            logging.info("\n\nList of unmatched reactions ({}): \n{}".format(len(pwt_metacyc_no_match_id_list), "\n".join(
+                [i for i in pwt_metacyc_no_match_id_list])))
 
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
@@ -87,7 +85,7 @@ class Merging(module.Module):
                     self.sbml_reactions_list += sbml_model.reactions
                     self.dict_upsetplot_reactions[sbml_model.id] = [reaction.id for reaction in sbml_model.reactions]
         else:
-            logging.info("------\nNo {} file of draft network or model found for {}\n------".format(extension,
+            logging.info("------ No {} file of draft network or model found for {} ------".format(extension,
                                                                                                     self.name))
 
     def _get_pwt_reactions(self):
@@ -146,8 +144,6 @@ class Merging(module.Module):
                                              reaction_line).group(0).rstrip())
                 except AttributeError:
                     logging.error("No ENZYMATIC-REACTION match for reactions.dat : {}".format(reaction_line))
-        logging.info("{} : {} enzymatic reaction(s) found associated to this reaction.".format(reaction.name,
-                                                                                               len(enzrxns)))
 
         # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
         stop = False
@@ -192,12 +188,11 @@ class Merging(module.Module):
                                 re.search('(?<=GENE - )[+-]*\w+(.*\w+)*(-*\w+)*', lineProt).group(0).rstrip())
                         except AttributeError:
                             logging.error("No GENE match for proteins.dat : {}".format(lineProt))
-                # logging.info(unique_id, "\n", " or ".join(set(gene_list))) Not needed, too much flooding
         else:
             logging.error("{} : No corresponding enzrxns entry for {}".format(self.name, unique_id))
             pass
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
-        return reaction
+        return reaction, [reaction.name, len(enzrxns)]
 
     def _merge(self, verbose=False):
         """Function to merge models, either from a model-based reconstruction (blasting module) or from
@@ -212,6 +207,7 @@ class Merging(module.Module):
 
         count = 0
         list_no_match_correction = []
+        list_match_nb_enzymatic_reactions = []
         for reaction in self.pwt_reactions_id_list:
             if count % 100 == 0:
                 print("%s : gene correction %s ou of %s" % (self.name, str(count),
@@ -221,13 +217,17 @@ class Merging(module.Module):
                 reaction = "_" + reaction
             try:
                 added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
-                added_reactions_corrected = self._correct_pwt_gene_reaction_rule(added_reactions, verbose)
+                added_reactions_corrected, tuple_nb_enzymatic_reactions_match = \
+                    self._correct_pwt_gene_reaction_rule(added_reactions, verbose)
+                list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
                 list_no_match_correction.append(reaction)
                 pass
-        logging.info("No match in {} gene correction for gene : {}".format(self.name,
-                                                                           " & ".join(list_no_match_correction)))
+        logging.info("\n\nNo match in {} gene correction for gene : \n{}".format(self.name, "\n".join(
+            [i for i in list_no_match_correction])))
+        logging.info("\n\nNumber of enzymatic reaction(s) found associated to each reaction : \n{}".format("\n".join(
+            [(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
         for reaction in self.json_reactions_list:
             self.merged_model.add_reactions([reaction])
         for reaction in self.sbml_reactions_list:
@@ -238,7 +238,7 @@ class Merging(module.Module):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
         else:
-            logging.info("------\nNo .dat files found, proceeding with drafts and models only.\n------")
+            logging.info("------ No .dat files found, proceeding with drafts and models only. ------")
         if utils.check_path(self.directory, sys_exit=True):
             self._get_networks_reactions("json")
             self._get_networks_reactions("sbml")
