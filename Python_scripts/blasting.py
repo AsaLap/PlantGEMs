@@ -155,7 +155,7 @@ class Blasting(module.Module):
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        print("Gene name not found in :", seq)  # TODO : Log this
+                        logging.info("Gene name not found in :", seq)
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
@@ -213,8 +213,10 @@ class Blasting(module.Module):
             to_add = []
             for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
-                    to_add += self.gene_dictionary[gene]  # TODO : faire le changement de protein/gene ici
-                except KeyError:  # TODO : log this
+                    to_add += self.gene_dictionary[gene]
+                except KeyError:
+                    logging.info("{} gene led to a KeyError, meaning it wasn't selected as a candidate gene ({} model "
+                                 "for {} subject)".format(gene, self.model.id, self.name))
                     pass
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
@@ -237,7 +239,7 @@ class Blasting(module.Module):
                     correspondence.append([gene.upper(), protein.upper()])
         utils.write_csv(self.directory, "protein_gene_correspondence", correspondence, "\t")
 
-    def _protein_to_gene(self):  # TODO : Review this code and use it in the run
+    def _protein_to_gene(self):
         """Function to transform the proteins in gene_reaction_rule into their corresponding genes.
         It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
