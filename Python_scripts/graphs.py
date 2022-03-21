@@ -56,7 +56,7 @@ def similarity_count(data, args, others):
     return cluster_set, len(cluster_set)
 
 
-def make_upsetplot(directory, name, data, title, remove_zero=True):
+def make_upsetplot(directory, name, data, title, remove_zero=True, show_plot=False):
     """Function to make an UpSetPlot.
     Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
 
@@ -67,6 +67,7 @@ def make_upsetplot(directory, name, data, title, remove_zero=True):
         and the genes/reactions/others to treat for the UpSetPlot.
         title (str) -- title of the graph.
         remove_zero (boolean) -- False if you want to plot the 0 values intersections.
+        show_plot (boolean) -- True if you want a graph to pop.
     """
 
     clusters = get_clusters(list(data.keys()))
@@ -98,7 +99,8 @@ def make_upsetplot(directory, name, data, title, remove_zero=True):
     plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
     plt.suptitle(title)
     plt.savefig(directory + name + ".pdf")
-    plt.show()
+    if show_plot:
+        plt.show()
 
 
 if __name__ == '__main__':
