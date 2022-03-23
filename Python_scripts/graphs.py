@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from upsetplot import from_memberships, plot
 
-from utils import list_reactions_cobra, cobra_compatibility, find_files, write_file
+from utils import list_ids_reactions_cobra, cobra_compatibility, find_files, write_file
 
 
 def get_clusters(cluster_list):
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     dicoUpset = {}
     for network in find_files(wd, '.json'):
         model = cobra.io.load_json_model(wd + network)
-        dicoUpset[model.id] = list_reactions_cobra(model)
+        dicoUpset[model.id] = list_ids_reactions_cobra(model)
 
     # Choose a name, an explanation and let's go !
     make_upsetplot(wd, "Name", dicoUpset,  "Explanation")

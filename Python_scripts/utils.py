@@ -259,17 +259,17 @@ def get_sequence_region(gff_file_path):
     return regions_dict
 
 
-def list_reactions_cobra(data):
+def list_ids_reactions_cobra(model):
     """Function to gather all the reactions' id of a cobra model in a list.
 
     PARAMS:
-        data -- a cobra model.
+        model -- a cobra model.
     RETURNS:
         res -- a list containing all the model's reactions' id.
     """
 
     res = []
-    for reaction in data.reactions:
+    for reaction in model.reactions:
         res.append(reaction.id)
     return res
 
