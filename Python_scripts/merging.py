@@ -64,9 +64,9 @@ class Merging(module.Module):
                         self.dict_upsetplot_reactions["Pathway_Tools"].append(reaction)
                     except KeyError:
                         pwt_metacyc_no_match_id_list.append(reaction)
-            logging.info("\n\nList of despecialized reactions ({}): \n{}".format(len(pwt_metacyc_long_id_list), "\n".join(
+            logging.info("\n\nList of despecialized reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_long_id_list), "\n".join(
                 [i for i in pwt_metacyc_long_id_list])))
-            logging.info("\n\nList of unmatched reactions ({}): \n{}".format(len(pwt_metacyc_no_match_id_list), "\n".join(
+            logging.info("\n\nList of unmatched reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_no_match_id_list), "\n".join(
                 [i for i in pwt_metacyc_no_match_id_list])))
 
     def _get_networks_reactions(self, extension):
