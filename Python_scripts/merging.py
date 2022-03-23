@@ -76,14 +76,14 @@ class Merging(module.Module):
                 for json_model_file in list_networks:
                     logging.info("JSON model network found : {}".format(json_model_file))
                     json_model = cobra.io.load_json_model(self.directory + json_model_file)
-                    self.json_reactions_list += json_model.reactions
-                    self.dict_upsetplot_reactions[json_model.id] = [reaction.id for reaction in json_model.reactions]
+                    self.json_reactions_list.extend(utils.get_list_reactions_cobra(json_model))
+                    self.dict_upsetplot_reactions[json_model.id] = utils.get_list_ids_reactions_cobra(json_model)
             if extension == "sbml":
                 for sbml_model_file in list_networks:
                     logging.info("SBML model network found : {}".format(sbml_model_file))
                     sbml_model = cobra.io.read_sbml_model(self.directory + sbml_model_file)
-                    self.sbml_reactions_list += sbml_model.reactions
-                    self.dict_upsetplot_reactions[sbml_model.id] = [reaction.id for reaction in sbml_model.reactions]
+                    self.sbml_reactions_list.extend(utils.get_list_reactions_cobra(sbml_model))
+                    self.dict_upsetplot_reactions[sbml_model.id] = utils.get_list_ids_reactions_cobra(sbml_model)
         else:
             logging.info("------ No {} file of draft network or model found for {} ------".format(extension,
                                                                                                     self.name))
@@ -232,6 +232,15 @@ class Merging(module.Module):
             self.merged_model.add_reactions([reaction])
         for reaction in self.sbml_reactions_list:
             self.merged_model.add_reactions([reaction])
+
+    # def _conservative_merging(self, merging_reactions_list):
+    #     for reaction in self.merged_model.reactions:
+    #         if reaction.id in merging_reactions_list:
+    #             list_genes = reaction.gene_reaction_rule.split(" or ")
+    #             list_genes.extend(merging_reactions_list.pop(reaction.id).gene_reaction_rule.split(" or "))
+    #             set(list_genes)
+    #             reaction.gene_reaction_rule = " or ".join(list_genes)
+    #             merging_reactions_list.remove_reactions(reaction.id)
 
     def build(self):
         if utils.check_path(self.directory + "reactions.dat"):
