@@ -227,7 +227,8 @@ class Merging(module.Module):
 
     def _conservative_merging(self, merging_reactions_list):
         temp_model = cobra.Model("temp")
-        temp_model.add_reactions(merging_reactions_list)
+        for reaction in merging_reactions_list:
+            temp_model.add_reactions([reaction])
         merging_reactions_list_ids = utils.get_list_ids_reactions_cobra(temp_model)
         for reaction in self.merged_model.reactions:
             if reaction.id in merging_reactions_list_ids:
