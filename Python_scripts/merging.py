@@ -64,10 +64,16 @@ class Merging(module.Module):
                         self.dict_upsetplot_reactions["Pathway_Tools"].append(reaction)
                     except KeyError:
                         pwt_metacyc_no_match_id_list.append(reaction)
-            logging.info("\n\nList of despecialized reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_long_id_list), "\n".join(
-                [i for i in pwt_metacyc_long_id_list])))
-            logging.info("\n\nList of unmatched reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_no_match_id_list), "\n".join(
-                [i for i in pwt_metacyc_no_match_id_list])))
+            logging.info(
+                "\n\nList of despecialized reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_long_id_list),
+                                                                             "\n".join(
+                                                                                 [i for i in
+                                                                                  pwt_metacyc_long_id_list])))
+            logging.info(
+                "\n\nList of unmatched reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_no_match_id_list),
+                                                                         "\n".join(
+                                                                             [i for i in
+                                                                              pwt_metacyc_no_match_id_list])))
 
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
@@ -86,7 +92,7 @@ class Merging(module.Module):
                     self.dict_upsetplot_reactions[sbml_model.id] = utils.get_list_ids_reactions_cobra(sbml_model)
         else:
             logging.info("------ No {} file of draft network or model found for {} ------".format(extension,
-                                                                                                    self.name))
+                                                                                                  self.name))
 
     def _get_pwt_reactions(self):
         """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
@@ -111,7 +117,7 @@ class Merging(module.Module):
         logging.info("{} : Number of reactions found in the Pathway Tools reconstruction files : {}".format(self.name,
                                                                                                             count))
 
-    def _correct_pwt_gene_reaction_rule(self, reaction, verbose=True):
+    def _browse_pwt_dat_files(self, reaction, verbose=True):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
         to make it fit the organism for which the model is reconstructed.
 
@@ -194,17 +200,7 @@ class Merging(module.Module):
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction, [reaction.name, len(enzrxns)]
 
-    def _merge(self, verbose=False):
-        """Function to merge models, either from a model-based reconstruction (blasting module) or from
-        Pathway Tools's Pathologic software.
-
-        ARGS:
-            trust_model (boolean) -- True if you trust the model(s) you gave in input (blasting/merging), taking all of
-                their reactions even if they are not found in the Metacyc network.
-                False if you only want the Metacyc reactions.
-            verbose (boolean) -- print or not the protein matches in the terminal (won't change the logs).
-        """
-
+    def _correct_pwt_reactions(self, verbose):
         count = 0
         list_no_match_correction = []
         list_match_nb_enzymatic_reactions = []
@@ -218,7 +214,7 @@ class Merging(module.Module):
             try:
                 added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
                 added_reactions_corrected, tuple_nb_enzymatic_reactions_match = \
-                    self._correct_pwt_gene_reaction_rule(added_reactions, verbose)
+                    self._browse_pwt_dat_files(added_reactions, verbose)
                 list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
@@ -228,19 +224,35 @@ class Merging(module.Module):
             [i for i in list_no_match_correction])))
         logging.info("\n\nNumber of enzymatic reaction(s) found associated to each reaction : \n{}".format("\n".join(
             [(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
-        for reaction in self.json_reactions_list:
-            self.merged_model.add_reactions([reaction])
-        for reaction in self.sbml_reactions_list:
-            self.merged_model.add_reactions([reaction])
 
-    # def _conservative_merging(self, merging_reactions_list):
-    #     for reaction in self.merged_model.reactions:
-    #         if reaction.id in merging_reactions_list:
-    #             list_genes = reaction.gene_reaction_rule.split(" or ")
-    #             list_genes.extend(merging_reactions_list.pop(reaction.id).gene_reaction_rule.split(" or "))
-    #             set(list_genes)
-    #             reaction.gene_reaction_rule = " or ".join(list_genes)
-    #             merging_reactions_list.remove_reactions(reaction.id)
+    def _conservative_merging(self, merging_reactions_list):
+        temp_model = cobra.Model("temp")
+        temp_model.add_reactions(merging_reactions_list)
+        merging_reactions_list_ids = utils.get_list_ids_reactions_cobra(temp_model)
+        for reaction in self.merged_model.reactions:
+            if reaction.id in merging_reactions_list_ids:
+                list_genes = reaction.gene_reaction_rule.split(" or ")
+                list_genes.extend(temp_model.reactions.get_by_id(reaction.id).gene_reaction_rule.split(" or "))
+                set(list_genes)
+                reaction.gene_reaction_rule = " or ".join(list_genes)
+                temp_model.remove_reactions(reaction.id)
+        return utils.get_list_reactions_cobra(temp_model)
+
+    def _merge(self, verbose=False):
+        """Function to merge models, either from a model-based reconstruction (blasting module) or from
+        Pathway Tools's Pathologic software.
+
+        ARGS:
+            verbose (optional boolean) -- print or not the protein matches in the terminal (won't change the logs).
+        """
+
+        self._correct_pwt_reactions(verbose)
+        self.json_reactions_list = self._conservative_merging(self.json_reactions_list)
+        self.sbml_reactions_list = self._conservative_merging(self.sbml_reactions_list)
+        # for reaction in self.json_reactions_list:
+        #     self.merged_model.add_reactions([reaction])
+        # for reaction in self.sbml_reactions_list:
+        #     self.merged_model.add_reactions([reaction])
 
     def build(self):
         if utils.check_path(self.directory + "reactions.dat"):
