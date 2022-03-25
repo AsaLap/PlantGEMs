@@ -65,34 +65,30 @@ class Merging(module.Module):
                     except KeyError:
                         pwt_metacyc_no_match_id_list.append(reaction)
             logging.info(
-                "\n\nList of despecialized reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_long_id_list),
-                                                                             "\n".join(
-                                                                                 [i for i in
-                                                                                  pwt_metacyc_long_id_list])))
+                "{} : List of despecialized reactions ({}): \n{}".format(self.name, len(pwt_metacyc_long_id_list), "\n".
+                                                                         join([i for i in pwt_metacyc_long_id_list])))
             logging.info(
-                "\n\nList of unmatched reactions ({} - {}): \n{}".format(self.name, len(pwt_metacyc_no_match_id_list),
-                                                                         "\n".join(
-                                                                             [i for i in
-                                                                              pwt_metacyc_no_match_id_list])))
+                "{} : List of unmatched reactions ({}): \n{}".format(self.name, len(pwt_metacyc_no_match_id_list), "\n".
+                                                                     join([i for i in pwt_metacyc_no_match_id_list])))
 
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
         if list_networks:
             if extension == "json":
                 for json_model_file in list_networks:
-                    logging.info("JSON model network found : {}".format(json_model_file))
+                    logging.info("{} : JSON model network found : {}".format(self.name, json_model_file))
                     json_model = cobra.io.load_json_model(self.directory + json_model_file)
                     self.json_reactions_list.extend(utils.get_list_reactions_cobra(json_model))
                     self.dict_upsetplot_reactions[json_model.id] = utils.get_list_ids_reactions_cobra(json_model)
             if extension == "sbml":
                 for sbml_model_file in list_networks:
-                    logging.info("SBML model network found : {}".format(sbml_model_file))
+                    logging.info("{} : SBML model network found : {}".format(self.name, sbml_model_file))
                     sbml_model = cobra.io.read_sbml_model(self.directory + sbml_model_file)
                     self.sbml_reactions_list.extend(utils.get_list_reactions_cobra(sbml_model))
                     self.dict_upsetplot_reactions[sbml_model.id] = utils.get_list_ids_reactions_cobra(sbml_model)
         else:
-            logging.info("------ No {} file of draft network or model found for {} ------".format(extension,
-                                                                                                  self.name))
+            logging.info("No {} file of draft network or model found for {}".format(extension,
+                                                                                    self.name))
 
     def _get_pwt_reactions(self):
         """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
@@ -113,7 +109,7 @@ class Merging(module.Module):
                         re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
                 except AttributeError:
                     count -= 1
-                    logging.error("No match for : {}".format(line))
+                    logging.error("{} : No match for : {}".format(self.name, line))
         logging.info("{} : Number of reactions found in the Pathway Tools reconstruction files : {}".format(self.name,
                                                                                                             count))
 
@@ -143,18 +139,20 @@ class Merging(module.Module):
                     if unique_id == reaction.name or unique_id == self.metacyc_matching_id_dict_reversed[reaction.name]:
                         stop = True
                 except AttributeError:
-                    logging.error("No UNIQUE-ID match for reactions.dat : {}".format(reaction_line))
+                    logging.error("{} : No UNIQUE-ID match for reactions.dat : {}".format(self.name, reaction_line))
             if stop and "ENZYMATIC-REACTION " in reaction_line and "#" not in reaction_line:
                 try:
                     enzrxns.append(re.search('(?<=ENZYMATIC-REACTION - )[+-]*\w+(.*\w+)*(-*\w+)*',
                                              reaction_line).group(0).rstrip())
                 except AttributeError:
-                    logging.error("No ENZYMATIC-REACTION match for reactions.dat : {}".format(reaction_line))
+                    logging.error("{} : No ENZYMATIC-REACTION match for reactions.dat : {}".format(self.name,
+                                                                                                   reaction_line))
 
         # Second step : getting the corresponding ENZYME for each ENZYME-REACTION.
         stop = False
         gene_list = []
         enzyme = ""
+        list_no_match_enzrxns = []
         if enzrxns:
             for enzrxn in enzrxns:
                 for line_enzrxn in enzrxns_file:
@@ -168,12 +166,12 @@ class Merging(module.Module):
                             if unique_id_rxn == enzrxn:
                                 stop = True
                         except AttributeError:
-                            logging.error("No UNIQUE-ID match for enzrxns.Dat : {}".format(line_enzrxn))
+                            logging.error("{} : No UNIQUE-ID match for enzrxns.dat : {}".format(self.name, line_enzrxn))
                     if stop and "ENZYME " in line_enzrxn and "#" not in line_enzrxn:
                         try:
                             enzyme = re.search('(?<=ENZYME - )[+-]*\w+(.*\w+)*(-*\w+)*', line_enzrxn).group(0).rstrip()
                         except AttributeError:
-                            logging.error("No ENZYME match for enzrxns.dat : {}".format(line_enzrxn))
+                            logging.error("{} : No ENZYME match for enzrxns.dat : {}".format(self.name, line_enzrxn))
                 # Third step into the second one : getting the corresponding GENE for each ENZYME and put it into
                 # geneList (which contains all that we're looking for).
                 for lineProt in proteins_file:
@@ -195,8 +193,10 @@ class Merging(module.Module):
                         except AttributeError:
                             logging.error("No GENE match for proteins.dat : {}".format(lineProt))
         else:
-            logging.error("{} : No corresponding enzrxns entry for {}".format(self.name, unique_id))
+            list_no_match_enzrxns.append(unique_id)
             pass
+        logging.info("{} : No enzrxns entry for unique-ids ({}) : {}".format(self.name, len(list_no_match_enzrxns), "\n"
+                                                                             .join([i for i in list_no_match_enzrxns])))
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction, [reaction.name, len(enzrxns)]
 
@@ -220,10 +220,11 @@ class Merging(module.Module):
             except KeyError:
                 list_no_match_correction.append(reaction)
                 pass
-        logging.info("\n\nNo match in {} gene correction for gene : \n{}".format(self.name, "\n".join(
-            [i for i in list_no_match_correction])))
-        logging.info("\n\nNumber of enzymatic reaction(s) found associated to each reaction : \n{}".format("\n".join(
-            [(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
+        logging.info("{} : No match in gene correction for reactions ({}) : \n{}".format(self.name, len(
+            list_no_match_correction), "\n".join([i for i in list_no_match_correction])))
+        logging.info("{} : Number of enzymatic reaction(s) found associated to each reaction : \n{}".
+                     format(self.name, "\n".
+                            join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
 
     def _conservative_merging(self, merging_reactions_list):
         temp_model = cobra.Model("temp")
@@ -260,7 +261,7 @@ class Merging(module.Module):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
         else:
-            logging.info("------ No .dat files found, proceeding with drafts and models only. ------")
+            logging.info("{} : No .dat files found, proceeding with drafts and models only.".format(self.name))
         if utils.check_path(self.directory, sys_exit=True):
             self._get_networks_reactions("json")
             self._get_networks_reactions("sbml")
