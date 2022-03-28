@@ -228,8 +228,9 @@ class Merging(module.Module):
                 pass
         logging.info("{} : No match in gene correction for reactions ({}) : \n{}".format(self.name, len(
             list_no_match_correction), "\n".join([i for i in list_no_match_correction])))
-        logging.info("{} : No enzrxns entry for unique-ids ({}) : {}".format(self.name, len(list_no_match_enzrxns), "\n"
-                                                                             .join([i for i in list_no_match_enzrxns])))
+        logging.info("{} : No enzrxns entry for unique-ids ({}) :\n{}".format(self.name, len(list_no_match_enzrxns),
+                                                                              "\n".
+                                                                              join([i for i in list_no_match_enzrxns])))
         logging.info("{} : Number of enzymatic reaction(s) found associated to each reaction : \n{}".
                      format(self.name, "\n".
                             join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
