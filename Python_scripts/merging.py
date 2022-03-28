@@ -74,18 +74,24 @@ class Merging(module.Module):
     def _get_networks_reactions(self, extension):
         list_networks = utils.find_files(self.directory, extension)
         if list_networks:
+            count = 0
             if extension == "json":
+                count += 1
                 for json_model_file in list_networks:
                     logging.info("{} : JSON model network found : {}".format(self.name, json_model_file))
                     json_model = cobra.io.load_json_model(self.directory + json_model_file)
                     self.json_reactions_list.extend(utils.get_list_reactions_cobra(json_model))
-                    self.dict_upsetplot_reactions[json_model.id] = utils.get_list_ids_reactions_cobra(json_model)
+                    self.dict_upsetplot_reactions[json_model.id + "_j" + str(count)] = utils.\
+                        get_list_ids_reactions_cobra(json_model)
+            count = 0
             if extension == "sbml":
+                count += 1
                 for sbml_model_file in list_networks:
                     logging.info("{} : SBML model network found : {}".format(self.name, sbml_model_file))
                     sbml_model = cobra.io.read_sbml_model(self.directory + sbml_model_file)
                     self.sbml_reactions_list.extend(utils.get_list_reactions_cobra(sbml_model))
-                    self.dict_upsetplot_reactions[sbml_model.id] = utils.get_list_ids_reactions_cobra(sbml_model)
+                    self.dict_upsetplot_reactions[sbml_model.id + "_s" + str(count)] = utils.\
+                        get_list_ids_reactions_cobra(sbml_model)
         else:
             logging.info("No {} file of draft network or model found for {}".format(extension,
                                                                                     self.name))
@@ -268,7 +274,7 @@ class Merging(module.Module):
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
         graphs.make_upsetplot(self.directory, self.name + "_merging_upsetplot", self.dict_upsetplot_reactions,
-                              "Intersections of reactions in the different models/datasources used while merging")
+                              "Intersection of different sources' reactions")
 
 
 def merging_multirun_first(main_directory):
