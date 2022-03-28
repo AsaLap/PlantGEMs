@@ -158,7 +158,7 @@ class Merging(module.Module):
         stop = False
         gene_list = []
         enzyme = ""
-        list_no_match_enzrxns = []
+        no_match_enzrxns = []
         if enzrxns:
             for enzrxn in enzrxns:
                 for line_enzrxn in enzrxns_file:
@@ -199,16 +199,15 @@ class Merging(module.Module):
                         except AttributeError:
                             logging.error("No GENE match for proteins.dat : {}".format(lineProt))
         else:
-            list_no_match_enzrxns.append(unique_id)
+            no_match_enzrxns.append(unique_id)
             pass
-        logging.info("{} : No enzrxns entry for unique-ids ({}) : {}".format(self.name, len(list_no_match_enzrxns), "\n"
-                                                                             .join([i for i in list_no_match_enzrxns])))
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
-        return reaction, [reaction.name, len(enzrxns)]
+        return reaction, [reaction.name, len(enzrxns)], no_match_enzrxns
 
     def _correct_pwt_reactions(self, verbose):
         count = 0
         list_no_match_correction = []
+        list_no_match_enzrxns = []
         list_match_nb_enzymatic_reactions = []
         for reaction in self.pwt_reactions_id_list:
             if count % 100 == 0:
@@ -219,15 +218,18 @@ class Merging(module.Module):
                 reaction = "_" + reaction
             try:
                 added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
-                added_reactions_corrected, tuple_nb_enzymatic_reactions_match = \
+                added_reactions_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
                     self._browse_pwt_dat_files(added_reactions, verbose)
                 list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
+                list_no_match_enzrxns.extend(no_match_enzrxns)
                 self.merged_model.add_reactions([added_reactions_corrected])
             except KeyError:
                 list_no_match_correction.append(reaction)
                 pass
         logging.info("{} : No match in gene correction for reactions ({}) : \n{}".format(self.name, len(
             list_no_match_correction), "\n".join([i for i in list_no_match_correction])))
+        logging.info("{} : No enzrxns entry for unique-ids ({}) : {}".format(self.name, len(list_no_match_enzrxns), "\n"
+                                                                             .join([i for i in list_no_match_enzrxns])))
         logging.info("{} : Number of enzymatic reaction(s) found associated to each reaction : \n{}".
                      format(self.name, "\n".
                             join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
