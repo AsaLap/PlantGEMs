@@ -246,7 +246,7 @@ class Merging(module.Module):
                 list_genes.extend(temp_model.reactions.get_by_id(reaction.id).gene_reaction_rule.split(" or "))
                 list_genes = list(filter(None, set(list_genes)))
                 reaction.gene_reaction_rule = " or ".join(list_genes)
-                temp_model.remove_reactions(reaction.id)
+                temp_model.remove_reactions([reaction.id])
         return utils.get_list_reactions_cobra(temp_model)
 
     def _merge(self, verbose=False):
