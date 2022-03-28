@@ -235,6 +235,7 @@ class Merging(module.Module):
                             join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
 
     def _conservative_merging(self, merging_reactions_list):
+        # TODO : comment
         temp_model = cobra.Model("temp")
         for reaction in merging_reactions_list:
             temp_model.add_reactions([reaction])
@@ -243,7 +244,7 @@ class Merging(module.Module):
             if reaction.id in merging_reactions_list_ids:
                 list_genes = reaction.gene_reaction_rule.split(" or ")
                 list_genes.extend(temp_model.reactions.get_by_id(reaction.id).gene_reaction_rule.split(" or "))
-                set(list_genes)
+                list_genes = list(filter(None, set(list_genes)))
                 reaction.gene_reaction_rule = " or ".join(list_genes)
                 temp_model.remove_reactions(reaction.id)
         return utils.get_list_reactions_cobra(temp_model)
