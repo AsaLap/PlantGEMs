@@ -277,9 +277,9 @@ class Merging(module.Module):
                 list_genes = list(filter(None, set(list_genes)))
                 reaction.gene_reaction_rule = " or ".join(list_genes)
                 temp_model.remove_reactions([reaction.id])
-        self.merged_model.add_reactions([utils.get_list_reactions_cobra(temp_model)])
+        self.merged_model.add_reactions(utils.get_list_reactions_cobra(temp_model))
 
-    def _merge(self, verbose=False):
+    def _merge(self):
         """Function to merge models, either from a model-based reconstruction (blasting module) or from
         Pathway Tools's Pathologic software.
 
@@ -287,7 +287,7 @@ class Merging(module.Module):
             verbose (optional boolean) -- print or not the protein matches in the terminal (won't change the logs).
         """
 
-        self._correct_pwt_reactions(verbose)
+        self._correct_pwt_reactions()
         self._conservative_merging(self.json_reactions_list)
         self._conservative_merging(self.sbml_reactions_list)
 

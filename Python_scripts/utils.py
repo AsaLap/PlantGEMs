@@ -5,8 +5,8 @@
 # Reconstruction de réseaux métaboliques
 # Mars - Aout 2020
 """This file contains utility functions used in several PlantGEMs' scripts."""
-import sys
 
+import sys
 import configparser
 import csv
 import json
