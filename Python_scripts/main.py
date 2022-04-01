@@ -22,8 +22,6 @@ def run(args):
     list_objects, cpu, input_directory, output_directory, log_directory = \
         mpwting.mpwt_multirun_first(args.main_directory)
 
-    # TODO : adding a check-file function here if needed (PDP)
-
     # Then, launching the rest of the run in multiprocess without the need of any input from the user
     print("Everything's fine, now launching BLAST and then MPWT processes, it may take some time...")
     blasting.blast_multirun_last(list_objects_to_blast)

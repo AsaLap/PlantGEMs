@@ -209,7 +209,7 @@ def mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log
 
 
 def build_mpwt_objects(organism):
-    """Function to build the mpwting object received from a multiprocess call."""
+    """Small function required for the multiprocessing reconstruction."""
 
     organism.build()
 

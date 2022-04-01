@@ -179,7 +179,7 @@ def get_metacyc_ids(metacyc_json_model_path):
 
     data = read_json(metacyc_json_model_path)
     res = []
-    print(len(data["reactions"]))
+    print("Number of reactions found in the metacyc.json file : {}", format(len(data["reactions"])))
     for reaction in data["reactions"]:
         long_id = reaction["name"].split("/")[0]
         # Getting rid of the brackets in the name sometimes!
@@ -237,7 +237,7 @@ def get_sequence_region(gff_file_path):
                 garbage = re.search('([GgEeNn]*[:-])*', gene).group(0)
                 gene = str.replace(gene, garbage, "")
             except AttributeError:
-                print("The gene name hasn't been found...")  # TODO : Log this error
+                print("The gene name hasn't been found here : {}", format(line))
                 break
             if region not in regions_dict.keys():
                 regions_dict[region] = {}
@@ -251,7 +251,7 @@ def get_sequence_region(gff_file_path):
                 protein_found = True
                 cds_break = False
             except AttributeError:
-                print("The CDS has no attribute 'ID='...")  # TODO : Log this error
+                print("The CDS has no attribute 'ID='...")
                 cds_break = True
         if not cds_break and "\tCDS\t" in line:  # Searching the CDS' information
             spl = line.split("\t")

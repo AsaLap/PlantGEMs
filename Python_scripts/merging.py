@@ -47,6 +47,9 @@ class Merging(module.Module):
             utils.build_correspondence_dict(self.metacyc_ids_file_path)
 
     def _search_metacyc_reactions_ids(self):
+        """Function to search the reactions' ids for in the flat files from a Pathway Tools reconstruction. Then, adds
+        them into the object's Pathway Tools' reactions list."""
+
         if self.pwt_reactions_id_list:
             pwt_metacyc_long_id_list = []
             pwt_metacyc_no_match_id_list = []
@@ -72,10 +75,17 @@ class Merging(module.Module):
                                                                      join([i for i in pwt_metacyc_no_match_id_list])))
 
     def _get_networks_reactions(self, extension):
+        """
+        Search all the reactions in a model and add them to the object's list of regarding the extension of the file.
+
+        PARAMS:
+            extension (str) -- Extension of the model. json/JSON or sbml/SBML only for the moment.
+        """
+
         list_networks = utils.find_files(self.directory, extension)
         if list_networks:
             count = 0
-            if extension == "json":
+            if extension in ["json", "JSON"]:
                 count += 1
                 for json_model_file in list_networks:
                     logging.info("{} : JSON model network found : {}".format(self.name, json_model_file))
@@ -84,7 +94,7 @@ class Merging(module.Module):
                     self.dict_upsetplot_reactions[json_model.id + "_j" + str(count)] = utils.\
                         get_list_ids_reactions_cobra(json_model)
             count = 0
-            if extension == "sbml":
+            if extension in ["sbml", "SBML"]:
                 count += 1
                 for sbml_model_file in list_networks:
                     logging.info("{} : SBML model network found : {}".format(self.name, sbml_model_file))
@@ -93,8 +103,7 @@ class Merging(module.Module):
                     self.dict_upsetplot_reactions[sbml_model.id + "_s" + str(count)] = utils.\
                         get_list_ids_reactions_cobra(sbml_model)
         else:
-            logging.info("No {} file of draft network or model found for {}".format(extension,
-                                                                                    self.name))
+            logging.info("{} : No {} file of draft network or model found".format(self.name, extension))
 
     def _get_pwt_reactions(self):
         """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
@@ -119,11 +128,11 @@ class Merging(module.Module):
         logging.info("{} : Number of reactions found in the Pathway Tools reconstruction files : {}".format(self.name,
                                                                                                             count))
 
-    def _browse_pwt_dat_files(self, reaction, verbose=True):
+    def _browse_pwt_dat_files(self, reaction):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
         to make it fit the organism for which the model is reconstructed.
 
-        Args:
+        PARAMS:
             reaction: the reaction's gene reaction rule to change.
         Returns the corrected gene reaction rule.
         """
@@ -204,22 +213,31 @@ class Merging(module.Module):
         reaction.gene_reaction_rule = " or ".join(set(gene_list))
         return reaction, [reaction.name, len(enzrxns)], no_match_enzrxns
 
-    def _correct_pwt_reactions(self, verbose):
+    def _correct_pwt_reactions(self, verbose=True):
+        """
+        Function to correct the gene_reaction_rule of each reaction coming from the Pathway Tools' software as they are
+        copied from Metacyc and therefore wrongfully linked to the proper genes of the species reconstructed.
+
+        PARAMS:
+            verbose (bool) -- toggles the printing of work progression.
+        """
+
         count = 0
         list_no_match_correction = []
         list_no_match_enzrxns = []
         list_match_nb_enzymatic_reactions = []
         for reaction in self.pwt_reactions_id_list:
             if count % 100 == 0:
-                print("%s : gene correction %s ou of %s" % (self.name, str(count),
-                                                            str(len(self.pwt_reactions_id_list))))
+                if verbose:
+                    print("%s : gene correction %s ou of %s" % (self.name, str(count),
+                                                                str(len(self.pwt_reactions_id_list))))
             count += 1
             if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
                 reaction = "_" + reaction
             try:
                 added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
                 added_reactions_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
-                    self._browse_pwt_dat_files(added_reactions, verbose)
+                    self._browse_pwt_dat_files(added_reactions)
                 list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
                 list_no_match_enzrxns.extend(no_match_enzrxns)
                 self.merged_model.add_reactions([added_reactions_corrected])
@@ -236,7 +254,18 @@ class Merging(module.Module):
                             join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
 
     def _conservative_merging(self, merging_reactions_list):
-        # TODO : comment
+        """
+        Function to merge reactions in the merging_reactions_list that are already in the merged model taking care of
+        keeping every gene of the gene reaction rule, either from the merged model or the reactions' list. Just adds the
+        reactions that were not already present.
+
+        PARAMS:
+            merging_reactions_list (cobra list reactions) -- list of cobra reactions you want to merge to the object's
+            model.
+        RETURNS:
+            a list of reactions that are not already in the merged_model
+        """
+
         temp_model = cobra.Model("temp")
         for reaction in merging_reactions_list:
             temp_model.add_reactions([reaction])
@@ -248,7 +277,7 @@ class Merging(module.Module):
                 list_genes = list(filter(None, set(list_genes)))
                 reaction.gene_reaction_rule = " or ".join(list_genes)
                 temp_model.remove_reactions([reaction.id])
-        return utils.get_list_reactions_cobra(temp_model)
+        self.merged_model.add_reactions([utils.get_list_reactions_cobra(temp_model)])
 
     def _merge(self, verbose=False):
         """Function to merge models, either from a model-based reconstruction (blasting module) or from
@@ -259,14 +288,12 @@ class Merging(module.Module):
         """
 
         self._correct_pwt_reactions(verbose)
-        self.json_reactions_list = self._conservative_merging(self.json_reactions_list)
-        self.sbml_reactions_list = self._conservative_merging(self.sbml_reactions_list)
-        # for reaction in self.json_reactions_list:
-        #     self.merged_model.add_reactions([reaction])
-        # for reaction in self.sbml_reactions_list:
-        #     self.merged_model.add_reactions([reaction])
+        self._conservative_merging(self.json_reactions_list)
+        self._conservative_merging(self.sbml_reactions_list)
 
     def build(self):
+        """Function to call the method in correct order for a complete merging."""
+
         if utils.check_path(self.directory + "reactions.dat"):
             self._get_pwt_reactions()
             self._search_metacyc_reactions_ids()
@@ -282,6 +309,11 @@ class Merging(module.Module):
 
 
 def merging_multirun_first(main_directory):
+    """
+        Split of major function 'run', first part = creates a merge object for each individual found in the directory
+        given and puts them in a list.
+    """
+
     list_objects = []
     for species in utils.get_list_directory(main_directory + "merge"):
         list_objects.append(Merging(species, main_directory))
@@ -290,7 +322,7 @@ def merging_multirun_first(main_directory):
 
 def merging_multirun_last(list_objects):
     """
-    Split of major function 'run', second part = launching the process on each given object with multiprocessing.
+    Split of major function 'run', second part = launches the process on each given object with multiprocessing.
     """
 
     cpu = len(list_objects)
@@ -299,6 +331,8 @@ def merging_multirun_last(list_objects):
 
 
 def build_merge_objects(organism):
+    """Small function required for the multiprocessing reconstruction."""
+
     organism.build()
 
 
