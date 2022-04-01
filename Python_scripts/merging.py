@@ -91,7 +91,7 @@ class Merging(module.Module):
                     logging.info("{} : JSON model network found : {}".format(self.name, json_model_file))
                     json_model = cobra.io.load_json_model(self.directory + json_model_file)
                     self.json_reactions_list.extend(utils.get_list_reactions_cobra(json_model))
-                    self.dict_upsetplot_reactions[json_model.id + "_j" + str(count)] = utils.\
+                    self.dict_upsetplot_reactions[json_model.id + "_j" + str(count)] = utils. \
                         get_list_ids_reactions_cobra(json_model)
             count = 0
             if extension in ["sbml", "SBML"]:
@@ -100,7 +100,7 @@ class Merging(module.Module):
                     logging.info("{} : SBML model network found : {}".format(self.name, sbml_model_file))
                     sbml_model = cobra.io.read_sbml_model(self.directory + sbml_model_file)
                     self.sbml_reactions_list.extend(utils.get_list_reactions_cobra(sbml_model))
-                    self.dict_upsetplot_reactions[sbml_model.id + "_s" + str(count)] = utils.\
+                    self.dict_upsetplot_reactions[sbml_model.id + "_s" + str(count)] = utils. \
                         get_list_ids_reactions_cobra(sbml_model)
         else:
             logging.info("{} : No {} file of draft network or model found".format(self.name, extension))
@@ -119,11 +119,10 @@ class Merging(module.Module):
         for line in pwt_reactions:
             if "UNIQUE-ID" in line and "#" not in line:
                 try:
-                    count += 1
                     self.pwt_reactions_id_list.append(
                         re.search('(?<=UNIQUE-ID - )[+-]*\w+(.*\w+)*(-*\w+)*', line).group(0).rstrip())
+                    count += 1
                 except AttributeError:
-                    count -= 1
                     logging.error("{} : No match for : {}".format(self.name, line))
         logging.info("{} : Number of reactions found in the Pathway Tools reconstruction files : {}".format(self.name,
                                                                                                             count))
@@ -226,24 +225,31 @@ class Merging(module.Module):
         list_no_match_correction = []
         list_no_match_enzrxns = []
         list_match_nb_enzymatic_reactions = []
-        for reaction in self.pwt_reactions_id_list:
+        for reaction_id in self.pwt_reactions_id_list:
             if count % 100 == 0:
                 if verbose:
                     print("%s : gene correction %s ou of %s" % (self.name, str(count),
                                                                 str(len(self.pwt_reactions_id_list))))
             count += 1
-            if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
-                reaction = "_" + reaction
-            try:
-                added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
-                added_reactions_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
-                    self._browse_pwt_dat_files(added_reactions)
-                list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
-                list_no_match_enzrxns.extend(no_match_enzrxns)
-                self.merged_model.add_reactions([added_reactions_corrected])
+            try:  # Changing pwt ids into long ids to match Metacyc ones
+                long_reactions = self.metacyc_matching_id_dict[reaction_id]
             except KeyError:
-                list_no_match_correction.append(reaction)
+                list_no_match_correction.append(reaction_id)
                 pass
+            for reaction in long_reactions:
+                if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                                   '9']:  # Another Metacyc ids' specificity
+                    reaction = "_" + reaction
+                try:
+                    added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
+                    added_reactions_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
+                        self._browse_pwt_dat_files(added_reactions)
+                    list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
+                    list_no_match_enzrxns.extend(no_match_enzrxns)
+                    self.merged_model.add_reactions([added_reactions_corrected])
+                except KeyError:
+                    list_no_match_correction.append(reaction)
+                    pass
         logging.info("{} : No match in gene correction for reactions ({}) : \n{}".format(self.name, len(
             list_no_match_correction), "\n".join([i for i in list_no_match_correction])))
         logging.info("{} : No enzrxns entry for unique-ids ({}) :\n{}".format(self.name, len(list_no_match_enzrxns),
@@ -281,15 +287,17 @@ class Merging(module.Module):
 
     def _merge(self):
         """Function to merge models, either from a model-based reconstruction (blasting module) or from
-        Pathway Tools's Pathologic software.
-
-        ARGS:
-            verbose (optional boolean) -- print or not the protein matches in the terminal (won't change the logs).
-        """
+        Pathway Tools's Pathologic software."""
 
         self._correct_pwt_reactions()
+        logging.info("{} : network size with only Pathway Tools' reactions : {}", format(self.name, str(len(
+            self.merged_model.reactions))))
         self._conservative_merging(self.json_reactions_list)
+        logging.info("{} : network size with the addition of JSON's reactions : {}", format(self.name, str(len(
+            self.merged_model.reactions))))
         self._conservative_merging(self.sbml_reactions_list)
+        logging.info("{} : network size with the addition of SBML's reactions : {}", format(self.name, str(len(
+            self.merged_model.reactions))))
 
     def build(self):
         """Function to call the method in correct order for a complete merging."""
