@@ -215,8 +215,8 @@ class Blasting(module.Module):
                 try:
                     to_add += self.gene_dictionary[gene]
                 except KeyError:
-                    logging.info("{} gene led to a KeyError, meaning it wasn't selected as a candidate gene ({} model "
-                                 "for {} subject)".format(gene, self.model.id, self.name))
+                    logging.info("{} gene led to a KeyError, therefore it wasn't selected as a candidate gene ({} model"
+                                 " for {} subject)".format(gene, self.model.id, self.name))
                     pass
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
