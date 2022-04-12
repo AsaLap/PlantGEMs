@@ -290,14 +290,14 @@ class Merging(module.Module):
         Pathway Tools's Pathologic software."""
 
         self._correct_pwt_reactions()
-        logging.info("{} : network size with only Pathway Tools' reactions : {}", format(self.name, str(len(
-            self.merged_model.reactions))))
+        logging.info("{} : network size with only Pathway Tools' reactions : {}".format(self.name, len(
+            self.merged_model.reactions)))
         self._conservative_merging(self.json_reactions_list)
-        logging.info("{} : network size with the addition of JSON's reactions : {}", format(self.name, str(len(
-            self.merged_model.reactions))))
+        logging.info("{} : network size with the addition of JSON's reactions : {}".format(self.name, len(
+            self.merged_model.reactions)))
         self._conservative_merging(self.sbml_reactions_list)
-        logging.info("{} : network size with the addition of SBML's reactions : {}", format(self.name, str(len(
-            self.merged_model.reactions))))
+        logging.info("{} : network size with the addition of SBML's reactions : {}".format(self.name, len(
+            self.merged_model.reactions)))
 
     def build(self):
         """Function to call the method in correct order for a complete merging."""
