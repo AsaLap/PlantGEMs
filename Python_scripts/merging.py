@@ -233,23 +233,23 @@ class Merging(module.Module):
             count += 1
             try:  # Changing pwt ids into long ids to match Metacyc ones
                 long_reactions = self.metacyc_matching_id_dict[reaction_id]
+                for reaction_id2 in long_reactions:
+                    if reaction_id2[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8',
+                                           '9']:  # Another Metacyc ids' specificity
+                        reaction_id2 = "_" + reaction_id2
+                    try:
+                        added_reaction = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction_id2))
+                        added_reaction_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
+                            self._browse_pwt_dat_files(added_reaction)
+                        list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
+                        list_no_match_enzrxns.extend(no_match_enzrxns)
+                        self.merged_model.add_reactions([added_reaction_corrected])
+                    except KeyError:
+                        list_no_match_correction.append(reaction_id2)
+                        pass
             except KeyError:
                 list_no_match_correction.append(reaction_id)
                 pass
-            for reaction in long_reactions:
-                if reaction[0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8',
-                                   '9']:  # Another Metacyc ids' specificity
-                    reaction = "_" + reaction
-                try:
-                    added_reactions = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction))
-                    added_reactions_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
-                        self._browse_pwt_dat_files(added_reactions)
-                    list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
-                    list_no_match_enzrxns.extend(no_match_enzrxns)
-                    self.merged_model.add_reactions([added_reactions_corrected])
-                except KeyError:
-                    list_no_match_correction.append(reaction)
-                    pass
         logging.info("{} : No match in gene correction for reactions ({}) : \n{}".format(self.name, len(
             list_no_match_correction), "\n".join([i for i in list_no_match_correction])))
         logging.info("{} : No enzrxns entry for unique-ids ({}) :\n{}".format(self.name, len(list_no_match_enzrxns),
@@ -272,7 +272,7 @@ class Merging(module.Module):
             a list of reactions that are not already in the merged_model
         """
 
-        temp_model = cobra.Model("temp")
+        temp_model = cobra.Model("temp_" + self.name)
         for reaction in merging_reactions_list:
             temp_model.add_reactions([reaction])
         merging_reactions_list_ids = utils.get_list_ids_reactions_cobra(temp_model)
@@ -382,3 +382,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # run("/home/asa/INRAE/These/Dev/tests/")
