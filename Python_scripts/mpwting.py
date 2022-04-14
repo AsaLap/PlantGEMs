@@ -178,6 +178,7 @@ def mpwt_multirun_first(main_directory):
         cpu = len(parameters.keys()) - 1
         for i in parameters.keys():
             if i != "DEFAULT":
+                logging.info("Species found : {}".format(i))
                 species_name = parameters[i]["ORGANISM_NAME"]
                 element_type = parameters[i]["ELEMENT_TYPE"]
                 taxon_id = int(parameters[i]["NCBI_TAXON_ID"])
@@ -204,11 +205,11 @@ def mpwt_multirun_last(list_objects, cpu, input_directory, output_directory, log
     mpwt.multiprocess_pwt(input_folder=input_directory, output_folder=output_directory, patho_inference=True,
                           patho_hole_filler=False, patho_operon_predictor=False, pathway_score=1, flat_creation=True,
                           dat_extraction=True, number_cpu=cpu, size_reduction=False, patho_log=log_directory,
-                          ignore_error=False, taxon_file=input_directory + "taxon_id.tsv", verbose=True)
+                          taxon_file=input_directory + "taxon_id.tsv", verbose=True)
 
 
 def build_mpwt_objects(organism):
-    """Function to build the mpwting object received from a multiprocess call."""
+    """Small function required for the multiprocessing reconstruction."""
 
     organism.build()
 
@@ -233,12 +234,14 @@ def mpwt_arguments():
 def main():
     args = mpwt_arguments()
     if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
-    logging.info("\n------ Mpwting module started ------")
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info("------ Mpwting module started ------")
     run(utils.slash(args.main_directory))
 
 

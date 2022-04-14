@@ -19,8 +19,6 @@ class Module:
         self.name = _name
         self.main_directory = _main_directory.rstrip("/ ") + "/"
 
-    # TODO : take multiple file format in account for the different "find" functions (cf. find_file in utils.py)
-    # TODO : log of the file(s) used
     def _find_eggnog(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".tsv")
 
@@ -34,7 +32,6 @@ class Module:
         return utils.find_file(self.main_directory + "/files/", target, ".faa")
 
     def _find_sbml_model(self, files_directory):
-        # TODO : log of the file used
         model = utils.find_files(files_directory, "sbml")
         if len(model) == 0:
             print("No SBML file found in the files directory...")

@@ -155,7 +155,7 @@ class Blasting(module.Module):
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        print("Gene name not found in :", seq)  # TODO : Log this
+                        logging.info("Gene name not found in :", seq)
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
@@ -213,8 +213,10 @@ class Blasting(module.Module):
             to_add = []
             for gene in reaction.gene_reaction_rule.split(" or "):
                 try:
-                    to_add += self.gene_dictionary[gene]  # TODO : faire le changement de protein/gene ici
-                except KeyError:  # TODO : log this
+                    to_add += self.gene_dictionary[gene]
+                except KeyError:
+                    logging.info("{} gene led to a KeyError, therefore it wasn't selected as a candidate gene ({} model"
+                                 " for {} subject)".format(gene, self.model.id, self.name))
                     pass
             string_reaction_rule = " or ".join(to_add)
             if string_reaction_rule:
@@ -237,7 +239,7 @@ class Blasting(module.Module):
                     correspondence.append([gene.upper(), protein.upper()])
         utils.write_csv(self.directory, "protein_gene_correspondence", correspondence, "\t")
 
-    def _protein_to_gene(self):  # TODO : Review this code and use it in the run
+    def _protein_to_gene(self):
         """Function to transform the proteins in gene_reaction_rule into their corresponding genes.
         It creates a new model that will have all the genes' names instead of the proteins' ones."""
 
@@ -302,11 +304,11 @@ def blast_multirun_first(args):
             if i != "DEFAULT":
                 logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
                              "\n - Main directory : " + args.main_directory +
-                             "\n - Identity : " + args.identity +
-                             "\n - Difference : " + args.difference +
-                             "\n - E_Value : " + args.e_val +
-                             "\n - Coverage : " + args.coverage +
-                             "\n - Bit_Score : " + args.bit_score)
+                             "\n - Identity : " + str(args.identity) +
+                             "\n - Difference : " + str(args.difference) +
+                             "\n - E_Value : " + str(args.e_val) +
+                             "\n - Coverage : " + str(args.coverage) +
+                             "\n - Bit_Score : " + str(args.bit_score))
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
                                              identity=args.identity, difference=args.difference, e_val=args.e_val,
                                              coverage=args.coverage, bit_score=args.bit_score))
@@ -420,14 +422,17 @@ def blast_arguments():
 def main():
     args = blast_arguments()
     if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     else:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
-    logging.info("\n------ Blasting module started ------")
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    if args.verbose:
+        logging.getLogger().addHandler(logging.StreamHandler())
+    logging.info("------ Blasting module started ------")
     if args.rerun:
-        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
+        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
+                              args.coverage, args.bit_score)
     elif args.unique:
         if args.name:
             run_unique(args)

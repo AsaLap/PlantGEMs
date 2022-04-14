@@ -278,14 +278,13 @@ NCBI_TAXON_ID = 3659
 ## NEWS :
 
 Some improvements are to come : 
-- A complete pipeline (blast draft (done) & mpwt draft (done) + merging (done) + gap-filling + global analysis of the reconstructed networks).
-  - The blast values ~~will be~~ **are** customizable as it suits you when using the rerun function.
-  - _Merging.py_ reworking is ~~on its way~~ **done !**
-    - A merge of any sbml **and json** model ~~will also be~~ **is** possible in the _merging.py_ module.
+- A complete pipeline (blast draft (done) & mpwt draft (re-WIP) + merging (done) + compartmentalization (WIP) + gap-filling + global analysis of the reconstructed networks).
+  - The rework of the MPWT module with easier use
   - The compartmentalization of the reactions.
   - The Meneco-based gap-filling (https://github.com/bioasp/meneco) will be done subsequently.
   
 Further ideas :
 - Multiple models reconstruction in the blast module.
-- Graphical interface for a common use and easy metabolic reconstructions.
+- More feedback of both the choices made by the user and the program -> improving logs.
+- Graphical interface for a common use and easy metabolic reconstructions (Master's students are working on it !!).
 - A docker version for more compatibility and easy deployment.
