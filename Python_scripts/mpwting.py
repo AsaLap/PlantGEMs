@@ -58,7 +58,7 @@ def make_mpwt_architecture(main_directory):
                 species_directory = input_directory + species_name + "/"
                 utils.make_directory(species_directory)
                 taxon_name_list.append([species_name, taxon_id, element_type])
-                multirun_list.append([main_directory + "files/", input_directory, 4])
+                multirun_list.append([input_directory, output_directory, 4])
         make_taxon_file(input_directory, taxon_name_list)
         logging.info("Species found : {}".format(count))
         return [cpu, input_directory, output_directory, log_directory, multirun_list]
