@@ -150,8 +150,9 @@ positional arguments:
   main_directory        The path to the main directory where the 'files/' directory is stored
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Shows this help message and exit
   -v, --verbose         Toggle the printing of more information
+  -le --log_erase Erases the previous log file
   -u, --unique          Specify if the reconstruction is made on a unique species or not
   -rr RERUN, --rerun RERUN
                         Use this option if you want to rerun the blast selection on an existing blasted.pkl object and give its path
@@ -206,8 +207,9 @@ positional arguments:
   main_directory  The path to the main directory where the 'files/' directory is stored
 
 optional arguments:
-  -h, --help      show this help message and exit
+  -h, --help      Shows this help message and exit
   -v, --verbose   Toggle the printing of more information
+  -le --log_erase Erases the previous log file
 ```
 **NB** : each argument between [brackets] is optional.
 
@@ -234,8 +236,10 @@ positional arguments:
   main_directory  The path to the main directory where the 'files/' directory is stored
 
 optional arguments:
-  -h, --help      show this help message and exit
-  -v, --verbose   Toggle the printing of more information
+  -h, --help      Shows this help message and exit
+  -m, --migrate   Searches and copies files from mpwting or blasting reconstruction into the merging directory 
+  -v, --verbose   Toggles the printing of more information
+  -le --log_erase Erases the previous log file
 ```
 **NB** : each argument between [brackets] is optional.
 
