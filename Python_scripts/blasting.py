@@ -410,7 +410,7 @@ def blast_arguments():
                         type=int, default=30, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-ev", "--e_val",
                         help="The blast's e-value threshold value. Default=e-100",
-                        type=float, default=1e-100, choices=range(0, 1), metavar="[0-1]")
+                        type=float, default=1e-100, choices=range(0, 2), metavar="[0-1]")
     parser.add_argument("-c", "--coverage", help="The minimum sequence coverage tolerated. Default=20",
                         type=int, default=20, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
