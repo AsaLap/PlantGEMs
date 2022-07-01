@@ -17,6 +17,7 @@ import subprocess
 import sys
 import time
 
+import graphs
 import module
 import utils
 
@@ -34,6 +35,7 @@ class Blasting(module.Module):
             _model_file_path -- the path to the SBML file containing the model for the reconstruction.
             _model_proteomic_fasta_path -- the path to the fasta file of the model.
             _subject_proteomic_fasta_path -- the path to the fasta file of the subject.
+            _subject_gff_path -- the path to the gff file of the subject.
         """
         super().__init__(_name, _main_directory)
         utils.make_directory(self.main_directory + "blast/")
@@ -185,6 +187,9 @@ class Blasting(module.Module):
                                      " select_genes()")
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
         else:
+            wrong_identity, wrong_difference, wrong_coverage, wrong_bit_score, wrong_e_val = [], [], [], [], []
+            selected_proteins = [["Protein Model\tSize P. Model\tProtein Subject\tSize P. Subject\tAlignment length\t"
+                                  "Number of identity\tPercentage of identity\tScore\tEValue\tBitScore"]]
             for key in self.blast_result.keys():  # key = region name
                 for res in self.blast_result[key]:
                     spl = res.split(",")
@@ -196,15 +201,36 @@ class Blasting(module.Module):
                     len_subject = spl[3]
                     len_query = [spl[1] * (100 - self.difference) / 100, spl[1] * (100 + self.difference) / 100]
                     min_align = self.coverage / 100 * spl[1]
-                    if spl[6] >= self.identity \
-                            and len_query[0] <= len_subject <= len_query[1] \
-                            and spl[4] >= min_align \
-                            and spl[9] >= self.bit_score \
-                            and spl[8] <= self.e_val:  # TODO : collect all the genes selected and those who are not
+                    selected = True
+                    if spl[6] < self.identity:
+                        wrong_identity.append(res)
+                        selected = False
+                    if not len_query[0] <= len_subject <= len_query[1]:
+                        wrong_difference.append(res)
+                        selected = False
+                    if spl[4] < min_align:
+                        wrong_coverage.append(res)
+                        selected = False
+                    if spl[9] < self.bit_score:
+                        wrong_bit_score.append(res)
+                        selected = False
+                    if spl[8] > self.e_val:
+                        wrong_e_val.append(res)
+                        selected = False
+                    if selected:
+                        selected_proteins.append([str.replace(res, ",", "\t")])
                         try:
                             self.gene_dictionary[key].append(spl[2])
                         except KeyError:
                             self.gene_dictionary[key] = [spl[2]]
+            removed_proteins_upsetplot_dict = {"Identity": wrong_identity,
+                                               "Difference": wrong_difference,
+                                               "Coverage": wrong_coverage,
+                                               "Bit_Score": wrong_bit_score,
+                                               "E_Value": wrong_e_val}
+            graphs.make_upsetplot(self.directory, "removed_proteins_plot", removed_proteins_upsetplot_dict,
+                                  "Thresholds responsible for unselected proteins")
+            utils.write_csv(self.directory, "selected_proteins", selected_proteins)
 
     def _drafting(self):
         """Creates the new COBRA model for the subject organism."""
@@ -262,7 +288,7 @@ class Blasting(module.Module):
                             print(log_message)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
-            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path +\
+            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path + \
                           "\nAborting..."
             logging.info(log_message)
             print(log_message)
@@ -393,7 +419,7 @@ def blast_arguments():
     parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
                         action="store_true")
     parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
-                                               " blasted.pkl object and give its path", type=str)
+                                               " blasted.pkl object. The species' name is expected here", type=str)
     parser.add_argument("-n", "--name", help="The future draft's name", type=str)
     parser.add_argument("-m", "--model_file_path", help="Model's file's path, use if 'files/' directory doesn't exist",
                         type=str)
@@ -410,7 +436,7 @@ def blast_arguments():
                         type=int, default=30, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-ev", "--e_val",
                         help="The blast's e-value threshold value. Default=e-100",
-                        type=float, default=1e-100, choices=range(0, 1), metavar="[0-1]")
+                        type=float, default=1e-100, choices=range(0, 2), metavar="[0-1]")
     parser.add_argument("-c", "--coverage", help="The minimum sequence coverage tolerated. Default=20",
                         type=int, default=20, choices=range(0, 101), metavar="[0-100]")
     parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
