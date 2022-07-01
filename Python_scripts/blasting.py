@@ -35,6 +35,7 @@ class Blasting(module.Module):
             _model_file_path -- the path to the SBML file containing the model for the reconstruction.
             _model_proteomic_fasta_path -- the path to the fasta file of the model.
             _subject_proteomic_fasta_path -- the path to the fasta file of the subject.
+            _subject_gff_path -- the path to the gff file of the subject.
         """
         super().__init__(_name, _main_directory)
         utils.make_directory(self.main_directory + "blast/")
@@ -287,7 +288,7 @@ class Blasting(module.Module):
                             print(log_message)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
-            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path +\
+            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path + \
                           "\nAborting..."
             logging.info(log_message)
             print(log_message)
@@ -418,7 +419,7 @@ def blast_arguments():
     parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
                         action="store_true")
     parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
-                                               " blasted.pkl object and give its path", type=str)
+                                               " blasted.pkl object. The species' name is expected here", type=str)
     parser.add_argument("-n", "--name", help="The future draft's name", type=str)
     parser.add_argument("-m", "--model_file_path", help="Model's file's path, use if 'files/' directory doesn't exist",
                         type=str)
