@@ -224,10 +224,18 @@ def get_sequence_region(gff_file_path):
     region = None  # Assignment before use
     gene = None  # Assignment before use
     protein = None  # Assignment before use
+    rna = None  # Assignment before use
     for line in gff_file:
         if "RNA\t" in line:
             protein_found = False
             cds_break = False
+            try:
+                rna = re.search('(?<=ID=)[RrNnAaTtSsCcIiPpMm]*[:-]*\w+(\.\w+)*(\-\w+)*', line).group(0)
+                garbage = re.search('([RrNnAaTtSsCcIiPpMm]*[:-])*', rna).group(0)
+                rna = str.replace(rna, garbage, "")
+            except AttributeError:
+                print("RNA ID not found, might cause a problem if CDS name is different than RNA.\n", line)
+                pass
         if "\tgene\t" in line:  # Searching the gene's information
             protein_found = False
             spl = line.split("\t")
@@ -247,6 +255,8 @@ def get_sequence_region(gff_file_path):
                 protein = re.search('(?<=ID=)[CcDdSs]*[:-]*\w+(\.\w+)*', line).group(0)
                 garbage = re.search('([CcDdSs]*[:-])*', protein).group(0)
                 protein = str.replace(protein, garbage, "")
+                if protein[:-2] == rna:  # I check if the GFF is compatible with the faa file for the tsv annotation
+                    protein, rna = rna, protein
                 regions_dict[region][gene]["Proteins"][protein] = []
                 protein_found = True
                 cds_break = False
@@ -323,13 +333,13 @@ def migrate(main_directory):
     for species in list_species:
         make_directory(merge_directory + species)
         copy_file(blast_directory + species + "/" + species + "_blast_draft.json",
-                        merge_directory + species + "/" + species + "_blast_draft.json")
+                  merge_directory + species + "/" + species + "_blast_draft.json")
         copy_file(mpwt_directory + "/output/" + species + "/reactions.dat",
-                        merge_directory + species + "/reactions.dat")
+                  merge_directory + species + "/reactions.dat")
         copy_file(mpwt_directory + "/output/" + species + "/proteins.dat",
-                        merge_directory + species + "/proteins.dat")
+                  merge_directory + species + "/proteins.dat")
         copy_file(mpwt_directory + "/output/" + species + "/enzrxns.dat",
-                        merge_directory + species + "/enzrxns.dat")
+                  merge_directory + species + "/enzrxns.dat")
 
 
 def dot(extension):
@@ -496,3 +506,8 @@ def write_file(path, data, strip=True):
         for i in data:
             f.write(i)
     f.close()
+
+
+if __name__ == "__main__":
+    # get_sequence_region("/home/asa/INRAE/These/Bioinfo/Tests/debug_solanum_SL4/files/solanum_lycopersicum_SL4.gff")
+    print(get_sequence_region("/home/asa/INRAE/These/Bioinfo/Tests/debug_solanum_SL4/files/solanum_lycopersicum_SL4.gff"))

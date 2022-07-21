@@ -62,7 +62,8 @@ main_directory/
   │    │         └── genes_selected.pkl
   │    ├── species_2/
   │    └── ...
-  ├── mpwt/ (see mpwt at https://github.com/AuReMe/mpwt)
+  ├── mpwt/ 
+  │    └── (see mpwt at https://github.com/AuReMe/mpwt)
   ├── merge/
   │    ├── species_1/
   │    │    ├── species_1_blast_draft.json
@@ -95,23 +96,22 @@ PlantGEMs/python/files/directory$ python main.py -h
 usage: main.py [-h] [-v] [-i [0-100]] [-d [0-100]] [-ev [0-1]] [-c [0-100]] [-bs [0-1000]] main_directory
 
 positional arguments:
-  main_directory        The path to the main directory where the 'files/' directory is stored
+  main_directory        The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         Toggle the printing of more information
+  -v, --verbose         Toggle the printing of more information (WIP)
   -i [0-100], --identity [0-100]
-                        The blast's identity percentage tolerated. Default=50
+                        The blast\'s identity percentage tolerated. Default=50
   -d [0-100], --difference [0-100]
                         The tolerated length difference between the two aligned sequences. Default=30
   -ev [0-1], --e_val [0-1]
-                        The blast's e-value threshold value. Default=e-100
+                        The blast\'s e-value threshold value. Default=e-100 (only default value working for the moment)
   -c [0-100], --coverage [0-100]
                         The minimum sequence coverage tolerated. Default=20
   -bs [0-1000], --bit_score [0-1000]
-                        The blast's bit-score threshold value. Default=300
+                        The blast\'s bit-score threshold value. Default=300
 ```
-**NB** : each argument between [brackets] is optional.
 
 ## **blasting.py only :**
 You will need : (see also _Folders structure_)
@@ -119,10 +119,10 @@ You will need : (see also _Folders structure_)
 * The model's proteome fasta (.faa)
 * The subject's proteome fasta (.faa)
 
-You can store the files in a _files/_ directory if you reconstruct several networks, or specify a path for each file needed if you do only one. If you fail to give it on the commandline you'll be prompted to give the different path.
+You can store the files in a _files/_ directory or specify a path for each file needed.
 <br />
 
-**NB** : Please note that the "name" of the model is its _**id**_. You will also need a _main.ini_ file stored in the _main_directory_ you provided, with at least the organisms names. Every additional data will not be read (you can use the same file as for _mpwting_ if you manually used this process before the _blasting_ process)
+**NB** : Please note that the "name" of the model is its _**id**_ in the SBML file. You will also need a _main.ini_ file stored in the _main_directory_ you provided, with at least the organisms names. Every additional data will not be read (you can use the same file as for _mpwting_ if you manually used this process before the _blasting_ process)
 
 __Example of use for multiple reconstruction with _main.ini_:__
 ```bash
@@ -147,35 +147,35 @@ usage: blasting.py [-h] [-v] [-u] [-rr RERUN] [-n NAME] [-m MODEL_FILE_PATH] [-m
                    main_directory
 
 positional arguments:
-  main_directory        The path to the main directory where the 'files/' directory is stored
+  main_directory        The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            Shows this help message and exit
   -v, --verbose         Toggle the printing of more information
+  -le --log_erase Erases the previous log file
   -u, --unique          Specify if the reconstruction is made on a unique species or not
   -rr RERUN, --rerun RERUN
                         Use this option if you want to rerun the blast selection on an existing blasted.pkl object and give its path
-  -n NAME, --name NAME  The future draft's name
+  -n NAME, --name NAME  The future draft\'s name
   -m MODEL_FILE_PATH, --model_file_path MODEL_FILE_PATH
-                        Model's file's path, use if 'files/' directory doesn't exist
+                        Model\'s files path, use if \'files/\' directory doesn\'t exist
   -mfaa MODEL_PROTEOMIC_FASTA_PATH, --model_proteomic_fasta_path MODEL_PROTEOMIC_FASTA_PATH
-                        Model's proteomic fasta's path, use if 'files/' directory doesn't exist
+                        Model\'s proteomic fasta path, use if \'files/\' directory doesn\'t exist
   -sfaa SUBJECT_PROTEOMIC_FASTA_PATH, --subject_proteomic_fasta_path SUBJECT_PROTEOMIC_FASTA_PATH
-                        Subject's proteomic fasta's path, use if 'files/' directory doesn't exist
+                        Subject\'s proteomic fasta path, use if \'files/\' directory doesn\'t exist
   -sgff SUBJECT_GFF_PATH, --subject_gff_path SUBJECT_GFF_PATH
-                        Subject's gff file's path, use if 'files/' directory doesn't exist
+                        Subject\'s gff file path, use if \'files/\' directory doesn\'t exist
   -i [0-100], --identity [0-100]
-                        The blast's identity percentage tolerated. Default=50
+                        The blast\'s identity percentage tolerated. Default=50
   -d [0-100], --difference [0-100]
                         The tolerated length difference between the two aligned sequences. Default=30
   -ev [0-1], --e_val [0-1]
-                        The blast's e-value threshold value. Default=e-100
+                        The blast\'s e-value threshold value. Default=e-100
   -c [0-100], --coverage [0-100]
                         The minimum sequence coverage tolerated. Default=20
   -bs [0-1000], --bit_score [0-1000]
-                        The blast's bit-score threshold value. Default=300
+                        The blast\'s bit-score threshold value. Default=300
 ```
-**NB** : each argument between [brackets] is optional.
 
 ## **mpwting.py only :**
 This module needs you to create a "files/" directory in a directory of your choice (can be the same as for _blasting.py_
@@ -203,17 +203,16 @@ PlantGEMs/python/files/directory$ python mpwting.py -h
 usage: mpwting.py [-h] [-v] main_directory
 
 positional arguments:
-  main_directory  The path to the main directory where the 'files/' directory is stored
+  main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
-  -h, --help      show this help message and exit
+  -h, --help      Shows this help message and exit
   -v, --verbose   Toggle the printing of more information
+  -le --log_erase Erases the previous log file
 ```
-**NB** : each argument between [brackets] is optional.
+**NB** : if you didn't put the files in the _files/_ directory, you will be asked to give the exact path for each file needed. Not recommended if you reconstruct several organisms at once for obvious practicality.
 
-**NB2** : if you didn't put the files in the _files/_ directory, you will be asked to give the exact path for each file needed. Not recommended if you reconstruct several organisms at once for obvious practicality.
-
-**NB3** : every dependency needed is normally listed in the _requirements.txt_, but you will also need **Pathway-Tools** to be installed. Please see mpwt's GitHub page for more information : https://github.com/AuReMe/mpwt.
+**NB\'** : every dependency needed is normally listed in the _requirements.txt_, but you will also need **Pathway-Tools** to be installed. Please see mpwt's GitHub page for more information : https://github.com/AuReMe/mpwt.
 
 
 ## **merging.py only :**
@@ -231,13 +230,14 @@ __Help displayed with the associated argument :__
 usage: merging.py [-h] [-v] main_directory
 
 positional arguments:
-  main_directory  The path to the main directory where the 'files/' directory is stored
+  main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
-  -h, --help      show this help message and exit
-  -v, --verbose   Toggle the printing of more information
+  -h, --help      Shows this help message and exit
+  -m, --migrate   Searches and copies files from mpwting or blasting reconstruction into the merging directory 
+  -v, --verbose   Toggles the printing of more information
+  -le --log_erase Erases the previous log file
 ```
-**NB** : each argument between [brackets] is optional.
 
 ## Files description :
 

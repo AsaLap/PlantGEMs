@@ -9,6 +9,7 @@
 
 import argparse
 import blasting
+import logging
 import merging
 import mpwting
 import utils
@@ -36,6 +37,8 @@ def main_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
                         type=str)
+    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
+                        action="store_true")
     parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
     parser.add_argument("-i", "--identity", help="The blast's identity percentage tolerated. Default=50",
                         type=int, default=50, choices=range(0, 101), metavar="[0-100]")
@@ -55,6 +58,20 @@ def main_arguments():
 
 def main():
     args = main_arguments()
+    if args.log_erase:
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/merging.log', filemode='w', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    else:
+        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/mpwting.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+        logging.basicConfig(filename=args.main_directory + '/merging.log', level=logging.INFO,
+                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
     run(args)
 
 
