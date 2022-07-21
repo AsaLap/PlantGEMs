@@ -95,21 +95,21 @@ PlantGEMs/python/files/directory$ python main.py -h
 usage: main.py [-h] [-v] [-i [0-100]] [-d [0-100]] [-ev [0-1]] [-c [0-100]] [-bs [0-1000]] main_directory
 
 positional arguments:
-  main_directory        The path to the main directory where the 'files/' directory is stored
+  main_directory        The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         Toggle the printing of more information
   -i [0-100], --identity [0-100]
-                        The blast's identity percentage tolerated. Default=50
+                        The blast\'s identity percentage tolerated. Default=50
   -d [0-100], --difference [0-100]
                         The tolerated length difference between the two aligned sequences. Default=30
   -ev [0-1], --e_val [0-1]
-                        The blast's e-value threshold value. Default=e-100
+                        The blast\'s e-value threshold value. Default=e-100
   -c [0-100], --coverage [0-100]
                         The minimum sequence coverage tolerated. Default=20
   -bs [0-1000], --bit_score [0-1000]
-                        The blast's bit-score threshold value. Default=300
+                        The blast\'s bit-score threshold value. Default=300
 ```
 **NB** : each argument between [brackets] is optional.
 
@@ -147,7 +147,7 @@ usage: blasting.py [-h] [-v] [-u] [-rr RERUN] [-n NAME] [-m MODEL_FILE_PATH] [-m
                    main_directory
 
 positional arguments:
-  main_directory        The path to the main directory where the 'files/' directory is stored
+  main_directory        The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
   -h, --help            Shows this help message and exit
@@ -156,25 +156,25 @@ optional arguments:
   -u, --unique          Specify if the reconstruction is made on a unique species or not
   -rr RERUN, --rerun RERUN
                         Use this option if you want to rerun the blast selection on an existing blasted.pkl object and give its path
-  -n NAME, --name NAME  The future draft's name
+  -n NAME, --name NAME  The future draft\'s name
   -m MODEL_FILE_PATH, --model_file_path MODEL_FILE_PATH
-                        Model's file's path, use if 'files/' directory doesn't exist
+                        Model\'s files path, use if \'files/\' directory doesn\'t exist
   -mfaa MODEL_PROTEOMIC_FASTA_PATH, --model_proteomic_fasta_path MODEL_PROTEOMIC_FASTA_PATH
-                        Model's proteomic fasta's path, use if 'files/' directory doesn't exist
+                        Model\'s proteomic fasta path, use if \'files/\' directory doesn\'t exist
   -sfaa SUBJECT_PROTEOMIC_FASTA_PATH, --subject_proteomic_fasta_path SUBJECT_PROTEOMIC_FASTA_PATH
-                        Subject's proteomic fasta's path, use if 'files/' directory doesn't exist
+                        Subject\'s proteomic fasta path, use if \'files/\' directory doesn\'t exist
   -sgff SUBJECT_GFF_PATH, --subject_gff_path SUBJECT_GFF_PATH
-                        Subject's gff file's path, use if 'files/' directory doesn't exist
+                        Subject\'s gff file path, use if \'files/\' directory doesn\'t exist
   -i [0-100], --identity [0-100]
-                        The blast's identity percentage tolerated. Default=50
+                        The blast\'s identity percentage tolerated. Default=50
   -d [0-100], --difference [0-100]
                         The tolerated length difference between the two aligned sequences. Default=30
   -ev [0-1], --e_val [0-1]
-                        The blast's e-value threshold value. Default=e-100
+                        The blast\'s e-value threshold value. Default=e-100
   -c [0-100], --coverage [0-100]
                         The minimum sequence coverage tolerated. Default=20
   -bs [0-1000], --bit_score [0-1000]
-                        The blast's bit-score threshold value. Default=300
+                        The blast\'s bit-score threshold value. Default=300
 ```
 **NB** : each argument between [brackets] is optional.
 
@@ -204,7 +204,7 @@ PlantGEMs/python/files/directory$ python mpwting.py -h
 usage: mpwting.py [-h] [-v] main_directory
 
 positional arguments:
-  main_directory  The path to the main directory where the 'files/' directory is stored
+  main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
   -h, --help      Shows this help message and exit
@@ -233,7 +233,7 @@ __Help displayed with the associated argument :__
 usage: merging.py [-h] [-v] main_directory
 
 positional arguments:
-  main_directory  The path to the main directory where the 'files/' directory is stored
+  main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
   -h, --help      Shows this help message and exit
