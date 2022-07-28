@@ -6,7 +6,6 @@
 # Mars - Aout 2020
 """This file is used for the metabolic reconstruction using sequence homology."""
 
-import argparse
 import cobra
 import copy
 import logging
@@ -17,8 +16,10 @@ import subprocess
 import sys
 import time
 
+import graphing
 import module
 import utils
+import PlantGEMs
 
 
 class Blasting(module.Module):
@@ -227,7 +228,7 @@ class Blasting(module.Module):
                                                "Coverage": wrong_coverage,
                                                "Bit_Score": wrong_bit_score,
                                                "E_Value": wrong_e_val}
-            graphs.make_upsetplot(self.directory, "removed_proteins_plot", removed_proteins_upsetplot_dict,
+            graphing.make_upsetplot(self.directory, "removed_proteins_plot", removed_proteins_upsetplot_dict,
                                   "Thresholds responsible for unselected proteins")
             utils.write_csv(self.directory, "selected_proteins", selected_proteins)
 
@@ -371,25 +372,6 @@ def run(args):
     blast_multirun_last(list_objects)
 
 
-def run_unique(args):
-    """
-    This function allows to launch a blasting process on a unique organism with every argument in command line
-    if wished so.
-    """
-
-    logging.info("\n------ Running a unique species ------")
-    logging.info("\nParameters for : {}\n - Main directory : {}\n - Model's file's path : {}\n - Model's proteomic "
-                 "fasta's path : {}\n - Subject's proteomic fasta's path : {}\n - Subject's gff file's path : {}\n"
-                 " - Identity : {}\n - Difference : {}\n - E_Value : {}\n - Coverage : {}\n - Bit_Score : {}"
-                 .format(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
-                         args.subject_proteomic_fasta_path, args.subject_gff_path,
-                         args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
-    unique_blast = Blasting(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
-                            args.subject_proteomic_fasta_path, args.subject_gff_path,
-                            args.identity, args.difference, args.e_val, args.coverage, args.bit_score)
-    unique_blast.build()
-
-
 def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
     logging.info("\n------ Rerunning a species' genes selection ------")
     species = utils.load_obj(utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl")
@@ -408,64 +390,5 @@ def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_va
     species.rebuild()
 
 
-def blast_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
-                        type=str)
-    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
-    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
-                        action="store_true")
-    parser.add_argument("-u", "--unique", help="Specify if the reconstruction is made on a unique species or not",
-                        action="store_true")
-    parser.add_argument("-rr", "--rerun", help="Use this option if you want to rerun the blast selection on an existing"
-                                               " blasted.pkl object. The species' name is expected here", type=str)
-    parser.add_argument("-n", "--name", help="The future draft's name", type=str)
-    parser.add_argument("-m", "--model_file_path", help="Model's file's path, use if 'files/' directory doesn't exist",
-                        type=str)
-    parser.add_argument("-mfaa", "--model_proteomic_fasta_path",
-                        help="Model's proteomic fasta's path, use if 'files/' directory doesn't exist")
-    parser.add_argument("-sfaa", "--subject_proteomic_fasta_path",
-                        help="Subject's proteomic fasta's path, use if 'files/' directory doesn't exist")
-    parser.add_argument("-sgff", "--subject_gff_path",
-                        help="Subject's gff file's path, use if 'files/' directory doesn't exist")
-    parser.add_argument("-i", "--identity", help="The blast's identity percentage tolerated. Default=50",
-                        type=int, default=50, choices=range(0, 101), metavar="[0-100]")
-    parser.add_argument("-d", "--difference",
-                        help="The tolerated length difference between the two aligned sequences. Default=30",
-                        type=int, default=30, choices=range(0, 101), metavar="[0-100]")
-    parser.add_argument("-ev", "--e_val",
-                        help="The blast's e-value threshold value. Default=e-100",
-                        type=float, default=1e-100, choices=range(0, 2), metavar="[0-1]")
-    parser.add_argument("-c", "--coverage", help="The minimum sequence coverage tolerated. Default=20",
-                        type=int, default=20, choices=range(0, 101), metavar="[0-100]")
-    parser.add_argument("-bs", "--bit_score", help="The blast's bit-score threshold value. Default=300",
-                        type=int, default=300, choices=range(0, 1001), metavar="[0-1000]")
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    args = blast_arguments()
-    if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', filemode='w', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-    else:
-        logging.basicConfig(filename=args.main_directory + '/blasting.log', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-    if args.verbose:
-        logging.getLogger().addHandler(logging.StreamHandler())
-    logging.info("------ Blasting module started ------")
-    if args.rerun:
-        rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
-                              args.coverage, args.bit_score)
-    elif args.unique:
-        if args.name:
-            run_unique(args)
-        else:
-            print("Optional argument --name (-n) becomes necessary if you do a unique run")
-    else:
-        run(args)
-
-
 if __name__ == "__main__":
-    main()
+    PlantGEMs.main()

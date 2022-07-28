@@ -8,7 +8,6 @@
 reconstruction and another one from a Pathway Tools reconstruction with the AuReMe's 
 mpwt package."""
 
-import argparse
 import cobra
 import copy
 import logging
@@ -18,8 +17,10 @@ import re
 
 from datetime import date
 
+import graphing
 import module
 import utils
+import PlantGEMs
 
 
 class Merging(module.Module):
@@ -311,8 +312,8 @@ class Merging(module.Module):
             self._get_networks_reactions("sbml")
         self._merge()
         cobra.io.save_json_model(self.merged_model, self.directory + self.name + "_merged.json")
-        graphs.make_upsetplot(self.directory, self.name + "_merging_upsetplot", self.dict_upsetplot_reactions,
-                              "Intersection of different sources' reactions")
+        graphing.make_upsetplot(self.directory, self.name + "_merging_upsetplot", self.dict_upsetplot_reactions,
+                                "Intersection of different sources' reactions")
 
 
 def merging_multirun_first(main_directory):
@@ -349,36 +350,5 @@ def run(main_directory):
     merging_multirun_last(list_objects)
 
 
-def merging_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("main_directory", help="The path to the main directory where the 'files/' directory is stored",
-                        type=str)
-    parser.add_argument("-m", "--migrate", help="Take the files previously created by blasting or mpwting modules and "
-                                                "store them in a new merge folder, ready to be merged.",
-                        action="store_true")
-    parser.add_argument("-v", "--verbose", help="Toggle the printing of more information", action="store_true")
-    parser.add_argument("-le", "--log_erase", help="Erase the existing log file to create a brand new one",
-                        action="store_true")
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    args = merging_arguments()
-    if args.log_erase:
-        logging.basicConfig(filename=args.main_directory + '/merging.log', filemode='w', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-    else:
-        logging.basicConfig(filename=args.main_directory + '/merging.log', level=logging.INFO,
-                            format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-    if args.verbose:
-        logging.getLogger().addHandler(logging.StreamHandler())
-    if args.migrate:
-        utils.migrate(utils.slash(args.main_directory))
-    logging.info("------ Merging module started ------")
-    run(utils.slash(args.main_directory))
-
-
 if __name__ == "__main__":
-    main()
-    # run("/home/asa/INRAE/These/Dev/tests/")
+    PlantGEMs.main()
