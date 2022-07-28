@@ -17,7 +17,7 @@ import subprocess
 import sys
 import time
 
-import graphs
+import graphing
 import module
 import utils
 

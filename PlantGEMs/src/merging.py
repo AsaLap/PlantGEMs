@@ -18,7 +18,7 @@ import re
 
 from datetime import date
 
-import graphs
+import graphing
 import module
 import utils
 
