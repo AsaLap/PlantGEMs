@@ -206,9 +206,9 @@ positional arguments:
   main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
-  -h, --help      Shows this help message and exit
-  -v, --verbose   Toggle the printing of more information
-  -le --log_erase Erases the previous log file
+  -h, --help       Shows this help message and exit
+  -v, --verbose    Toggle the printing of more information
+  -le, --log_erase Erases the previous log file
 ```
 **NB** : if you didn't put the files in the _files/_ directory, you will be asked to give the exact path for each file needed. Not recommended if you reconstruct several organisms at once for obvious practicality.
 
@@ -233,10 +233,10 @@ positional arguments:
   main_directory  The path to the main directory where the \'files/\' directory is stored
 
 optional arguments:
-  -h, --help      Shows this help message and exit
-  -m, --migrate   Searches and copies files from mpwting or blasting reconstruction into the merging directory 
-  -v, --verbose   Toggles the printing of more information
-  -le --log_erase Erases the previous log file
+  -h, --help       Shows this help message and exit
+  -m, --migrate    Searches and copies files from mpwting or blasting reconstruction into the merging directory 
+  -v, --verbose    Toggles the printing of more information
+  -le, --log_erase Erases the previous log file
 ```
 
 ## Files description :
