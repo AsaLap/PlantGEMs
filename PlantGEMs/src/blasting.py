@@ -317,29 +317,29 @@ class Blasting(module.Module):
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + surname + ".json")
 
 
-def blast_multirun_first(args):
+def blast_multirun_first(main_directory, identity, difference, e_val, coverage, bit_score):
     """
     Split of major function 'run', first part = gathering the files and candidates' names and creating one
     Blasting object for each.
     """
 
-    parameters = utils.read_config(args.main_directory + "main.ini")
-    if os.path.isdir(args.main_directory):
+    parameters = utils.read_config(main_directory + "main.ini")
+    if os.path.isdir(main_directory):
         list_objects = []
         for i in parameters.keys():
             if i != "DEFAULT":
                 logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
-                             "\n - Main directory : " + args.main_directory +
-                             "\n - Identity : " + str(args.identity) +
-                             "\n - Difference : " + str(args.difference) +
-                             "\n - E_Value : " + str(args.e_val) +
-                             "\n - Coverage : " + str(args.coverage) +
-                             "\n - Bit_Score : " + str(args.bit_score))
-                list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
-                                             identity=args.identity, difference=args.difference, e_val=args.e_val,
-                                             coverage=args.coverage, bit_score=args.bit_score))
+                             "\n - Main directory : " + main_directory +
+                             "\n - Identity : " + str(identity) +
+                             "\n - Difference : " + str(difference) +
+                             "\n - E_Value : " + str(e_val) +
+                             "\n - Coverage : " + str(coverage) +
+                             "\n - Bit_Score : " + str(bit_score))
+                list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], main_directory,
+                                             identity=identity, difference=difference, e_val=e_val,
+                                             coverage=coverage, bit_score=bit_score))
     else:
-        log_message = "Main directory given does not exist : " + args.main_directory
+        log_message = "Main directory given does not exist : " + main_directory
         logging.error(log_message)
         sys.exit(log_message)
     return list_objects
@@ -362,17 +362,17 @@ def build_blast_objects(organism_object):
     organism_object.build()
 
 
-def run(args):
+def run(*args):
     """The function to launch the process when used alone."""
 
     logging.info("\n------ Running multiple species or unique but with a config file ------")
     logging.info("Reading parameters...")
-    list_objects = blast_multirun_first(args)
+    list_objects = blast_multirun_first(*args)
     logging.info("Launching the blast(s) with given parameters...")
     blast_multirun_last(list_objects)
 
 
-def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
+def rerun_blast_selection(main_directory, name, identity, difference, e_val, coverage, bit_score):
     logging.info("\n------ Rerunning a species' genes selection ------")
     species = utils.load_obj(utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl")
     logging.info("Parameters for : {}\n - Main directory : {}\n - Identity : {} -> {}\n - Difference : {} -> {}\n"
