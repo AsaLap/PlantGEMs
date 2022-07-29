@@ -365,7 +365,7 @@ def build_blast_objects(organism_object):
 def run(*args):
     """The function to launch the process when used alone."""
 
-    logging.info("\n------ Running multiple species or unique but with a config file ------")
+    logging.info("\n------ Running blasting ------")
     logging.info("Reading parameters...")
     list_objects = blast_multirun_first(*args)
     logging.info("Launching the blast(s) with given parameters...")
