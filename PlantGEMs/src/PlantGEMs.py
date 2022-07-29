@@ -40,9 +40,9 @@ def main_arguments():
     # POSITIONAL
     parser.add_argument("module",
                         help="Choice of the module you'd like to use.\nrun = whole pipeline"
-                             "\nblasting = only blasting module"
-                             "\nmpwting = only mpwt from AuReMe"
-                             "\nmerging = only merging module",
+                             "\nB or blasting = only blasting module"
+                             "\nP or mpwting = only mpwt from AuReMe"
+                             "\nM or merging = only merging module",
                         type=str,
                         choices=["run", "blasting", "mpwting", "merging"])
     parser.add_argument("main_directory",
@@ -53,9 +53,10 @@ def main_arguments():
     parser.add_argument("-le", "--log_erase",
                         help="Erase the existing log file to create a brand new one",
                         action="store_true")
-    parser.add_argument("-v", "--verbose",
-                        help="Toggle the printing of more information",
-                        action="store_true")
+    # TODO : implement verbose option
+    # parser.add_argument("-v", "--verbose",
+    #                     help="Toggle the printing of more information",
+    #                     action="store_true")
 
     # BLASTING OPTIONS
     parser.add_argument("-rr", "--rerun",
@@ -94,6 +95,7 @@ def main_arguments():
                         metavar="[0-1000]")
 
     # MPWTING OPTIONS
+    # TODO : add the mpwt options
 
     # MERGING OPTIONS
     parser.add_argument("-m", "--migrate",
@@ -112,12 +114,25 @@ def main():
     else:
         logging.basicConfig(filename=args.main_directory + '/PlantGEMs.log', level=logging.INFO,
                             format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
+    if args.module in ["B", "BLASTING", "Blasting", "blasting"]:  # Args for the blasting launch
+        logging.info("------ Blasting module started ------")
+        if args.rerun:
+            blasting.rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
+                                           args.coverage, args.bit_score)
+        else:
+            blasting.run(args.main_directory, args.identity, args.difference, args.e_val,
+                         args.coverage, args.bit_score)
+    if args.module in ["P", "MPWTING", "Mpwting", "mpwting"]:  # Args for the mpwting launch
+        logging.info("------ Mpwting module started ------")
+        mpwting.run(args.main_directory)
+    if args.module in ["M", "MERGING", "Merging", "merging"]:  # Args for the merging launch
+        logging.info("------ Merging module started ------")
         if args.migrate:
             utils.migrate(utils.slash(args.main_directory))
-    if args.rerun:
-        blasting.rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
-                                       args.coverage, args.bit_score)
-    run(args)
+        merging.run(args.main_directory)
+    else:  # Else, run of the whole pipeline
+        logging.info("------ PlantGEMs pipeline started ------")
+        run(args)
 
 
 if __name__ == "__main__":
