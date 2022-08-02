@@ -115,7 +115,8 @@ def main():
     else:
         logging.basicConfig(filename=args.main_directory + '/PlantGEMs.log', level=logging.INFO,
                             format='%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
-    if args.module in ["B", "BLASTING", "Blasting", "blasting"]:  # Args for the blasting launch
+    # BLASTING
+    if args.module == "blasting":
         logging.info("------ Blasting module started ------")
         if args.rerun:
             blasting.rerun_blast_selection(args.main_directory, args.rerun, args.identity, args.difference, args.e_val,
@@ -123,15 +124,18 @@ def main():
         else:
             blasting.run(args.main_directory, args.identity, args.difference, args.e_val,
                          args.coverage, args.bit_score)
-    if args.module in ["P", "MPWTING", "Mpwting", "mpwting"]:  # Args for the mpwting launch
+    # MPWTING
+    if args.module == "mpwting":
         logging.info("------ Mpwting module started ------")
         mpwting.run(args.main_directory)
-    if args.module in ["M", "MERGING", "Merging", "merging"]:  # Args for the merging launch
+    # MERGING
+    if args.module == "merging":
         logging.info("------ Merging module started ------")
         if args.migrate:
             utils.migrate(utils.slash(args.main_directory))
         merging.run(args.main_directory)
-    else:  # Else, run of the whole pipeline
+    # RUN (whole pipeline)
+    else:
         logging.info("------ PlantGEMs pipeline started ------")
         run(args)
 
