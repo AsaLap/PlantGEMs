@@ -20,7 +20,8 @@ import utils
 def run(args):
     print("Proceeding to create all the needed files and checking input files, please stay around...")
     # Launching the first part of Blast (files checking & folder generation)
-    list_objects_to_blast = blasting.blast_multirun_first(args)
+    list_objects_to_blast = blasting.blast_multirun_first(args.main_directory, args.identity, args.difference,
+                                                          args.e_val, args.coverage, args.bit_score)
     # Launching the first part of MPWT (files checking & folder generation)
     list_objects, cpu, input_directory, output_directory, log_directory = \
         mpwting.mpwt_multirun_first(args.main_directory)
