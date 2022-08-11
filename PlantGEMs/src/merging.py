@@ -14,13 +14,13 @@ import logging
 import multiprocessing
 import os
 import re
+import sys
 
 from datetime import date
 
 import graphing
 import module
 import utils
-import PlantGEMs
 
 
 class Merging(module.Module):
@@ -351,4 +351,4 @@ def run(main_directory):
 
 
 if __name__ == "__main__":
-    PlantGEMs.main()
+    sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")

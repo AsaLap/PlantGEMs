@@ -19,7 +19,6 @@ import time
 import graphing
 import module
 import utils
-import PlantGEMs
 
 
 class Blasting(module.Module):
@@ -391,4 +390,4 @@ def rerun_blast_selection(main_directory, name, identity, difference, e_val, cov
 
 
 if __name__ == "__main__":
-    PlantGEMs.main()
+    sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")

@@ -509,5 +509,4 @@ def write_file(path, data, strip=True):
 
 
 if __name__ == "__main__":
-    # get_sequence_region("/home/asa/INRAE/These/Bioinfo/Tests/debug_solanum_SL4/files/solanum_lycopersicum_SL4.gff")
-    print(get_sequence_region("/home/asa/INRAE/These/Bioinfo/Tests/debug_solanum_SL4/files/solanum_lycopersicum_SL4.gff"))
+    sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")

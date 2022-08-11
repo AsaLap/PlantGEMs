@@ -13,10 +13,10 @@ import mpwt
 import multiprocessing
 import numpy as np
 import re
+import sys
 
 import module
 import utils
-import PlantGEMs
 
 
 class Mpwting(module.Module):
@@ -222,4 +222,4 @@ def run(main_directory):
 
 
 if __name__ == "__main__":
-    PlantGEMs.main()
+    sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")

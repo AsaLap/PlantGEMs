@@ -104,6 +104,8 @@ def make_upsetplot(directory, name, data, title, remove_zero=True, show_plot=Fal
 
 
 if __name__ == '__main__':
+    # sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")
+
     # Example of use, put all the .json networks you want to compare in a directory and point to this directory :
     wd = '/home/asa/Bureau/Graphs/'
     dicoUpset = {}
