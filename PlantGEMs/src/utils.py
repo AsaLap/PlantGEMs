@@ -6,14 +6,15 @@
 # Mars - Aout 2020
 """This file contains utility functions used in several PlantGEMs' scripts."""
 
-import sys
+import argparse
 import configparser
 import csv
 import json
 import os
 import pickle
-import subprocess
 import re
+import subprocess
+import sys
 
 
 def build_correspondence_dict(path, sep="\t"):
@@ -416,6 +417,15 @@ def remove_directory(directory):
     except PermissionError:
         print("Permission to erase this folder :\n" + directory + "\nnot granted !")
 
+def restricted_float(x):  # https://stackoverflow.com/questions/12116685/how-can-i-require-my-python-scripts-argument-to-be-a-float-in-a-range-using-arg
+    try:
+        x = float(x)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
+
+    if x < 0.0 or x > 1.0:
+        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+    return x
 
 def save_obj(obj, path):
     """Saves an object in a pickle file."""

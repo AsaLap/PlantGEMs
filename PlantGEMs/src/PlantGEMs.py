@@ -79,9 +79,8 @@ def main_arguments():
                         metavar="[0-100]")
     parser.add_argument("-ev", "--e_val",
                         help="The blast's e-value threshold value. Default=e-100",
-                        type=float,
+                        type=utils.restricted_float,
                         default=1e-100,
-                        choices=range(0, 1),
                         metavar="[0-1]")
     parser.add_argument("-c", "--coverage",
                         help="The minimum sequence coverage tolerated. Default=20",
