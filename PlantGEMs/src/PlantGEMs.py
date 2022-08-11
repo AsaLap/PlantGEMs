@@ -126,11 +126,11 @@ def main():
             blasting.run(args.main_directory, args.identity, args.difference, args.e_val,
                          args.coverage, args.bit_score)
     # MPWTING
-    if args.module == "mpwting":
+    elif args.module == "mpwting":
         logging.info("------ Mpwting module started ------")
         mpwting.run(args.main_directory)
     # MERGING
-    if args.module == "merging":
+    elif args.module == "merging":
         logging.info("------ Merging module started ------")
         if args.migrate:
             utils.migrate(utils.slash(args.main_directory))
