@@ -28,7 +28,7 @@ class Blasting(module.Module):
                  identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
         """
         ARGS :
-            _name -- name of the subject, must corresponds to the files' names.
+            _name -- name of the subject, must correspond to the files' names.
             _main_directory -- main directory with the files et subdirectories for the results.
         (optional):
             _model_file_path -- the path to the SBML file containing the model for the reconstruction.
@@ -78,7 +78,7 @@ class Blasting(module.Module):
 
     @property
     def directory(self):
-        return self.main_directory + "blast/" + self.name + "/"
+        return utils.slash(self.main_directory) + "blast/" + self.name + "/"
 
     @property
     def identity(self):
@@ -189,46 +189,47 @@ class Blasting(module.Module):
             wrong_identity, wrong_difference, wrong_coverage, wrong_bit_score, wrong_e_val = [], [], [], [], []
             selected_proteins = [["Protein Model\tSize P. Model\tProtein Subject\tSize P. Subject\tAlignment length\t"
                                   "Number of identity\tPercentage of identity\tScore\tEValue\tBitScore"]]
-            for key in self.blast_result.keys():  # key = region name
-                for res in self.blast_result[key]:
-                    spl = res.split(",")
-                    for i in range(len(spl)):
+            for region in self.blast_result.keys():  # key = region name
+                for line in self.blast_result[region]:
+                    blast_values = line.split(",")
+                    for i in range(len(blast_values)):
                         try:
-                            spl[i] = float(spl[i])
+                            blast_values[i] = float(blast_values[i])
                         except ValueError:
                             pass
-                    len_subject = spl[3]
-                    len_query = [spl[1] * (100 - self.difference) / 100, spl[1] * (100 + self.difference) / 100]
-                    min_align = self.coverage / 100 * spl[1]
+                    len_subject = blast_values[3]
+                    len_query = [blast_values[1] * (100 - self.difference) / 100, blast_values[1] *
+                                 (100 + self.difference) / 100]
+                    min_align = self.coverage / 100 * blast_values[1]
                     selected = True
-                    if spl[6] < self.identity:
-                        wrong_identity.append(res)
+                    if blast_values[6] < self.identity:
+                        wrong_identity.append(line)
                         selected = False
                     if not len_query[0] <= len_subject <= len_query[1]:
-                        wrong_difference.append(res)
+                        wrong_difference.append(line)
                         selected = False
-                    if spl[4] < min_align:
-                        wrong_coverage.append(res)
+                    if blast_values[4] < min_align:
+                        wrong_coverage.append(line)
                         selected = False
-                    if spl[9] < self.bit_score:
-                        wrong_bit_score.append(res)
+                    if blast_values[9] < self.bit_score:
+                        wrong_bit_score.append(line)
                         selected = False
-                    if spl[8] > self.e_val:
-                        wrong_e_val.append(res)
+                    if blast_values[8] > self.e_val:
+                        wrong_e_val.append(line)
                         selected = False
                     if selected:
-                        selected_proteins.append([str.replace(res, ",", "\t")])
+                        selected_proteins.append([str.replace(line, ",", "\t")])
                         try:
-                            self.gene_dictionary[key].append(spl[2])
+                            self.gene_dictionary[region].append(blast_values[2])
                         except KeyError:
-                            self.gene_dictionary[key] = [spl[2]]
+                            self.gene_dictionary[region] = [blast_values[2]]
             removed_proteins_upsetplot_dict = {"Identity": wrong_identity,
                                                "Difference": wrong_difference,
                                                "Coverage": wrong_coverage,
                                                "Bit_Score": wrong_bit_score,
                                                "E_Value": wrong_e_val}
             graphing.make_upsetplot(self.directory, "removed_proteins_plot", removed_proteins_upsetplot_dict,
-                                  "Thresholds responsible for unselected proteins")
+                                    "Thresholds responsible for unselected proteins")
             utils.write_csv(self.directory, "selected_proteins", selected_proteins)
 
     def _drafting(self):
