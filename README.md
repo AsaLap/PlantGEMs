@@ -93,7 +93,7 @@ __Example of use :__
 ~PlantGEMs/PlantGEMs/src/$ python PlantGEMs.py run path/to/main/directory/
 ```
 __Help displayed with the associated argument :__
-```txt
+```text
 (venv) [asa@asa-precision PlantGEMs]$ python PlantGEMs/src/PlantGEMs.py -h
 usage: PlantGEMs.py [-h] [-le] [-rr RERUN] [-i [0-100]] [-d [0-100]] [-ev [0-1]] [-c [0-100]] [-bs [0-1000]] [-m] {run,blasting,mpwting,merging} main_directory
 
