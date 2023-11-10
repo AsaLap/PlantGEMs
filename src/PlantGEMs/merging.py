@@ -228,8 +228,8 @@ class Merging(module.Module):
         for reaction_id in self.pwt_reactions_id_list:
             if count % 100 == 0:
                 if verbose:
-                    print("%s : gene correction %s ou of %s" % (self.name, str(count),
-                                                                str(len(self.pwt_reactions_id_list))))
+                    print("%s : gene correction %s out of %s" % (self.name, str(count),
+                                                                 str(len(self.pwt_reactions_id_list))))
             count += 1
             try:  # Changing pwt ids into long ids to match Metacyc ones
                 long_reactions = self.metacyc_matching_id_dict[reaction_id]
@@ -238,12 +238,17 @@ class Merging(module.Module):
                                            '9']:  # Another Metacyc ids' specificity
                         reaction_id2 = "_" + reaction_id2
                     try:
+                        print(self.metacyc_model.reactions.get_by_id(reaction_id2))
+                        print(self.metacyc_model.reactions.get_by_id(reaction_id2).name)
+                        # TODO
                         added_reaction = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction_id2))
+                        print("test")
                         added_reaction_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
                             self._browse_pwt_dat_files(added_reaction)
                         list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
                         list_no_match_enzrxns.extend(no_match_enzrxns)
                         self.merged_model.add_reactions([added_reaction_corrected])
+                        print("test")
                     except KeyError:
                         list_no_match_correction.append(reaction_id2)
                         pass
@@ -330,7 +335,7 @@ def merging_multirun_first(main_directory):
 
 def merging_multirun_last(list_objects):
     """
-    Split of major function 'run', second part = launches the process on each given object with multiprocessing.
+        Split of major function 'run', second part = launches the process on each given object with multiprocessing.
     """
 
     cpu = len(list_objects)
@@ -345,9 +350,13 @@ def build_merge_objects(organism):
 
 
 def run(main_directory):
+    main_directory = utils.slash(main_directory)
     utils.check_path(main_directory)
-    list_objects = merging_multirun_first(main_directory)
-    merging_multirun_last(list_objects)
+    # Rework of multiprocess needed... # TODO
+    # list_objects = merging_multirun_first(utils.slash(main_directory))
+    # merging_multirun_last(list_objects)
+    for species in utils.get_list_directory(main_directory + "merge"):
+        Merging(species, main_directory).build()
 
 
 if __name__ == "__main__":
