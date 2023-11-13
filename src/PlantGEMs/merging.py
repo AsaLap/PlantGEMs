@@ -222,6 +222,7 @@ class Merging(module.Module):
         """
 
         count = 0
+        list_TypeErrors = []
         list_no_match_correction = []
         list_no_match_enzrxns = []
         list_match_nb_enzymatic_reactions = []
@@ -238,19 +239,20 @@ class Merging(module.Module):
                                            '9']:  # Another Metacyc ids' specificity
                         reaction_id2 = "_" + reaction_id2
                     try:
-                        print(self.metacyc_model.reactions.get_by_id(reaction_id2))
-                        print(self.metacyc_model.reactions.get_by_id(reaction_id2).name)
-                        # TODO
-                        added_reaction = copy.deepcopy(self.metacyc_model.reactions.get_by_id(reaction_id2))
-                        print("test")
+                        # print(reaction_id2)
+                        # print(self.metacyc_model.reactions.get_by_id(reaction_id2))
+                        added_reaction = copy.copy(self.metacyc_model.reactions.get_by_id(reaction_id2))
                         added_reaction_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
                             self._browse_pwt_dat_files(added_reaction)
                         list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
                         list_no_match_enzrxns.extend(no_match_enzrxns)
                         self.merged_model.add_reactions([added_reaction_corrected])
-                        print("test")
+                        # print(self.merged_model.reactions)
                     except KeyError:
                         list_no_match_correction.append(reaction_id2)
+                        pass
+                    except TypeError:
+                        list_TypeErrors.append(reaction_id2)
                         pass
             except KeyError:
                 list_no_match_correction.append(reaction_id)
@@ -260,6 +262,7 @@ class Merging(module.Module):
         logging.info("{} : No enzrxns entry for unique-ids ({}) :\n{}".format(self.name, len(list_no_match_enzrxns),
                                                                               "\n".
                                                                               join([i for i in list_no_match_enzrxns])))
+        logging.info("{} : No match in gene correction for reactions ({}) due to a TypeError: \n{}".format(self.name, len(list_TypeErrors), "\n".join([i for i in list_TypeErrors])))
         logging.info("{} : Number of enzymatic reaction(s) found associated to each reaction : \n{}".
                      format(self.name, "\n".
                             join([(str(i[0]) + " : " + str(i[1])) for i in list_match_nb_enzymatic_reactions])))
@@ -361,3 +364,15 @@ def run(main_directory):
 
 if __name__ == "__main__":
     sys.exit("Please launch the pipeline with PlantGEMs.py. Terminating the process.")
+
+    vitis_object = Merging("vitis_vinifera", "/home/asa/INRAE/These/Bioinfo/Info/run_merge_2023_11_10/")
+    added_reaction = copy.copy(vitis_object.metacyc_model.reactions.get_by_id("RXN-15025"))
+    added_reaction_corrected, tuple_nb_enzymatic_reactions_match, no_match_enzrxns = \
+        vitis_object._browse_pwt_dat_files(added_reaction)
+    # list_match_nb_enzymatic_reactions.append(tuple_nb_enzymatic_reactions_match)
+    # list_no_match_enzrxns.extend(no_match_enzrxns)
+    vitis_object.merged_model.add_reactions([added_reaction_corrected])
+    print(vitis_object.merged_model.reactions)
+
+
+
