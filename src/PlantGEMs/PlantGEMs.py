@@ -15,7 +15,6 @@ import blasting
 import merging
 import mpwting
 import utils
-from blasting import Blasting  # Necessary for pickle read
 
 
 def run(args):
