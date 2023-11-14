@@ -191,7 +191,7 @@ def get_metacyc_ids(metacyc_json_model_path):
         meta_pattern = re.compile('(_CC[OI]-.*)|(^[_])|([_]\D$)')
         if len(reaction["metabolites"].keys()) != 0:
             for metabolite in reaction["metabolites"].keys():
-                # The metabolite are "cleaned" here
+                # The metabolites are "cleaned" here
                 metabolite = meta_pattern.sub("", metabolite)
                 len_id, len_meta = len(tmp_id), len(metabolite)
                 diff = len_id - len_meta
@@ -417,6 +417,7 @@ def remove_directory(directory):
     except PermissionError:
         print("Permission to erase this folder :\n" + directory + "\nnot granted !")
 
+
 def restricted_float(x):  # https://stackoverflow.com/questions/12116685/how-can-i-require-my-python-scripts-argument-to-be-a-float-in-a-range-using-arg
     try:
         x = float(x)
@@ -426,6 +427,7 @@ def restricted_float(x):  # https://stackoverflow.com/questions/12116685/how-can
     if x < 0.0 or x > 1.0:
         raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
     return x
+
 
 def save_obj(obj, path):
     """Saves an object in a pickle file."""
