@@ -91,14 +91,14 @@ class Mpwting(module.Module):
     def _eggnog_file_parser(self, region, gene, protein, line):
         """Sub-function of make_pf_files() to write the info in the correct order for each protein.
 
-        PARAMS:
-            region (str) -- actual genomic scope.
-            gene (str) -- one gene id in the scope.
-            protein (str) -- one of the proteins coded by the gene above.
-            start (int) -- the start position of the sequence.
-            line (str) -- the line corresponding to the protein in the .tsv file.
-        RETURNS:
-            info (str) -- a string with all the information and with the correct
+        Args:
+            region (str): actual genomic scope.
+            gene (str): one gene id in the scope.
+            protein (str): one of the proteins coded by the gene above.
+            start (int): the start position of the sequence.
+            line (str): the line corresponding to the protein in the .tsv file.
+        Returns:
+            info (str): a string with all the information and with the correct
             file architecture settings for the .pf file.
         """
 
@@ -148,8 +148,8 @@ class Mpwting(module.Module):
 def make_taxon_file(directory, taxon_name_list):
     """Function to make the taxon_id.tsv file.
 
-    PARAMS:
-        taxon_name_list (list) -- the list containing the name of the organism and its taxon id.
+    Args:
+        taxon_name_list (list): the list containing the name of the organism and its taxon id.
     """
 
     res = [["species", "taxon_id", "element_type"]]

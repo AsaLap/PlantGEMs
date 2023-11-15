@@ -78,8 +78,8 @@ class Merging(module.Module):
         """
         Search all the reactions in a model and add them to the object's list of regarding the extension of the file.
 
-        PARAMS:
-            extension (str) -- Extension of the model. json/JSON or sbml/SBML only for the moment.
+        Args:
+            extension (str): Extension of the model. json/JSON or sbml/SBML only for the moment.
         """
 
         list_networks = utils.find_files(self.directory, extension)
@@ -108,10 +108,10 @@ class Merging(module.Module):
     def _get_pwt_reactions(self):
         """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
 
-        PARAMS:
-            path (str) -- the path to the reactions.dat file.
-        RETURNS:
-            list_reactions (list of str) -- the list containing all the reactions in this model.
+        Args:
+            path (str): the path to the reactions.dat file.
+        Returns:
+            list_reactions (list of str): the list containing all the reactions in this model.
         """
 
         pwt_reactions = open(self.directory + "/reactions.dat", "r")
@@ -131,7 +131,7 @@ class Merging(module.Module):
         """Function to correct the gene reaction rule in each reaction taken from Metacyc/Pathway Tools
         to make it fit the organism for which the model is reconstructed.
 
-        PARAMS:
+        Args:
             reaction: the reaction's gene reaction rule to change.
         Returns the corrected gene reaction rule.
         """
@@ -217,8 +217,8 @@ class Merging(module.Module):
         Function to correct the gene_reaction_rule of each reaction coming from the Pathway Tools' software as they are
         copied from Metacyc and therefore wrongfully linked to the proper genes of the species reconstructed.
 
-        PARAMS:
-            verbose (bool) -- toggles the printing of work progression.
+        Args:
+            verbose (bool): toggles the printing of work progression.
         """
 
         count = 0
@@ -273,10 +273,10 @@ class Merging(module.Module):
         keeping every gene of the gene reaction rule, either from the merged model or the reactions' list. Just adds the
         reactions that were not already present.
 
-        PARAMS:
-            merging_reactions_list (cobra list reactions) -- list of cobra reactions you want to merge to the object's
+        Args:
+            merging_reactions_list (cobra list reactions): list of cobra reactions you want to merge to the object's
             model.
-        RETURNS:
+        Returns:
             a list of reactions that are not already in the merged_model
         """
 

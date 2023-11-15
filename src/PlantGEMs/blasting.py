@@ -27,14 +27,14 @@ class Blasting(module.Module):
                  _subject_proteomic_fasta_path=None, _subject_gff_path=None,
                  identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
         """
-        ARGS :
-            _name -- name of the subject, must correspond to the files' names.
-            _main_directory -- main directory with the files et subdirectories for the results.
+        Args:
+            _name (str): name of the subject, must correspond to the files' names.
+            _main_directory (str): main directory with the files et subdirectories for the results.
         (optional):
-            _model_file_path -- the path to the SBML file containing the model for the reconstruction.
-            _model_proteomic_fasta_path -- the path to the fasta file of the model.
-            _subject_proteomic_fasta_path -- the path to the fasta file of the subject.
-            _subject_gff_path -- the path to the gff file of the subject.
+            _model_file_path (str): the path to the SBML file containing the model for the reconstruction.
+            _model_proteomic_fasta_path (str): the path to the fasta file of the model.
+            _subject_proteomic_fasta_path (str): the path to the fasta file of the subject.
+            _subject_gff_path (str): the path to the gff file of the subject.
         """
         super().__init__(_name, _main_directory)
         utils.make_directory(self.main_directory + "blast/")
@@ -69,11 +69,11 @@ class Blasting(module.Module):
         self.version = 1.0
 
         """
-        identity (int) -- the blast result identity's threshold value to select the subject genes.
-        difference (int) -- the percentage of length difference tolerated between subject and query.
-        e_val (int) -- the minimum E-Value of each match.
-        coverage (int) -- the minimum sequence coverage of the match (percentage).
-        bit_score (int) -- the minimum Bit-Score of each match.
+        identity (int): the blast result identity's threshold value to select the subject genes.
+        difference (int): the percentage of length difference tolerated between subject and query.
+        e_val (int): the minimum E-Value of each match.
+        coverage (int): the minimum sequence coverage of the match (percentage).
+        bit_score (int): the minimum Bit-Score of each match.
         """
 
     @property

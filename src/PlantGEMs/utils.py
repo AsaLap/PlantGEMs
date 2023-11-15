@@ -21,12 +21,12 @@ def build_correspondence_dict(path, sep="\t"):
     """Function to create a dictionary of correspondence between
     elements from a correspondence file (Metacyc short and long IDs for example).
 
-    PARAMS:
-        path (str) -- the path to the csv/tsv file containing the corresponding information (only two elements).
-        sep (str) -- the separator of the correspondence file (default = tab).
-    RETURNS:
-        matching_dict -- dictionary with an element as key that matches the value.
-        matching_dict_reversed -- same thing as matching_dict but in reversed (value is key and vice-versa).
+    Args:
+        path (str): the path to the csv/tsv file containing the corresponding information (only two elements).
+        sep (str): the separator of the correspondence file (default = tab).
+    Returns:
+        matching_dict: dictionary with an element as key that matches the value.
+        matching_dict_reversed: same thing as matching_dict but in reversed (value is key and vice-versa).
     """
 
     matching = read_file_listed(path)
@@ -46,11 +46,11 @@ def build_correspondence_dict(path, sep="\t"):
 def check_path(path, sys_exit=False):
     """Function to check a file or folder existence.
 
-    ARGS:
-        path (str) -- the path to check.
-        sys_exit (boolean) -- True if you want to stop the process and quit, False (default) if you juste want the
-            return to be False if applicable (doesn't stop the process).
-        """
+    Args:
+        path (str): the path to check.
+        sys_exit (boolean): True if you want to stop the process and quit, False (default) if you juste want the
+        return to be False if applicable (doesn't stop the process).
+    """
 
     if os.path.exists(path):
         return True
@@ -60,14 +60,31 @@ def check_path(path, sys_exit=False):
         return False
 
 
+def clean_fasta(path):
+    """Function to get rid of the chevron character and uppercase fasta files.
+
+    Args:
+        path (str): the path to the fasta file.
+    RETURN:
+        res (str): the string uppercased and without the '>' char.
+    """
+
+    file = read_file_listed(path)
+    res = ""
+    for line in file:
+        if ">" not in line:
+            res += line.rstrip().upper()
+    return res
+
+
 def clean_sbml(directory, name):
     """Function to get rid of specific character COBRA puts into its 
     sbml models, and cannot read (you read it right...).
     
-    PARAMS:
-        wd (str) -- the working directory.
-        name (str) -- the name of the sbml model.
-    RETURNS:
+    Args:
+        wd (str): the working directory.
+        name (str): the name of the sbml model.
+    Returns:
         the name of the new file.
     """
 
@@ -89,12 +106,12 @@ def clean_sbml(directory, name):
 def cobra_compatibility(reaction, side=True):
     """Function to transform a reaction ID into a cobra readable ID and vice versa.
     
-    PARAMS:
-        reaction (str) -- the reaction.
-        side (boolean) -- True if you want to convert a COBRA ID into a readable ID, 
+    Args:
+        reaction (str): the reaction.
+        side (boolean): True if you want to convert a COBRA ID into a readable ID, 
         False for the reverse.
-    RETURNS:
-        reaction (str) -- the transformed reaction.
+    Returns:
+        reaction (str): the transformed reaction.
     """
 
     if side:
@@ -122,17 +139,37 @@ def copy_file(start, end):
         print("File not found : " + start)
 
 
+def count_letters(file, letters):
+    """Function to count the occurrence of the letters given as argument.
+
+    Args:
+        file (str): the path to the file to count.
+        letters (list of str): the char/str to count.
+    RETURN:
+        res (dic): a dictionary, each key is a str counted and the value
+        the number of occurrence.
+    """
+
+    res = {}
+    for letter in letters:
+        res[letter] = 0
+        for i in file:
+            if letter == i:
+                res[letter] += 1
+    return res
+
+
 def find_file(directory, target, extension):  # TODO : take multiple file extensions in parameters
     """Search a file corresponding to the target in the 'files' directory. If no match is found,
     asks the user to input the exact path to the file he wants to use.
 
-    PARAMS:
-        directory (str) -- the directory where to find the file.
-        target (str) -- the name of the file to search if correctly named.
-        extension (str) -- the file's extension.
+    Args:
+        directory (str): the directory where to find the file.
+        target (str): the name of the file to search if correctly named.
+        extension (str): the file's extension.
 
-    RETURNS:
-        file_path (str) -- the exact path to the file.
+    Returns:
+        file_path (str): the exact path to the file.
     """
 
     file_path = slash(directory) + target + dot(extension)
@@ -161,10 +198,10 @@ def find_files(directory, extension):
 def get_list_directory(path):
     """Function to retrieve all the directories names at a specified location (path)
 
-    ARGS:
-        path (str) -- the folder path in which are searched the sub-folders.
-    RETURNS:
-        list_directory (list of str) -- the names of the found folders.
+    Args:
+        path (str): the folder path in which are searched the sub-folders.
+    Returns:
+        list_directory (list of str): the names of the found folders.
     """
 
     path = slash(path)
@@ -208,10 +245,10 @@ def get_sequence_region(gff_file_path):
     """Function that browses the .gff file and gets the name of each gene,
     the position in the genome and each corresponding region and protein(s).
 
-    RETURNS:
-        regions_dict -- a dictionary containing all the gathered information (see pipelinePT() for the structure).
+    Returns:
+        regions_dict: a dictionary containing all the gathered information (see pipelinePT() for the structure).
 
-    -- Structure of regions_dict:
+   : Structure of regions_dict:
     {Region name (str):
         {Gene name (str):
             {"Start": int, "End": int, "Proteins":
@@ -273,10 +310,10 @@ def get_sequence_region(gff_file_path):
 def get_list_ids_reactions_cobra(model):
     """Function to gather all the reactions' id of a cobra model in a list.
 
-    PARAMS:
-        model -- a cobra model.
-    RETURNS:
-        res -- a list containing all the model's reactions' id.
+    Args:
+        model: a cobra model.
+    Returns:
+        res: a list containing all the model's reactions' id.
     """
 
     res = []
@@ -288,10 +325,10 @@ def get_list_ids_reactions_cobra(model):
 def get_list_reactions_cobra(model):
     """Function to gather all the reactions of a cobra model in a list.
 
-    PARAMS:
-        model -- a cobra model.
-    RETURNS:
-        res -- a list containing all the model's reactions.
+    Args:
+        model: a cobra model.
+    Returns:
+        res: a list containing all the model's reactions.
     """
 
     res = []
@@ -355,10 +392,10 @@ def dot(extension):
 def read_config(ini):
     """Runs the config file containing all the information to make a new model.
 
-    PARAMS :
-        ini (str) -- the path to the .ini file.
-    RETURNS :
-        config (dict of str) -- the configuration in a python dictionary object.
+    Args:
+        ini (str): the path to the .ini file.
+    Returns:
+        config (dict of str): the configuration in a python dictionary object.
     """
 
     if os.path.isfile(ini):
@@ -418,14 +455,15 @@ def remove_directory(directory):
         print("Permission to erase this folder :\n" + directory + "\nnot granted !")
 
 
-def restricted_float(x):  # https://stackoverflow.com/questions/12116685/how-can-i-require-my-python-scripts-argument-to-be-a-float-in-a-range-using-arg
+def restricted_float(
+        x):  # https://stackoverflow.com/questions/12116685/how-can-i-require-my-python-scripts-argument-to-be-a-float-in-a-range-using-arg
     try:
         x = float(x)
     except ValueError:
         raise argparse.ArgumentTypeError("%r not a floating-point literal" % (x,))
 
     if x < 0.0 or x > 1.0:
-        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]"%(x,))
+        raise argparse.ArgumentTypeError("%r not in range [0.0, 1.0]" % (x,))
     return x
 
 
@@ -449,14 +487,14 @@ def trans_short_id(list_ids, correspondence, short=True, keep=False):
     """Function to transform short IDs that can be ambiguous
     into long ones thanks to the correspondence ID file.
 
-    PARAMS:
-        list_ids (list of str) --  the list of IDs to convert (must be Metacyc format IDs).
-        correspondence (str) -- the path to the correspondence file of Metacyc IDs.
-        short (boolean) -- True if you want to have short IDs becoming long,
+    Args:
+        list_ids (list of str):  the list of IDs to convert (must be Metacyc format IDs).
+        correspondence (str): the path to the correspondence file of Metacyc IDs.
+        short (boolean): True if you want to have short IDs becoming long,
         False if you want long IDs to become short.
-        keep (boolean) -- True if you want to keep the reactions even if they are not found.
-    RETURNS:
-        new_list (list of str) -- the list with the converted IDs.
+        keep (boolean): True if you want to keep the reactions even if they are not found.
+    Returns:
+        new_list (list of str): the list with the converted IDs.
     """
 
     metacyc_matching_id_dict, metacyc_matching_id_dict_reversed = build_correspondence_dict(correspondence)
@@ -518,6 +556,20 @@ def write_file(path, data, strip=True):
         for i in data:
             f.write(i)
     f.close()
+
+
+def write_dict(path, dictionary):
+    """Function to save a one level dictionary as .txt.
+    Args:
+        path (str): directory and name of the file where to save the file.
+        dictionary (dict): the dictionary containing the values.
+        """
+
+    f = open(path, "w")
+    for key in dictionary.keys():
+        f.write(key + ":\n")
+        for value in dictionary[key]:
+            f.write(value + "\n")
 
 
 if __name__ == "__main__":

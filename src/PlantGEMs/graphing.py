@@ -11,11 +11,11 @@ def get_clusters(cluster_list):
     """Function to create every individual cluster depending on
     the number of values given to the UpSetPlot function.
 
-    PARAMS:
-        cluster_list (list) -- the list of subjects for the upSetPlot.
+    Args:
+        cluster_list (list): the list of subjects for the upSetPlot.
 
-    RETURNS:
-        final_res (list of lists) -- a list of all the possible clusters.
+    Returns:
+        final_res (list of lists): a list of all the possible clusters.
     """
 
     res = []
@@ -60,14 +60,14 @@ def make_upsetplot(directory, name, data, title, remove_zero=True, show_plot=Fal
     """Function to make an UpSetPlot.
     Need this three other functions : similarity_count(), get_clusters(), get_sub_clusters().
 
-    PARAMS:
-        directory (str) -- the directory to save the result.
-        name (str) -- name of the file to save.
-        data -- the dictionary containing the organisms as keys
+    Args:
+        directory (str): the directory to save the result.
+        name (str): name of the file to save.
+        data: the dictionary containing the organisms as keys
         and the genes/reactions/others to treat for the UpSetPlot.
-        title (str) -- title of the graph.
-        remove_zero (boolean) -- False if you want to plot the 0 values intersections.
-        show_plot (boolean) -- True if you want a graph to pop.
+        title (str): title of the graph.
+        remove_zero (boolean): False if you want to plot the 0 values intersections.
+        show_plot (boolean): True if you want a graph to pop.
     """
 
     clusters = get_clusters(list(data.keys()))

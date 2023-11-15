@@ -17,7 +17,7 @@ class Module:
 
     def __init__(self, _name, _main_directory):
         self.name = _name
-        self.main_directory = _main_directory.rstrip("/ ") + "/"
+        self.main_directory = utils.slash(_main_directory)
 
     def _find_eggnog(self, target):
         return utils.find_file(self.main_directory + "/files/", target, ".tsv")
