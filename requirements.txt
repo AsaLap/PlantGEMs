@@ -1,9 +1,10 @@
-matplotlib==3.8.1
-numpy==1.26.1
 cobra==0.29.0
 future>=0.18.2
-mpwt==0.8.4
-UpSetPlot==0.8.0
-supervenn==0.4.2
-pyasp~=1.4.4
+matplotlib==3.8.1
 Meneco~=2.0.0
+mpwt==0.8.4
+numpy==1.26.2
+pyasp~=1.4.4 #Worked when installed first 1.4.0 and updated to 1.4.4, didn't work when installing directly 1.4.4
+setuptools>=68.2.2
+supervenn==0.4.2
+UpSetPlot==0.8.0
