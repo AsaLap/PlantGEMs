@@ -48,7 +48,7 @@ class Merging(module.Module):
 
     def _search_metacyc_reactions_ids(self):
         """Function to search the reactions' ids for in the flat files from a Pathway Tools reconstruction. Then, adds
-        them into the object's Pathway Tools' reactions list."""
+        them into the object's Pathway Tools reactions list."""
 
         if self.pwt_reactions_id_list:
             pwt_metacyc_long_id_list = []
@@ -76,7 +76,7 @@ class Merging(module.Module):
 
     def _get_networks_reactions(self, extension):
         """
-        Search all the reactions in a model and add them to the object's list of regarding the extension of the file.
+        Search all the reactions in a model and add them to the object's list regarding the extension of the file.
 
         PARAMS:
             extension (str) -- Extension of the model. json/JSON or sbml/SBML only for the moment.
@@ -106,7 +106,7 @@ class Merging(module.Module):
             logging.info("{} : No {} file of draft network or model found".format(self.name, extension))
 
     def _get_pwt_reactions(self):
-        """Function to get the reactions in a reactions.dat file of Pathway Tools PGDB.
+        """Function to get the reactions in a reactions.dat file from a Pathway Tools PGDB.
 
         PARAMS:
             path (str) -- the path to the reactions.dat file.
@@ -214,8 +214,8 @@ class Merging(module.Module):
 
     def _correct_pwt_reactions(self, verbose=True):
         """
-        Function to correct the gene_reaction_rule of each reaction coming from the Pathway Tools' software as they are
-        copied from Metacyc and therefore wrongfully linked to the proper genes of the species reconstructed.
+        Function to correct the gene_reaction_rule of each reaction coming from Pathway Tools software as they are
+        copied from Metacyc and therefore wrongfully linked to the genes of the species reconstructed.
 
         PARAMS:
             verbose (bool) -- toggles the printing of work progression.

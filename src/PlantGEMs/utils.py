@@ -180,7 +180,7 @@ def get_metacyc_ids(metacyc_json_model_path):
 
     data = read_json(metacyc_json_model_path)
     res = []
-    print("Number of reactions found in the metacyc.json file : {}", format(len(data["reactions"])))
+    print("Number of reactions found in the metacyc.json file : {}".format(len(data["reactions"])))
     for reaction in data["reactions"]:
         long_id = reaction["name"].split("/")[0]
         # Getting rid of the brackets in the name sometimes!
