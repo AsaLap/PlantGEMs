@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from upsetplot import from_memberships, plot
 
 from utils import get_list_ids_reactions_cobra, cobra_compatibility, find_files, write_file
-
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="upsetplot")
 
 def get_clusters(cluster_list):
     """Function to create every individual cluster depending on
@@ -96,7 +97,7 @@ def make_upsetplot(directory, name, data, title, remove_zero=True, show_plot=Fal
             count.pop(x)
             clusters.pop(x)
     my_upsetplot = from_memberships(clusters, count)
-    plot(my_upsetplot, show_counts='%d', totals_plot_elements=3)
+    plot(my_upsetplot, totals_plot_elements=3)
     plt.suptitle(title)
     plt.savefig(directory + name + ".pdf")
     if show_plot:

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by rsbml version 0.1 on 2025-10-17 17:09 with libSBML version 5.20.4. -->
+<sbml xmlns="http://www.sbml.org/sbml/level2" level="2" version="1">
+  <model id="model">
+    <listOfUnitDefinitions>
+      <unitDefinition id="mmol_per_gDW_per_hr">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="-3" multiplier="1" offset="0"/>
+          <unit kind="gram" exponent="-1" scale="0" multiplier="1" offset="0"/>
+          <unit kind="second" exponent="-1" scale="0" multiplier="0.000277777777777778" offset="0"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="c" name="Cytosol" spatialDimensions="3" size = "3" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="M_reac1_c" name="reactant reac 1" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod1_c" name="product reac 1" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac2_c" name="reactant reac 2" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod2_c" name="product reac 2" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac3_c" name="reactant reac 3" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod3_c" name="product reac 3" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac4_c" name="reactant reac 4" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod4_c" name="product reac 4" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac5_c" name="reactant reac 5" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod5_c" name="product reac 5" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac6_c" name="reactant reac 6" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod6_c" name="product reac 6" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_reac7_c" name="reactant reac 7" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+      <species id="M_prod7_c" name="product reac 7" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" initialAmount = "1">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>FORMULA:X</p>
+            <p>CHARGE:X</p>
+          </body>
+        </notes>
+      </species>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="R_Reac1" name="Reac 1 should match once" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_a or Gene_b)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac1_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod1_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac2" name="Reac 2 should match twice" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_c or Gene_d)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac2_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod2_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac3" name="Reac 3 should match with one and" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_e or Gene_f) and (Gene_g or Gene_h)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac3_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod3_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac4" name="Reac 4 should not match" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_i and Gene_j and Gene_k)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac4_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod4_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac5" name="Reac 5 no match" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_l or Gene_m)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac5_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod5_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac6" name="Reac 6 should match three and" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: (Gene_n and Gene_o and Gene_p)</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac6_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod6_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_Reac7" name="Reac 7 no GPR" reversible="false">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: ()</p>
+            <p>SUBSYSTEM: subsystem test</p>
+            <p>EC Number: 1.1.1.1</p>
+            <p>Confidence Level: 1</p>
+            <p>Reference: </p>
+            <p>KEGG: -</p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_reac7_c" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_prod7_c" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

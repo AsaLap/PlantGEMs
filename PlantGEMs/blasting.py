@@ -8,6 +8,8 @@
 
 import argparse
 import cobra
+from cobra import Model, Reaction, Gene
+from cobra.core.gene import GPR
 import copy
 import logging
 import multiprocessing
@@ -16,6 +18,8 @@ import re
 import subprocess
 import sys
 import time
+import itertools
+import ast
 
 import graphs
 import module
@@ -28,7 +32,7 @@ class Blasting(module.Module):
                  _subject_proteomic_fasta_path=None, _subject_gff_path=None,
                  identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
         """
-        ARGS :
+        ARGS:
             _name -- name of the subject, must corresponds to the files' names.
             _main_directory -- main directory with the files et subdirectories for the results.
         (optional):
@@ -91,7 +95,7 @@ class Blasting(module.Module):
             print("Setting identity value to %s" % (str(value)))
             self._identity = value
         else:
-            print("Identity value denied : value must be between 0 and 100 (both included), value not changed")
+            print("Identity value denied: value must be between 0 and 100 (both included), value not changed")
 
     @property
     def difference(self):
@@ -103,7 +107,7 @@ class Blasting(module.Module):
             print("Setting difference value to %s" % (str(value)))
             self._difference = value
         else:
-            print("Difference value denied : value must be between 0 and 100 (both included), value not changed")
+            print("Difference value denied: value must be between 0 and 100 (both included), value not changed")
 
     @property
     def e_val(self):
@@ -115,7 +119,7 @@ class Blasting(module.Module):
             print("Setting E-value to %s" % (str(value)))
             self._e_val = value
         else:
-            print("E_val value denied : value must be between 0 and 10 (both included), value not changed")
+            print("E_val value denied: value must be between 0 and 10 (both included), value not changed")
 
     @property
     def coverage(self):
@@ -127,7 +131,7 @@ class Blasting(module.Module):
             print("Setting coverage value to %s" % (str(value)))
             self._coverage = value
         else:
-            print("Coverage value denied : value must be between 0 and 100 (both included), value not changed")
+            print("Coverage value denied: value must be between 0 and 100 (both included), value not changed")
 
     @property
     def bit_score(self):
@@ -139,13 +143,13 @@ class Blasting(module.Module):
             print("Setting Bit-score value to %s" % (str(value)))
             self._bit_score = value
         else:
-            print("Bit_score value denied : value must be between 0 and 10000 (both included), value not changed")
+            print("Bit_score value denied: value must be between 0 and 10000 (both included), value not changed")
 
     def _blast_run(self):
         """Runs multiple blasts between the model and the subject."""
 
         if not self.gene_dictionary:
-            print(self.name + " : Launching the blast !")
+            print(self.name + ": Launching the blast !")
             i, x = 1, len(self.model.genes)
             total_time = lap_time = time.time()
             tmp_dir = self.directory + "tmp_dir/"
@@ -157,11 +161,11 @@ class Blasting(module.Module):
                         gene_name = re.search('\w+(\.\w+)*(-\w+)*', seq).group(0)
                         utils.write_file(tmp_dir + gene_name + ".fa", [">" + seq])
                     except AttributeError:
-                        logging.info("Gene name not found in :", seq)
+                        logging.info("Gene name not found in: ", seq)
                         pass
             for gene in self.model.genes:
                 if i % 10 == 0:
-                    print("\n" + self.name + " : Protein %i out of %i\nTime : %f s\n" % (i, x, time.time() - lap_time))
+                    print("\n" + self.name + ": Protein %i out of %i\nTime: %f s\n" % (i, x, time.time() - lap_time))
                     lap_time = time.time()
                 i += 1
                 blast_request = [
@@ -175,7 +179,7 @@ class Blasting(module.Module):
                 self.blast_result[gene.id] = subprocess.run(blast_request,
                                                             capture_output=True).stdout.decode('ascii').split("\n")[:-1]
             utils.remove_directory(tmp_dir)
-            log_message = self.name + " : Blast done !\nTotal time : %f s" % (time.time() - total_time)
+            log_message = self.name + ": Blast done !\nTotal time: %f s" % (time.time() - total_time)
             logging.info(log_message)
             print(log_message)
 
@@ -183,7 +187,7 @@ class Blasting(module.Module):
         """Select the subject organism's genes regarding the different threshold parameters of the Blasting instance."""
 
         if not self.blast_result:
-            logging.info(self.name + " : No blast results found... Please run a blast with blast_run() before launching"
+            logging.info(self.name + ": No blast results found... Please run a blast with blast_run() before launching"
                                      " select_genes()")
             print("No blast results found... Please run a blast with blast_run() before launching select_genes()")
         else:
@@ -232,8 +236,9 @@ class Blasting(module.Module):
                                   "Thresholds responsible for unselected proteins")
             utils.write_csv(self.directory, "selected_proteins", selected_proteins)
 
-    def _drafting(self):
-        """Creates the new COBRA model for the subject organism."""
+    def _draftingOld(self):
+        """Creates the new COBRA model for the subject organism.
+        Old version, using "or" to split gpr, kept for future reference"""
 
         for reaction in self.model.reactions:
             to_add = []
@@ -250,13 +255,47 @@ class Blasting(module.Module):
                 x.gene_reaction_rule = string_reaction_rule
                 self.draft.add_reactions([x])
 
+
+
+    def _drafting(self):
+        """Creates the new COBRA model for the subject organism."""
+
+        for reaction in self.model.reactions:
+
+            rule = reaction.gene_reaction_rule
+            if not rule:
+                continue #don't add reactions in the new draft if no gene were present in the reference network. Might need to be modified later?
+            new_rule = expand_gpr(reaction.gene_reaction_rule, self.gene_dictionary) #Create a new GPR rule based on the original one the blast matches
+            if new_rule:
+                rxn_new = Reaction(reaction.id)
+                for attr, value in vars(reaction).items(): #retrieve all the attributes of the original reaction except genes related ones and the id of the model
+                    if attr not in ['genes', 'gene_reaction_rule', '_model']:
+                        setattr(rxn_new, attr, value)
+
+                new_notes = rxn_new.notes.copy() if rxn_new.notes else {}
+                new_notes.pop('Confidence Level', None)  # remove the confidence level if it was present, does not apply to the new draft
+                new_notes['GENE_ASSOCIATION'] = new_rule
+                new_notes['INITIAL_GENE_ASSOCIATION'] = reaction.gene_reaction_rule #keep the original GPR for future reference
+
+                rxn_new.notes = new_notes
+                # remove previous gene associations
+                rxn_new._genes = set()
+                # assign new GPR (the "_genes" are added automatically)
+                rxn_new.gene_reaction_rule = new_rule
+                self.draft.add_reactions([rxn_new])
+
     def _object_history_save(self, step):
         objects_directory = self.directory + "objects_history/"
-        utils.make_directory(objects_directory)
+        if not os.path.isdir(objects_directory):
+            utils.make_directory(objects_directory)
+        else:
+            messageDirExists = "Directory already exists: " + objects_directory
+            logging.info(messageDirExists)
         utils.save_obj(self, objects_directory + step)
 
     def _make_protein_correspondence_file(self):
-        """Function to create a csv file with the correspondence between a protein and the associated gene."""
+        """Function to create a csv file with the correspondence between a protein and the associated gene.
+        TODO: fix this, doesn't really work, takes the "CDS" field in the gff file"""
 
         correspondence = []
         for region in self.regions_dict.keys():
@@ -267,7 +306,8 @@ class Blasting(module.Module):
 
     def _protein_to_gene(self):
         """Function to transform the proteins in gene_reaction_rule into their corresponding genes.
-        It creates a new model that will have all the genes' names instead of the proteins' ones."""
+        It creates a new model that will have all the genes' names instead of the proteins' ones.
+        TODO: change the way the genes are handled with the split on the " or " """
 
         correspondence_file_path = self.directory + "protein_gene_correspondence.tsv"
         if os.path.isfile(correspondence_file_path):
@@ -283,12 +323,12 @@ class Blasting(module.Module):
                             if protein in gene_protein_dict.keys():
                                 genes.append(protein)
                         except KeyError:
-                            log_message = self.name + " : No match for : ", protein
+                            log_message = self.name + ": No match for: ", protein
                             logging.error(log_message)
                             print(log_message)
                 reaction.gene_reaction_rule = " or ".join(set(genes))
         else:
-            log_message = self.name + " : No correspondence file found here : " + correspondence_file_path + \
+            log_message = self.name + ": No correspondence file found here: " + correspondence_file_path + \
                           "\nAborting..."
             logging.info(log_message)
             print(log_message)
@@ -303,8 +343,9 @@ class Blasting(module.Module):
         self._object_history_save("genes_selected")
         self._drafting()
         self._object_history_save("drafted")
-        self._protein_to_gene()
+        #self._protein_to_gene() # Might add that back once fixed
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft" + ".json")
+        cobra.io.write_sbml_model(self.draft, self.directory + self.name + "_blast_draft" + ".sbml")
 
     def rebuild(self):
         surname = "_".join((str(self.identity), str(self.difference), str(self.e_val), str(self.coverage),
@@ -313,8 +354,48 @@ class Blasting(module.Module):
         self._object_history_save("genes_selected_" + surname)
         self._drafting()
         self._object_history_save("drafted_" + surname)
-        self._protein_to_gene()
+        #self._protein_to_gene() # Might add that back once fixed
         cobra.io.save_json_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + surname + ".json")
+        cobra.io.write_sbml_model(self.draft, self.directory + self.name + "_blast_draft_rebuild_" + surname + ".sbml")
+
+
+def print_ast(node, indent=0):
+    """ for debugging purposes, in order to be able to print the AST"""
+    prefix = "  " * indent
+    if isinstance(node, ast.Name):
+        print(f"{prefix}Gene: {node.id}")
+    elif isinstance(node, ast.BoolOp):
+        op_type = "AND" if isinstance(node.op, ast.And) else "OR"
+        print(f"{prefix}BoolOp: {op_type}")
+        for child in node.values:
+            print_ast(child, indent + 1)
+    else:
+        print(f"{prefix}Unknown node type: {type(node)}")
+
+def expand_gpr(rule, gene_dict):
+    """Replace the genes in a gpr with new genes if there is a match in the new genome
+    If at least a match is missing for a "and" relationship: don't keep it"""
+    if not rule:
+        return ""
+    gpr = GPR.from_string(rule)
+    tree = gpr.body #creation of an "Abstract Syntax Tree", AST
+    def expand(node):
+        #print_ast(node) #for debugging
+        if isinstance(node, ast.Name):
+            return gene_dict.get(node.id, []) # node = gene (leaf of the tree) => Return the dict
+        if isinstance(node, ast.BoolOp) and isinstance(node.op, ast.Or): # node = OR => concatenation of all matches
+            result = []
+            for child in node.values:
+                result += expand(child)
+            return result
+        if isinstance(node, ast.BoolOp) and isinstance(node.op, ast.And): # node = "AND" => cartesian product of all possible combinations (I guess could cause issues if too many genes? TODO to check later)
+            children = [expand(child) for child in node.values]
+            combos = itertools.product(*children)
+            return ["(" + " and ".join(c) + ")" for c in combos]
+
+        return []
+    expanded = expand(tree)
+    return " or ".join(expanded) #add a "or" to
 
 
 def blast_multirun_first(args):
@@ -328,18 +409,18 @@ def blast_multirun_first(args):
         list_objects = []
         for i in parameters.keys():
             if i != "DEFAULT":
-                logging.info("Parameters for : " + parameters[i]["ORGANISM_NAME"] +
-                             "\n - Main directory : " + args.main_directory +
-                             "\n - Identity : " + str(args.identity) +
-                             "\n - Difference : " + str(args.difference) +
-                             "\n - E_Value : " + str(args.e_val) +
-                             "\n - Coverage : " + str(args.coverage) +
-                             "\n - Bit_Score : " + str(args.bit_score))
+                logging.info("Parameters for: " + parameters[i]["ORGANISM_NAME"] +
+                             "\n - Main directory: " + args.main_directory +
+                             "\n - Identity: " + str(args.identity) +
+                             "\n - Difference: " + str(args.difference) +
+                             "\n - E_Value: " + str(args.e_val) +
+                             "\n - Coverage: " + str(args.coverage) +
+                             "\n - Bit_Score: " + str(args.bit_score))
                 list_objects.append(Blasting(parameters[i]["ORGANISM_NAME"], args.main_directory,
                                              identity=args.identity, difference=args.difference, e_val=args.e_val,
                                              coverage=args.coverage, bit_score=args.bit_score))
     else:
-        log_message = "Main directory given does not exist : " + args.main_directory
+        log_message = "Main directory given does not exist: " + args.main_directory
         logging.error(log_message)
         sys.exit(log_message)
     return list_objects
@@ -379,9 +460,9 @@ def run_unique(args):
     """
 
     logging.info("\n------ Running a unique species ------")
-    logging.info("\nParameters for : {}\n - Main directory : {}\n - Model's file's path : {}\n - Model's proteomic "
-                 "fasta's path : {}\n - Subject's proteomic fasta's path : {}\n - Subject's gff file's path : {}\n"
-                 " - Identity : {}\n - Difference : {}\n - E_Value : {}\n - Coverage : {}\n - Bit_Score : {}"
+    logging.info("\nParameters for: {}\n - Main directory: {}\n - Model's file's path: {}\n - Model's proteomic "
+                 "fasta's path: {}\n - Subject's proteomic fasta's path: {}\n - Subject's gff file's path: {}\n"
+                 " - Identity: {}\n - Difference: {}\n - E_Value: {}\n - Coverage: {}\n - Bit_Score: {}"
                  .format(args.name, args.main_directory, args.model_file_path, args.model_proteomic_fasta_path,
                          args.subject_proteomic_fasta_path, args.subject_gff_path,
                          args.identity, args.difference, args.e_val, args.coverage, args.bit_score))
@@ -394,8 +475,8 @@ def run_unique(args):
 def rerun_blast_selection(main_directory, name, identity=50, difference=30, e_val=1e-100, coverage=20, bit_score=300):
     logging.info("\n------ Rerunning a species' genes selection ------")
     species = utils.load_obj(utils.slash(main_directory) + "blast/" + name + "/objects_history/blasted.pkl")
-    logging.info("Parameters for : {}\n - Main directory : {}\n - Identity : {} -> {}\n - Difference : {} -> {}\n"
-                 " - E_Value : {} -> {}\n - Coverage : {} -> {}\n - Bit_Score : {} -> {}"
+    logging.info("Parameters for: {}\n - Main directory: {}\n - Identity: {} -> {}\n - Difference: {} -> {}\n"
+                 " - E_Value: {} -> {}\n - Coverage: {} -> {}\n - Bit_Score: {} -> {}"
                  .format(species.name, species.main_directory, species.identity, identity, species.difference,
                          difference, species.e_val, e_val, species.coverage, coverage, species.bit_score, bit_score))
     species.main_directory = main_directory

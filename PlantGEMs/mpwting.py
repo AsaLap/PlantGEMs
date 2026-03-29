@@ -38,19 +38,19 @@ class Mpwting(module.Module):
         if self.element_type == "NONE":
             for i in self.regions_dict.keys():
                 dat_file_str_list.append('ID\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                         % (i, circular, self.main_directory + i + '.pf',
-                                            self.main_directory + i + '.fsa'))
+                                         % (i, circular, i + '.pf',
+                                            i + '.fsa'))
         elif self.element_type == ":CONTIG":
             for i in self.regions_dict.keys():
                 dat_file_str_list.append('ID\t%s\nchromosome_type\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n'
-                                         % (i, self.element_type, self.main_directory + i + '.pf',
-                                            self.main_directory + i + '.fsa'))
+                                         % (i, self.element_type, i + '.pf',
+                                            i + '.fsa'))
         else:
             for i in self.regions_dict.keys():
                 dat_file_str_list.append(
                     'ID\t%s\nchromosome_type\t%s\nCIRCULAR?\t%s\nANNOT-FILE\t%s\nSEQ-FILE\t%s\n//\n' % (
-                        i, self.element_type, circular, self.main_directory + i + '.pf',
-                        self.main_directory + i + '.fsa'))
+                        i, self.element_type, circular, i + '.pf',
+                        i + '.fsa'))
         utils.write_file(self.directory + "genetic-elements" + ".dat", dat_file_str_list)
 
     def _make_fsa_files(self):
